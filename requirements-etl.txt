@@ -1,0 +1,5 @@
+# Only needed to rebuild the optional aviation database, not by the desktop UI.
+duckdb==1.5.6
+timezonefinder==9.0.0
+timezonefinder-data==3.2026.4
+tzdata==2026.4

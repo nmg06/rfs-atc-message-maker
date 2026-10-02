@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0B1220">
+  <title>RFS ATC Message Maker — Mobile</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✈️</text></svg>">
+  <style>
+    :root {
+      --bg: #0B1220;
+      --card: #121D2E;
+      --card-border: #27364B;
+      --input-bg: #0D1726;
+      --input-border: #35465E;
+      --input-focus: #60A5FA;
+      --primary: #2563EB;
+      --primary-hover: #1D4ED8;
+      --success: #147D59;
+      --success-hover: #116A4C;
+      --danger: #FF7B86;
+      --text: #E6EDF7;
+      --text-muted: #8B9CB3;
+      --text-dim: #5F6F84;
+      --accent: #3AA0FF;
+      --radius: 12px;
+      --radius-sm: 8px;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: "JetBrains Mono", "SF Mono", Consolas, "Courier New", monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 15px;
+      line-height: 1.4;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding-bottom: 90px;
+    }
+
+    header {
+      background: rgba(18, 29, 46, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--card-border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-icon {
+      font-size: 22px;
+      line-height: 1;
+    }
+
+    .brand-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.2px;
+    }
+
+    .brand-badge {
+      font-size: 11px;
+      background: #18263A;
+      color: var(--accent);
+      border: 1px solid var(--input-border);
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+
+    .tab-bar {
+      display: flex;
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 3px;
+      margin: 12px 16px 4px 16px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 8px 12px;
+      font-size: 13.5px;
+      font-weight: 600;
+      text-align: center;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      border-radius: 7px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn.active {
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+    }
+
+    .container {
+      padding: 12px 16px;
+      max-width: 680px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 14px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+    }
+
+    .card-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .field {
+      margin-bottom: 12px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 5px;
+    }
+
+    .field label .req {
+      color: var(--danger);
+      margin-left: 2px;
+    }
+
+    input[type="text"], input[type="number"], select, textarea {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 14.5px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+      -webkit-appearance: none;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--input-focus);
+    }
+
+    input::placeholder, textarea::placeholder {
+      color: var(--text-dim);
+    }
+
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%238B9CB3' viewBox='0 0 16 16'%3E%3Cpath d='M8 11.5l-5-5h10l-5 5z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 32px;
+    }
+
+    .preview-box {
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.5;
+      color: #E2E8F0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      min-height: 240px;
+      user-select: text;
+      -webkit-user-select: text;
+    }
+
+    .preview-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11.5px;
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+
+    .preview-meta .limit-warn {
+      color: var(--danger);
+      font-weight: 700;
+    }
+
+    .bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(11, 18, 32, 0.95);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-top: 1px solid var(--card-border);
+      padding: 12px 16px max(12px, env(safe-area-inset-bottom));
+      z-index: 99;
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 13px 20px;
+      font-size: 15px;
+      font-weight: 700;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      flex: 1;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+    }
+
+    .btn-primary:active {
+      transform: scale(0.98);
+      background: var(--primary-hover);
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: #fff;
+    }
+
+    .btn-secondary {
+      background: #1C2B40;
+      color: var(--text);
+      border: 1px solid var(--input-border);
+      padding: 13px 14px;
+    }
+
+    .toast {
+      position: fixed;
+      top: 70px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background: #10B981;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 13.5px;
+      font-weight: 700;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 999;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <span class="brand-icon">✈️</span>
+      <div>
+        <div class="brand-title">RFS ATC Maker</div>
+      </div>
+      <span class="brand-badge">Mobile</span>
+    </div>
+    <button class="btn btn-secondary" style="padding:6px 12px;font-size:12px;" onclick="resetForm()">Nouveau</button>
+  </header>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" id="tab-form" onclick="switchTab('form')">📝 Vol & Saisie</button>
+    <button class="tab-btn" id="tab-preview" onclick="switchTab('preview')">👁 Aperçu Discord</button>
+  </div>
+
+  <div class="container">
+    <!-- PANEL 1: FORM -->
+    <div class="panel active" id="panel-form">
+      
+      <!-- OPTIONS RAPIDES -->
+      <div class="card">
+        <div class="card-title">Configuration</div>
+        <div class="field">
+          <label>Type de message <span class="req">*</span></label>
+          <select id="msg_type" onchange="onTypeChanged()">
+            <option value="ATC REQUEST">ATC REQUEST (Départ / Porte)</option>
+            <option value="AIRBORNE">AIRBORNE (En vol)</option>
+            <option value="ARRIVAL BOARD">ARRIVAL BOARD (Arrivée)</option>
+            <option value="FLIGHT COMPLETED">FLIGHT COMPLETED (Vol terminé)</option>
+            <option value="PUSHBACK">PUSHBACK</option>
+            <option value="TAXI">TAXI</option>
+            <option value="ATIS">ATIS</option>
+            <option value="DISPATCH FORM">DISPATCH FORM</option>
+          </select>
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label>Pseudo RFS</label>
+            <input type="text" id="pilot_name" value="n1chita" placeholder="Ex: n1chita" oninput="render()">
+          </div>
+          <div class="field">
+            <label>Design</label>
+            <select id="design" onchange="render()">
+              <option value="Bulletin">Bulletin</option>
+              <option value="Classique">Classique</option>
+              <option value="Moderne">Moderne</option>
+              <option value="Minimal">Minimal</option>
+              <option value="Pilote">Pilote</option>
+              <option value="Aviation">Aviation</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label>Longueur</label>
+            <select id="length" onchange="render()">
+              <option value="Court">Court</option>
+              <option value="Moyen" selected>Moyen</option>
+              <option value="Détaillé">Détaillé</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Emojis</label>
+            <select id="emojis" onchange="render()">
+              <option value="Classique">Classique</option>
+              <option value="Aviation">Aviation</option>
+              <option value="Alternatif" selected>Alternatif</option>
+              <option value="Sans emojis">Sans emojis</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- VOL ACTUEL -->
+      <div class="card">
+        <div class="card-title">Vol actuel</div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label>Compagnie <span class="req">*</span></label>
+            <input type="text" id="airline" placeholder="Ex: Air France" oninput="render()">
+          </div>
+          <div class="field">
+            <label>Avion / Modèle <span class="req">*</span></label>
+            <input type="text" id="aircraft" placeholder="Ex: Airbus A320neo" oninput="render()">
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label>Callsign <span class="req">*</span></label>
+            <input type="text" id="callsign" placeholder="Ex: AFR123" oninput="render()">
+          </div>
+          <div class="field">
+            <label>Niveau de vol</label>
+            <input type="text" id="cruise_fl" placeholder="Ex: FL350 ou 350" oninput="render()">
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label>ICAO Départ <span class="req">*</span></label>
+            <input type="text" id="dep_icao" placeholder="Ex: LFPG" maxlength="4" style="text-transform:uppercase" oninput="render()">
+          </div>
+          <div class="field">
+            <label>Ville départ</label>
+            <input type="text" id="dep_city" placeholder="Ex: Paris" oninput="render()">
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label>ICAO Arrivée <span class="req">*</span></label>
+            <input type="text" id="arr_icao" placeholder="Ex: EGLL" maxlength="4" style="text-transform:uppercase" oninput="render()">
+          </div>
+          <div class="field">
+            <label>Ville arrivée</label>
+            <input type="text" id="arr_city" placeholder="Ex: Londres" oninput="render()">
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label>Distance</label>
+            <input type="text" id="distance" placeholder="Ex: 215 NM" oninput="render()">
+          </div>
+          <div class="field">
+            <label>Durée prévue</label>
+            <input type="text" id="ete" placeholder="Ex: 1h15" oninput="render()">
+          </div>
+        </div>
+      </div>
+
+      <!-- INFORMATIONS DU MESSAGE -->
+      <div class="card" id="card-message-fields">
+        <div class="card-title">Informations du message</div>
+
+        <!-- Dynamic fields -->
+        <div id="dynamic-fields"></div>
+      </div>
+
+    </div>
+
+    <!-- PANEL 2: PREVIEW -->
+    <div class="panel" id="panel-preview">
+      <div class="card">
+        <div class="card-title">
+          <span>Aperçu Discord</span>
+          <span style="font-size:12px;color:var(--text-muted);font-weight:normal;">En direct</span>
+        </div>
+        <div class="preview-box" id="preview_text">Le message se construit pendant la saisie…</div>
+        <div class="preview-meta">
+          <span id="char_count">0 / 2 000 car.</span>
+          <span id="emoji_count">0 / 6 emojis</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FLOATING BOTTOM BAR -->
+  <div class="bottom-bar">
+    <button class="btn btn-primary" onclick="copyMessage()">
+      <span>📋 Copier le message</span>
+    </button>
+    <button class="btn btn-secondary" onclick="togglePreview()">
+      <span id="preview-toggle-icon">👁</span>
+    </button>
+  </div>
+
+  <div class="toast" id="toast">Copié dans le presse-papiers ! ✓</div>
+
+  <script>
+    // Local storage key
+    const STORAGE_KEY = 'rfs_mobile_state_v1';
+
+    // State
+    let state = {
+      msg_type: 'ATC REQUEST',
+      pilot_name: 'n1chita',
+      design: 'Bulletin',
+      length: 'Moyen',
+      emojis: 'Alternatif',
+      airline: '',
+      aircraft: '',
+      callsign: '',
+      cruise_fl: '',
+      dep_icao: '',
+      dep_city: '',
+      arr_icao: '',
+      arr_city: '',
+      distance: '',
+      ete: '',
+      // dynamic
+      server: 'ATC REPORT',
+      gate: '',
+      pushback: '5',
+      dep_runway: '',
+      climb_target: 'FL',
+      climb_waypoint: '',
+      controller: '',
+      arr_runway: '',
+      arr_status: 'On Final',
+      approach: 'ILS',
+      touchdown: '-120'
+    };
+
+    function loadState() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          state = { ...state, ...JSON.parse(saved) };
+        }
+      } catch (e) {}
+
+      for (const [k, v] of Object.entries(state)) {
+        const el = document.getElementById(k);
+        if (el) el.value = v;
+      }
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {}
+    }
+
+    function switchTab(name) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      document.getElementById('tab-' + name).classList.add('active');
+      document.getElementById('panel-' + name).classList.add('active');
+    }
+
+    function togglePreview() {
+      const isPreview = document.getElementById('panel-preview').classList.contains('active');
+      switchTab(isPreview ? 'form' : 'preview');
+    }
+
+    function onTypeChanged() {
+      state.msg_type = document.getElementById('msg_type').value;
+      updateDynamicFields();
+      render();
+    }
+
+    function updateDynamicFields() {
+      const container = document.getElementById('dynamic-fields');
+      const type = state.msg_type;
+      let html = '';
+
+      if (type === 'ATC REQUEST') {
+        html = `
+          <div class="grid-2">
+            <div class="field">
+              <label>Porte / Gate</label>
+              <input type="text" id="gate" value="${state.gate || ''}" placeholder="Ex: A12" oninput="onFieldInput(this)">
+            </div>
+            <div class="field">
+              <label>Pushback (min)</label>
+              <input type="text" id="pushback" value="${state.pushback || '5'}" placeholder="Ex: 5" oninput="onFieldInput(this)">
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="field">
+              <label>Piste de départ</label>
+              <input type="text" id="dep_runway" value="${state.dep_runway || ''}" placeholder="Ex: 27L" oninput="onFieldInput(this)">
+            </div>
+            <div class="field">
+              <label>Serveur</label>
+              <input type="text" id="server" value="${state.server || 'ATC REPORT'}" oninput="onFieldInput(this)">
+            </div>
+          </div>
+        `;
+      } else if (type === 'AIRBORNE') {
+        html = `
+          <div class="grid-2">
+            <div class="field">
+              <label>Piste utilisée</label>
+              <input type="text" id="dep_runway" value="${state.dep_runway || ''}" placeholder="Ex: 27L" oninput="onFieldInput(this)">
+            </div>
+            <div class="field">
+              <label>Contrôleur ATC</label>
+              <input type="text" id="controller" value="${state.controller || ''}" placeholder="Ex: JohnATC" oninput="onFieldInput(this)">
+            </div>
+          </div>
+        `;
+      } else if (type === 'ARRIVAL BOARD') {
+        html = `
+          <div class="grid-2">
+            <div class="field">
+              <label>Piste d'arrivée</label>
+              <input type="text" id="arr_runway" value="${state.arr_runway || ''}" placeholder="Ex: 09R" oninput="onFieldInput(this)">
+            </div>
+            <div class="field">
+              <label>Statut</label>
+              <input type="text" id="arr_status" value="${state.arr_status || 'On Final'}" placeholder="Ex: On Final" oninput="onFieldInput(this)">
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="field">
+              <label>Approche</label>
+              <input type="text" id="approach" value="${state.approach || 'ILS'}" placeholder="Ex: ILS" oninput="onFieldInput(this)">
+            </div>
+            <div class="field">
+              <label>Serveur</label>
+              <input type="text" id="server" value="${state.server || 'ATC REPORT'}" oninput="onFieldInput(this)">
+            </div>
+          </div>
+        `;
+      } else if (type === 'FLIGHT COMPLETED') {
+        html = `
+          <div class="grid-2">
+            <div class="field">
+              <label>Piste atterrissage</label>
+              <input type="text" id="arr_runway" value="${state.arr_runway || ''}" placeholder="Ex: 09R" oninput="onFieldInput(this)">
+            </div>
+            <div class="field">
+              <label>Touchdown (fpm)</label>
+              <input type="text" id="touchdown" value="${state.touchdown || '-120'}" placeholder="Ex: -120 fpm" oninput="onFieldInput(this)">
+            </div>
+          </div>
+          <div class="field">
+            <label>Contrôleur ATC</label>
+            <input type="text" id="controller" value="${state.controller || ''}" placeholder="Ex: JohnATC" oninput="onFieldInput(this)">
+          </div>
+        `;
+      } else {
+        html = `
+          <div class="field">
+            <label>Serveur</label>
+            <input type="text" id="server" value="${state.server || 'ATC REPORT'}" oninput="onFieldInput(this)">
+          </div>
+        `;
+      }
+
+      container.innerHTML = html;
+    }
+
+    function onFieldInput(el) {
+      state[el.id] = el.value;
+      render();
+    }
+
+    function formatRunway(r) {
+      if (!r) return '';
+      r = r.replace(/^(?:RWY|RUNWAY)\s*/i, '').trim();
+      return r ? 'RWY ' + r : '';
+    }
+
+    function formatFL(fl) {
+      if (!fl) return '';
+      fl = fl.trim();
+      return fl.toUpperCase().startsWith('FL') ? fl.toUpperCase() : 'FL' + fl;
+    }
+
+    function render() {
+      // sync values from DOM
+      const keys = ['pilot_name', 'design', 'length', 'emojis', 'airline', 'aircraft', 'callsign', 'cruise_fl', 'dep_icao', 'dep_city', 'arr_icao', 'arr_city', 'distance', 'ete'];
+      keys.forEach(k => {
+        const el = document.getElementById(k);
+        if (el) state[k] = el.value;
+      });
+
+      saveState();
+
+      const type = state.msg_type;
+      const pilot = state.pilot_name.trim();
+      const airline = state.airline.trim().toUpperCase();
+      const aircraft = state.aircraft.trim();
+      const callsign = state.callsign.trim().toUpperCase();
+      const depIcao = state.dep_icao.trim().toUpperCase();
+      const depCity = state.dep_city.trim();
+      const arrIcao = state.arr_icao.trim().toUpperCase();
+      const arrCity = state.arr_city.trim();
+      const fl = formatFL(state.cruise_fl);
+      const dist = state.distance.trim();
+      const ete = state.ete.trim();
+
+      const boxWidth = 27;
+      const lineCenter = (str) => {
+        const left = Math.max(0, Math.floor((boxWidth - str.length) / 2));
+        const right = Math.max(0, boxWidth - str.length - left);
+        return ' '.repeat(left) + str + ' '.repeat(right);
+      };
+
+      const headerBox = `╭${'─'.repeat(boxWidth)}╮\n${lineCenter(type)}\n╰${'─'.repeat(boxWidth)}╯`;
+
+      const identityLines = [];
+      if (airline) identityLines.push(airline);
+      if (pilot && aircraft) identityLines.push(`✈ ${pilot} │ ${aircraft}`);
+      else if (pilot) identityLines.push(`✈ ${pilot}`);
+      if (callsign) identityLines.push(`CALLSIGN : ${callsign}`);
+
+      const routeLines = [];
+      const depStr = depIcao ? (depCity ? `${depIcao} • ${depCity}` : depIcao) : '';
+      const arrStr = arrIcao ? (arrCity ? `${arrIcao} • ${arrCity}` : arrIcao) : '';
+      if (depStr && arrStr) {
+        routeLines.push(`🛫 ${depStr}\n　↘\n🛬 ${arrStr}`);
+      } else if (depStr) {
+        routeLines.push(`🛫 ${depStr}`);
+      } else if (arrStr) {
+        routeLines.push(`🛬 ${arrStr}`);
+      }
+
+      const infoLines = [];
+      if (type === 'ATC REQUEST') {
+        if (depIcao) infoLines.push(`ICAO　　 : ${depIcao}`);
+        const gate = state.gate ? `Gate ${state.gate.trim()} • Parking` : '';
+        if (gate) infoLines.push(`STATUS　 : ${gate}`);
+        if (state.pushback) infoLines.push(`PUSHBACK : in ${state.pushback} minute${state.pushback !== '1' ? 's' : ''}`);
+        if (state.dep_runway) infoLines.push(`RUNWAY　 : ${formatRunway(state.dep_runway)}`);
+        if (fl) infoLines.push(`CRUISE　 : ${fl}`);
+        if (dist) infoLines.push(`ROUTE　　 : ${dist}`);
+        if (ete) infoLines.push(`ETE　　　 : ${ete}`);
+        if (state.server) infoLines.push(`SERVER　 : ${state.server}`);
+      } else if (type === 'AIRBORNE') {
+        infoLines.push(`STATUS　 : Airborne`);
+        if (state.dep_runway) infoLines.push(`RUNWAY　 : ${formatRunway(state.dep_runway)}`);
+        if (fl) infoLines.push(`CRUISE　 : ${fl}`);
+        if (dist) infoLines.push(`ROUTE　　 : ${dist}`);
+        if (ete) infoLines.push(`ETE　　　 : ${ete}`);
+      } else if (type === 'ARRIVAL BOARD') {
+        if (state.arr_status) infoLines.push(`STATUS　 : ${state.arr_status}`);
+        if (state.arr_runway) infoLines.push(`RUNWAY　 : ${formatRunway(state.arr_runway)}`);
+        if (state.approach) infoLines.push(`APPROACH : ${state.approach}`);
+        if (state.server) infoLines.push(`SERVER　 : ${state.server}`);
+      } else if (type === 'FLIGHT COMPLETED') {
+        if (state.arr_runway) infoLines.push(`RUNWAY　 : ${formatRunway(state.arr_runway)}`);
+        if (state.touchdown) infoLines.push(`TOUCHDOWN: ${state.touchdown}`);
+        if (ete) infoLines.push(`FLIGHT　 : ${ete}`);
+      }
+
+      const blocks = [];
+      blocks.push(headerBox);
+      if (identityLines.length) blocks.push(identityLines.join('\n'));
+      if (routeLines.length) blocks.push(routeLines.join('\n'));
+      if (infoLines.length) blocks.push(infoLines.join('\n'));
+
+      if (type === 'ATC REQUEST') {
+        if (depIcao) blocks.push(`Requesting Ground and Tower for departure at ${depIcao}.`);
+        blocks.push(`「REQUESTING ATC」\n@RFS ATC`);
+      } else if (type === 'AIRBORNE') {
+        if (state.controller) {
+          blocks.push(`Big thanks to @${state.controller.replace(/^@/, '')} for the ATC on the ground and departure 🙏`);
+        }
+      } else if (type === 'ARRIVAL BOARD') {
+        blocks.push(`「REQUESTING ATC REPORT」\n@RFS ATC`);
+      } else if (type === 'FLIGHT COMPLETED') {
+        if (state.controller) {
+          blocks.push(`Thanks for ATC 🙏 @${state.controller.replace(/^@/, '')}`);
+        }
+      }
+
+      const finalText = blocks.join('\n\n');
+      document.getElementById('preview_text').textContent = finalText;
+
+      // Stats
+      const chars = finalText.length;
+      const charEl = document.getElementById('char_count');
+      charEl.textContent = `${chars} / 2 000 car.`;
+      charEl.className = chars > 2000 ? 'limit-warn' : '';
+
+      const emojis = (finalText.match(/[\uD800-\uDBFF][\uDC00-\uDFFF]|\p{Emoji_Presentation}/gu) || []).length;
+      const emojiEl = document.getElementById('emoji_count');
+      emojiEl.textContent = `${emojis} / 6 emojis`;
+      emojiEl.className = emojis > 6 ? 'limit-warn' : '';
+    }
+
+    function copyMessage() {
+      const text = document.getElementById('preview_text').textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        if (navigator.vibrate) navigator.vibrate(40);
+        showToast('Copié dans le presse-papiers ! ✓');
+      }).catch(() => {
+        // fallback
+        const area = document.createElement('textarea');
+        area.value = text;
+        document.body.appendChild(area);
+        area.select();
+        document.execCommand('copy');
+        document.body.removeChild(area);
+        showToast('Copié ! ✓');
+      });
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2200);
+    }
+
+    function resetForm() {
+      if (confirm('Voulez-vous effacer le vol actuel ?')) {
+        ['airline', 'aircraft', 'callsign', 'cruise_fl', 'dep_icao', 'dep_city', 'arr_icao', 'arr_city', 'distance', 'ete', 'gate', 'dep_runway', 'arr_runway'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.value = '';
+        });
+        render();
+      }
+    }
+
+    // Init
+    window.addEventListener('DOMContentLoaded', () => {
+      loadState();
+      updateDynamicFields();
+      render();
+    });
+  </script>
+</body>
+</html>
