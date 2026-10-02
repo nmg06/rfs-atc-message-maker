@@ -4,7 +4,8 @@ echo ========================================================
 echo   Envoi du projet vers GitHub : rfs-atc-message-maker
 echo ========================================================
 echo.
-git push -u origin main --tags
+git push -u origin main
+git push origin --tags --force
 echo.
 if errorlevel 1 (
     echo [ERREUR] L'envoi a echoue. Verifiez votre connexion ou authentification GitHub.
