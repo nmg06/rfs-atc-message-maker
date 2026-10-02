@@ -324,7 +324,8 @@
 
   <div class="tab-bar">
     <button class="tab-btn active" id="tab-form" onclick="switchTab('form')">📝 Vol & Saisie</button>
-    <button class="tab-btn" id="tab-preview" onclick="switchTab('preview')">👁 Aperçu Discord</button>
+    <button class="tab-btn" id="tab-fuel" onclick="switchTab('fuel')">⛽ Carburant</button>
+    <button class="tab-btn" id="tab-preview" onclick="switchTab('preview')">👁 Aperçu</button>
   </div>
 
   <div class="container">
@@ -455,6 +456,145 @@
         <div id="dynamic-fields"></div>
       </div>
 
+    </div>
+
+    <!-- PANEL 3: FUEL CALCULATOR -->
+    <div class="panel" id="panel-fuel">
+      <div class="card">
+        <div class="card-title">Calculateur de Carburant RFS</div>
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">
+          Estimation basée sur les données réelles RFS • Simulation uniquement, jamais pour un vol réel.
+        </p>
+
+        <div class="field">
+          <label>Avion / Variante RFS <span class="req">*</span></label>
+          <select id="fuel_aircraft" onchange="calculateWebFuel()">
+            <option value="">-- Choisir un avion / variante --</option>
+            <option value="airbus_a220_300" data-burn="1950">Airbus A220-300 (1950 kg/h)</option>
+            <option value="airbus_a310_300" data-burn="4500">Airbus A310-300 (4500 kg/h)</option>
+            <option value="airbus_a318" data-burn="2350">Airbus A318 (2350 kg/h)</option>
+            <option value="airbus_a319ceo" data-burn="2300">Airbus A319ceo (2300 kg/h)</option>
+            <option value="airbus_a320_200" data-burn="2400">Airbus A320-200 (2400 kg/h)</option>
+            <option value="airbus_a320neo" data-burn="2100">Airbus A320neo (2100 kg/h)</option>
+            <option value="airbus_a321_200" data-burn="2700">Airbus A321-200 (2700 kg/h)</option>
+            <option value="airbus_a321neo" data-burn="2400">Airbus A321neo (2400 kg/h)</option>
+            <option value="airbus_a330_200" data-burn="5800">Airbus A330-200 (5800 kg/h)</option>
+            <option value="airbus_a330_200f" data-burn="5950">Airbus A330-200F (5950 kg/h)</option>
+            <option value="airbus_a330_300" data-burn="6000">Airbus A330-300 (6000 kg/h)</option>
+            <option value="airbus_belugaxl_a330_700l" data-burn="5500">Airbus BelugaXL (A330-700L) (5500 kg/h)</option>
+            <option value="airbus_a330_900neo" data-burn="5400">Airbus A330-900neo (5400 kg/h)</option>
+            <option value="airbus_a340_300" data-burn="6600">Airbus A340-300 (6600 kg/h)</option>
+            <option value="airbus_a340_600" data-burn="8200">Airbus A340-600 (8200 kg/h)</option>
+            <option value="airbus_a350_1000" data-burn="6300">Airbus A350-1000 (6300 kg/h)</option>
+            <option value="airbus_a350_900" data-burn="5800">Airbus A350-900 (5800 kg/h)</option>
+            <option value="airbus_a380_800" data-burn="12000">Airbus A380-800 (12000 kg/h)</option>
+            <option value="antonov_an_225_mriya" data-burn="16000">Antonov AN-225 Mriya (16000 kg/h)</option>
+            <option value="atr_72_600" data-burn="660">ATR 72-600 (660 kg/h)</option>
+            <option value="bae_systems_146_300" data-burn="1900">BAE Systems 146-300 (1900 kg/h)</option>
+            <option value="boeing_707_320c" data-burn="7000">Boeing 707-320C (7000 kg/h)</option>
+            <option value="boeing_727_200" data-burn="4500">Boeing 727-200 (4500 kg/h)</option>
+            <option value="boeing_737_max_8" data-burn="2200">Boeing 737 MAX 8 (2200 kg/h)</option>
+            <option value="boeing_737_100" data-burn="2900">Boeing 737-100 (2900 kg/h)</option>
+            <option value="boeing_737_200" data-burn="2800">Boeing 737-200 (2800 kg/h)</option>
+            <option value="boeing_737_800" data-burn="2500">Boeing 737-800 (2500 kg/h)</option>
+            <option value="boeing_737_800bcf" data-burn="2500">Boeing 737-800BCF (2500 kg/h)</option>
+            <option value="boeing_747_200b" data-burn="11500">Boeing 747-200B (11500 kg/h)</option>
+            <option value="boeing_747_400" data-burn="10800">Boeing 747-400 (10800 kg/h)</option>
+            <option value="boeing_747_400f" data-burn="10900">Boeing 747-400F (10900 kg/h)</option>
+            <option value="boeing_747_8f" data-burn="9600">Boeing 747-8F (9600 kg/h)</option>
+            <option value="boeing_747_8i" data-burn="9600">Boeing 747-8I (9600 kg/h)</option>
+            <option value="boeing_757_200f" data-burn="3400">Boeing 757-200F (3400 kg/h)</option>
+            <option value="boeing_757_200wl" data-burn="3400">Boeing 757-200WL (3400 kg/h)</option>
+            <option value="boeing_767_300" data-burn="5000">Boeing 767-300 (5000 kg/h)</option>
+            <option value="boeing_767_300f" data-burn="5000">Boeing 767-300F (5000 kg/h)</option>
+            <option value="boeing_767_400er" data-burn="5900">Boeing 767-400ER (5900 kg/h)</option>
+            <option value="boeing_777_200" data-burn="6400">Boeing 777-200 (6400 kg/h)</option>
+            <option value="boeing_777_200lr" data-burn="6800">Boeing 777-200LR (6800 kg/h)</option>
+            <option value="boeing_777_300er" data-burn="7500">Boeing 777-300ER (7500 kg/h)</option>
+            <option value="boeing_777f" data-burn="7200">Boeing 777F (7200 kg/h)</option>
+            <option value="boeing_787_10_dreamliner" data-burn="5800">Boeing 787-10 Dreamliner (5800 kg/h)</option>
+            <option value="boeing_787_8_dreamliner" data-burn="4900">Boeing 787-8 Dreamliner (4900 kg/h)</option>
+            <option value="boeing_787_9_dreamliner" data-burn="5600">Boeing 787-9 Dreamliner (5600 kg/h)</option>
+            <option value="bombardier_crj900" data-burn="1600">Bombardier CRJ900 (1600 kg/h)</option>
+            <option value="cessna_172" data-burn="27">Cessna 172 (27 kg/h)</option>
+            <option value="cessna_208_caravan" data-burn="150">Cessna 208 Caravan (150 kg/h)</option>
+            <option value="cirrus_sr22" data-burn="80">Cirrus SR22 (80 kg/h)</option>
+            <option value="concorde" data-burn="20000">Concorde (20000 kg/h)</option>
+            <option value="dhc_dash_8_q400" data-burn="900">DHC Dash 8 Q400 (900 kg/h)</option>
+            <option value="dhc_6_twin_otter_300" data-burn="220">DHC-6 Twin Otter 300 (220 kg/h)</option>
+            <option value="douglas_dc_8_61" data-burn="6400">Douglas DC-8-61 (6400 kg/h)</option>
+            <option value="embraer_190" data-burn="1900">Embraer 190 (1900 kg/h)</option>
+            <option value="embraer_190_e2" data-burn="1800">Embraer 190-E2 (1800 kg/h)</option>
+            <option value="embraer_erj145" data-burn="1100">Embraer ERJ145 (1100 kg/h)</option>
+            <option value="learjet_35a" data-burn="620">Learjet 35A (620 kg/h)</option>
+            <option value="lockheed_c_5b_galaxy" data-burn="16000">Lockheed C-5B Galaxy (16000 kg/h)</option>
+            <option value="mcdonnell_douglas_md_11" data-burn="7800">McDonnell Douglas MD-11 (7800 kg/h)</option>
+            <option value="mcdonnell_douglas_md_11f" data-burn="7800">McDonnell Douglas MD-11F (7800 kg/h)</option>
+            <option value="mcdonnell_douglas_md_81" data-burn="3200">McDonnell Douglas MD-81 (3200 kg/h)</option>
+            <option value="saab_340b" data-burn="430">Saab 340B (430 kg/h)</option>
+            <option value="tupolev_tu_154m" data-burn="5300">Tupolev Tu-154M (5300 kg/h)</option>
+          </select>
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label>Durée estimée <span class="req">*</span></label>
+            <input type="text" id="fuel_hours" placeholder="Ex: 5h30 ou 5.5" oninput="calculateWebFuel()">
+          </div>
+          <div class="field">
+            <label>Dégagement (NM)</label>
+            <input type="number" id="fuel_alternate_nm" value="150" placeholder="150" oninput="calculateWebFuel()">
+          </div>
+        </div>
+
+        <button class="btn btn-primary" style="width:100%;margin-top:6px;" onclick="calculateWebFuel()">
+          Calculer le carburant
+        </button>
+      </div>
+
+      <!-- TABLE DE CARBURANT -->
+      <div class="card" id="fuel_results_card" style="display:none;">
+        <div class="card-title">Détail du carburant estimé</div>
+        
+        <table style="width:100%;border-collapse:collapse;font-size:13.5px;margin-bottom:14px;">
+          <tr style="border-bottom:1px solid var(--input-border);color:var(--text-muted);text-align:left;">
+            <th style="padding:6px 0;">Composant</th>
+            <th style="padding:6px 0;text-align:right;">Masse (kg)</th>
+          </tr>
+          <tr style="border-bottom:1px solid var(--card-border);">
+            <td style="padding:7px 0;">Taxi départ (6 min × 1,4)</td>
+            <td style="padding:7px 0;text-align:right;" id="res_taxi_out">—</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--card-border);">
+            <td style="padding:7px 0;">Trajet (Trip Fuel)</td>
+            <td style="padding:7px 0;text-align:right;" id="res_trip">—</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--card-border);">
+            <td style="padding:7px 0;">Contingence (5 % du trajet)</td>
+            <td style="padding:7px 0;text-align:right;" id="res_contingency">—</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--card-border);">
+            <td style="padding:7px 0;">Alternate (dégagement)</td>
+            <td style="padding:7px 0;text-align:right;" id="res_alternate">—</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--card-border);">
+            <td style="padding:7px 0;">Réserve finale (30 min)</td>
+            <td style="padding:7px 0;text-align:right;" id="res_reserve">—</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--card-border);">
+            <td style="padding:7px 0;">Taxi arrivée (4 min × 1,4)</td>
+            <td style="padding:7px 0;text-align:right;" id="res_taxi_in">—</td>
+          </tr>
+          <tr style="font-weight:700;color:var(--accent);font-size:15px;">
+            <td style="padding:10px 0;">TOTAL BLOC</td>
+            <td style="padding:10px 0;text-align:right;" id="res_total">—</td>
+          </tr>
+        </table>
+
+        <button class="btn btn-success" style="width:100%;" onclick="applyFuelToFlight()">
+          ✓ Appliquer cet avion et carburant au vol
+        </button>
+      </div>
     </div>
 
     <!-- PANEL 2: PREVIEW -->
@@ -710,7 +850,7 @@
       const depStr = depIcao ? (depCity ? `${depIcao} • ${depCity}` : depIcao) : '';
       const arrStr = arrIcao ? (arrCity ? `${arrIcao} • ${arrCity}` : arrIcao) : '';
       if (depStr && arrStr) {
-        routeLines.push(`🛫 ${depStr}\n　↘\n🛬 ${arrStr}`);
+        routeLines.push(`🛫 ${depStr}\n🛬 ${arrStr}`);
       } else if (depStr) {
         routeLines.push(`🛫 ${depStr}`);
       } else if (arrStr) {

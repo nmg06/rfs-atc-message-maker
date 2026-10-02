@@ -558,34 +558,40 @@ QCheckBox {
 }
 """
 
+_STYLESHEET_CACHE: dict[bool, str] = {}
+
 
 def get_stylesheet(dark: bool) -> str:
+    if dark in _STYLESHEET_CACHE:
+        return _STYLESHEET_CACHE[dark]
     base = DARK_STYLESHEET if dark else LIGHT_STYLESHEET
     check_icon = (Path(__file__).resolve().parent / 'assets' / 'check.svg').as_posix()
-    surface, text, muted, border = ('#121D2E', '#E6EDF7', '#A7B5C9', '#35465E') if dark else ('#FFFFFF', '#0F172A', '#475569', '#CBD5E1')
-    return base + f"""
-    QWidget#formBody {{ background:transparent; }}
-    QComboBox {{ padding-right:28px; }}
-    QComboBox QLineEdit {{ border:none; background:transparent; padding:0; }}
-    QPlainTextEdit#discordPreview {{ font-family:"JetBrains Mono", "Consolas"; font-size:14px; }}
-    QLabel#section {{ color:{text}; font-size:16px; }}
-    QLabel#muted {{ color:{muted}; }}
-    QSplitter::handle {{ background:transparent; }}
-    QSplitter::handle:hover {{ background:{border}; }}
-    QTabWidget::pane {{ background:{surface}; border:1px solid {border}; border-radius:8px; padding:8px; }}
-    QTabBar::tab {{ background:{surface}; color:{muted}; padding:10px 14px; border-bottom:2px solid transparent; }}
-    QTabBar::tab:selected {{ color:{text}; border-bottom:2px solid #60A5FA; }}
-    QPushButton#copy {{ background:#2563EB; border-color:#2563EB; color:#FFFFFF; }}
-    QPushButton#copy:hover {{ background:#1D4ED8; border-color:#1D4ED8; }}
-    QPushButton#copy:pressed {{ background:#1E40AF; }}
-    QPushButton#copy:focus, QPushButton#primary:focus {{ border-color:#B5D7FF; }}
-    QPushButton#copy:disabled {{ background:{surface}; color:{muted}; border-color:{border}; }}
-    QLineEdit:disabled, QComboBox:disabled, QAbstractSpinBox:disabled {{ background:{surface}; color:{muted}; border-color:{border}; }}
-    QCheckBox::indicator {{ width:16px; height:16px; background:{surface}; border:1px solid {muted}; border-radius:4px; }}
-    QCheckBox::indicator:checked {{ background:#2563EB; border-color:#2563EB; image:url("{check_icon}"); }}
-    QCheckBox::indicator:hover, QCheckBox::indicator:focus {{ border-color:#60A5FA; }}
-    QCheckBox::indicator:disabled {{ background:{border}; border-color:{border}; }}
-    """
+    surface, fg, muted, border = ('#121D2E', '#E6EDF7', '#A7B5C9', '#35465E') if dark else ('#FFFFFF', '#0F172A', '#475569', '#CBD5E1')
+    result = base + (
+        "    QWidget#formBody { background:transparent; }\n"
+        "    QComboBox { padding-right:28px; }\n"
+        "    QComboBox QLineEdit { border:none; background:transparent; padding:0; }\n"
+        '    QPlainTextEdit#discordPreview { font-family:"JetBrains Mono", "Consolas"; font-size:14px; }\n'
+        f"    QLabel#section {{ color:{fg}; font-size:16px; }}\n"
+        f"    QLabel#muted {{ color:{muted}; }}\n"
+        "    QSplitter::handle { background:transparent; }\n"
+        f"    QSplitter::handle:hover {{ background:{border}; }}\n"
+        f"    QTabWidget::pane {{ background:{surface}; border:1px solid {border}; border-radius:8px; padding:8px; }}\n"
+        f"    QTabBar::tab {{ background:{surface}; color:{muted}; padding:10px 14px; border-bottom:2px solid transparent; }}\n"
+        f"    QTabBar::tab:selected {{ color:{fg}; border-bottom:2px solid #60A5FA; }}\n"
+        "    QPushButton#copy { background:#2563EB; border-color:#2563EB; color:#FFFFFF; }\n"
+        "    QPushButton#copy:hover { background:#1D4ED8; border-color:#1D4ED8; }\n"
+        "    QPushButton#copy:pressed { background:#1E40AF; }\n"
+        "    QPushButton#copy:focus, QPushButton#primary:focus { border-color:#B5D7FF; }\n"
+        f"    QPushButton#copy:disabled {{ background:{surface}; color:{muted}; border-color:{border}; }}\n"
+        f"    QLineEdit:disabled, QComboBox:disabled, QAbstractSpinBox:disabled {{ background:{surface}; color:{muted}; border-color:{border}; }}\n"
+        f"    QCheckBox::indicator {{ width:16px; height:16px; background:{surface}; border:1px solid {muted}; border-radius:4px; }}\n"
+        f"    QCheckBox::indicator:checked {{ background:#2563EB; border-color:#2563EB; image:url(\"{check_icon}\"); }}\n"
+        "    QCheckBox::indicator:hover, QCheckBox::indicator:focus { border-color:#60A5FA; }\n"
+        f"    QCheckBox::indicator:disabled {{ background:{border}; border-color:{border}; }}\n"
+    )
+    _STYLESHEET_CACHE[dark] = result
+    return result
 
 
 def extra_style(dark: bool) -> str:

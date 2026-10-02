@@ -49,7 +49,7 @@ def _route(flight: dict) -> str:
     departure = _airport(flight, "departure")
     arrival = _airport(flight, "arrival")
     if departure and arrival:
-        return f"🛫 {departure}\n　↘\n🛬 {arrival}"
+        return f"🛫 {departure}\n🛬 {arrival}"
     if departure:
         return f"🛫 {departure}"
     if arrival:

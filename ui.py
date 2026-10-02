@@ -824,7 +824,7 @@ class RFSWindow(QMainWindow):
     def _apply_theme(self) -> None:
         dark = self.store.state.get('theme', 'Sombre') == 'Sombre'
         apply_palette(QApplication.instance(), dark)
-        QApplication.instance().setStyleSheet(get_stylesheet(dark))
+        self.setStyleSheet(get_stylesheet(dark))
         self.theme_button.setText(tr('☀ Mode clair') if dark else tr('☾ Mode sombre'))
 
     def closeEvent(self, event) -> None:
@@ -852,7 +852,8 @@ class RFSWindow(QMainWindow):
         self._build_ui()
         self._load_top_state()
         self._rebuild_forms()
-        self._apply_theme()
+        dark = self.store.state.get('theme', 'Sombre') == 'Sombre'
+        self.theme_button.setText(tr('☀ Mode clair') if dark else tr('☾ Mode sombre'))
         self.render_preview()
         self.save_state()
         old.deleteLater()
