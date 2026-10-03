@@ -30,7 +30,7 @@ navigate=async next=>{try{scrollPositions[screen]=window.scrollY;if(next==='sett
  }catch(error){fail(error);}};
 function toggleSettings(){navigate(screen==='settings'?settingsReturn:'settings');}
 window.goBack=()=>{const dialog=document.querySelector('dialog[open]');if(dialog){dialog.close();return true;}
- if(screen==='settings'){navigate(settingsReturn);return true;}if(screen==='flight')return false;navigate('flight');return true;};
+ if(screen==='settings'){navigate(settingsReturn);return true;}if(screen==='flight'){flushEdits().then(()=>rpc('native.finish')).catch(fail);return true;}navigate('flight');return true;};
 const baseFlightPage=flightPage;
 flightPage=()=>{
  const f=model.state.flight,session=model.state.active_session||{},log=model.state.flight_log||[];

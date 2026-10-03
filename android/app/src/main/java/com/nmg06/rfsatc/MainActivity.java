@@ -176,6 +176,11 @@ public class MainActivity extends Activity {
 
     private void nativeRequest(String id, String method, JSONObject args) throws Exception {
         switch (method) {
+            case "native.finish":
+                // Called only after the UI has awaited its final atomic save.
+                reply(id,"{\"ok\":true,\"result\":{}}");
+                runOnUiThread(this::finish);
+                break;
             case "native.online": online.enabled=args.getBoolean("enabled");reply(id,"{\"ok\":true,\"result\":{}}");break;
             case "native.appearance": {
                 int color=android.graphics.Color.parseColor(args.getString("color"));boolean light=args.optBoolean("light");
