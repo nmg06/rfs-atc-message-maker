@@ -80,7 +80,8 @@ exportez vos données avant de désinstaller pour changer de provenance.
 Build et installation vérifiés le 3 octobre 2026 sur émulateur API 35 en mode
 avion : moteurs, Finder/Fuel, presse-papiers, arrêt complet/relance du processus
 et affichage du vol restauré passent.
-[Exécution et artefacts](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37129848910).
+[Exécution Flightdeck et artefacts](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37135488244),
+commit `fb9640f` ; [bilan de livraison](../VERIFICATION_2026-10-03.md).
 La base gzip est embarquée sous `assets/aviation.database` pour éviter que AAPT
 décompresse/renomme automatiquement les fichiers portant l'extension `.gz`.
 `scripts/verify_android_apk.py` vérifie le contenu réel et l'absence de permissions.

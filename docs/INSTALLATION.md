@@ -6,6 +6,15 @@ l'application, sans télémétrie. Aucune publication Google Play/App Store.
 
 ## Télécharger depuis GitHub
 
+Paquets vérifiés le **3 octobre 2026**, version `0.2.0-flightdeck` :
+
+- [Télécharger Windows x64](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37135488231/artifacts/11278727220).
+- [Télécharger Android APK](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37135488244/artifacts/11278442657).
+- [Preuves, commandes et limites](VERIFICATION_2026-10-03.md).
+
+Ces liens correspondent au commit `fb9640f` et expirent le **2 novembre 2026**.
+Leur téléchargement demande une connexion GitHub. Pour retrouver les builds suivants :
+
 Sur https://github.com/nmg06/rfs-atc-message-maker/actions :
 
 1. Choisissez **Flightdeck Windows test package** pour le PC, ou **Android offline APK** pour Android.

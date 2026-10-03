@@ -60,8 +60,8 @@ modification et le prototype mobile est conservé.
   réinstallation dédiée, même instrumentation et arrêt complet du processus.
   Relance : vol EJU149U et fuel 12285 conservés, formulaire WebView visible,
   JSON privé identique, mode avion activé, Wi-Fi/données désactivés.
-  [Exécution GitHub réussie](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37129848910),
-  commit testé `7e684f3975e9d4ec21726e43dbe9a9d026e71a8e`.
+  [Exécution Flightdeck réussie](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37135488244),
+  commit testé `fb9640f5ca83695924cb9d602c56c7e66bd5afc7`.
 - Vérification de l'APK elle-même : ressources UI présentes, base embarquée
   décompressable à 94 892 032 octets et SHA-256 vérifié, aucune permission.
   `scripts/verify_android_apk.py` est exécuté avant mise à disposition de l'artefact.
