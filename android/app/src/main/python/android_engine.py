@@ -12,9 +12,11 @@ import uuid
 from zoneinfo import available_timezones
 
 from country_data import COUNTRIES
+from map_geometry import airport_coordinates, great_circle
 from finder.database import connect_readonly
 from finder.duration import parse_minutes, parse_finder_hours
 from finder.mapping import use_this_flight
+from finder.provenance import duration_provenance
 from finder.search import Criteria, SearchSession
 from finder.i18n import tr as finder_tr
 from finder.rfs_catalogue import TYPE_BY_ID
@@ -25,7 +27,9 @@ from history_utils import duplicate_index
 from i18n import set_language, tr
 from message_builder import (compose, validate_group, preview_text, clipboard_text,
     DEFAULT_PRESENTATION, BUILTIN_DESIGNS, EMOJI_STYLES, PILOT_FIELDS, OPERATION_LABELS,
-    _header, _layout, apply_custom, custom_context, limit_emojis, strip_emojis)
+    _header, _layout, apply_custom, custom_context, limit_emojis, strip_emojis,
+    format_message, pilot_flight, _group_identity)
+from templates import format_runway
 from rfs_schema import (Field, MESSAGE_TYPES, FLIGHT_TYPES, FLIGHT_FIELDS,
     MESSAGE_FIELDS, FLIGHT_FIELDS_BY_TYPE, empty_flight, empty_per_type)
 from validation import Issue, REQUIRED_FLIGHT, REQUIRED_MESSAGE, emoji_count
@@ -43,6 +47,7 @@ EXTENSIONS = {
              'qnh': Field('QNH'), 'runway': Field('Runway'), 'remarks': Field('Remarks', kind='multiline')},
 }
 ALL_TYPES = (*MESSAGE_TYPES, *EXTENSIONS)
+ANDROID_FLIGHT_TYPES = (*FLIGHT_TYPES, 'PUSHBACK', 'TAXI')
 STATE_LIMIT = 2 * 1024 * 1024
 
 
@@ -55,7 +60,7 @@ def defaults():
         'per_type': per_type, 'saved_flights': [], 'preview_edits': {},
         'presentation': deepcopy(DEFAULT_PRESENTATION), 'compact_history': True,
         'intro_seen': False, 'joke_seen': False, 'language': 'fr', 'finder_filters': {},
-        'fuel_inputs': {}, 'recent': {k: [] for k in ('airline', 'aircraft', 'airports', 'controllers', 'servers')}}
+        'fuel_inputs': {}, 'map_settings': {}, 'recent': {k: [] for k in ('airline', 'aircraft', 'airports', 'controllers', 'servers')}}
 
 
 def atomic_json(path, value):
@@ -104,6 +109,16 @@ def normalise_state(value):
     if state['message_type'] not in ALL_TYPES or state['language'] not in ('fr', 'en'):
         raise ValueError('Unknown message type or language')
     state['flight'] = {**empty_flight(), **state['flight']}
+    view = state['map_settings']
+    if 'center' in view and (not isinstance(view['center'], list) or len(view['center']) != 2
+            or any(type(v) not in (int, float) or not math.isfinite(v) for v in view['center'])
+            or not -180 <= view['center'][1] <= 180 or not -540 <= view['center'][0] <= 540):
+        raise ValueError('Invalid map center')
+    if 'zoom' in view and (type(view['zoom']) not in (int, float) or not 1 <= view['zoom'] <= 32768):
+        raise ValueError('Invalid map zoom')
+    for key in ('origin_country', 'destination_country'):
+        if view.get(key) and view[key] not in {c for c, _ in COUNTRIES}:
+            raise ValueError('Invalid map country')
     for key in FLIGHT_FIELDS:
         if not isinstance(state['flight'][key], str):
             raise ValueError('Invalid flight field: ' + key)
@@ -113,7 +128,7 @@ def normalise_state(value):
         for person in people:
             if any(not isinstance(person.get(k, ''), str) for k in PILOT_FIELDS):
                 raise ValueError('Invalid pilot field')
-            if not isinstance(person.get('message_types', []), list) or any(k not in FLIGHT_TYPES for k in person.get('message_types', [])):
+            if not isinstance(person.get('message_types', []), list) or any(k not in ANDROID_FLIGHT_TYPES for k in person.get('message_types', [])):
                 raise ValueError('Invalid pilot message selection')
     per = defaults()['per_type']
     for kind, spec in {**MESSAGE_FIELDS, **EXTENSIONS}.items():
@@ -143,6 +158,16 @@ def normalise_state(value):
     return state
 
 
+def pc_state(value):
+    if not isinstance(value, dict):
+        raise ValueError('Invalid PC state')
+    result = deepcopy(value)
+    selected = result.get('language', result.get('finder_language', 'fr'))
+    result['language'] = selected if selected in ('fr', 'en') else 'fr'
+    result.setdefault('joke_seen', True)
+    return result
+
+
 def validate_design(value):
     if not isinstance(value, dict) or not isinstance(value.get('name'), str) or not value['name'].strip():
         raise ValueError('Invalid design name')
@@ -156,7 +181,9 @@ def validate_design(value):
     if not value.get('guided') and not value.get('template'):
         raise ValueError('Template required')
     if not value.get('guided'):
-        apply_custom(value['template'], custom_context('ATC REQUEST', empty_flight(), {}, '', ''))
+        context = custom_context('ATC REQUEST', empty_flight(), {}, '', '')
+        context.update({key: '' for spec in EXTENSIONS.values() for key in spec})
+        apply_custom(value['template'], context)
     return deepcopy(value)
 
 
@@ -198,7 +225,7 @@ class Engine:
             raise ValueError('Invalid backup')
         # An explicitly selected Windows state JSON is also accepted, never automatic.
         if 'schema_version' not in value and 'flight' in value:
-            value = {'schema_version': 1, 'state': value, 'history': [], 'presets': {}, 'designs': {}}
+            value = {'schema_version': 1, 'state': pc_state(value), 'history': [], 'presets': {}, 'designs': {}}
         if value.get('schema_version') != 1:
             raise ValueError('Unsupported backup version')
         check_json(value)
@@ -237,7 +264,7 @@ class Engine:
         def spec(fields_dict):
             return {key: {**asdict(field), 'label': tr(field.label), 'hint': tr(field.hint),
                           'choice_labels': [tr(c) for c in field.choices]} for key, field in fields_dict.items()}
-        return {'types': ALL_TYPES, 'windows_types': MESSAGE_TYPES, 'flight_types': FLIGHT_TYPES,
+        return {'types': ALL_TYPES, 'windows_types': MESSAGE_TYPES, 'flight_types': ANDROID_FLIGHT_TYPES,
             'flight_fields': spec(FLIGHT_FIELDS), 'message_fields': {k: spec(v) for k, v in {**MESSAGE_FIELDS, **EXTENSIONS}.items()},
             'flight_by_type': FLIGHT_FIELDS_BY_TYPE, 'required_flight': REQUIRED_FLIGHT,
             'required_message': REQUIRED_MESSAGE, 'pilot_fields': PILOT_FIELDS,
@@ -252,35 +279,74 @@ class Engine:
 
     def extension(self, kind, flight, data):
         issues = []
-        required_flight = () if kind == 'ATIS' else ('callsign', 'departure_icao', 'departure_gate', 'departure_runway')
+        required_flight = () if kind == 'ATIS' else ('aircraft', 'callsign', 'departure_icao', 'departure_gate', 'departure_runway')
         for key in required_flight:
             if not str(flight.get(key, '')).strip():
-                issues.append(Issue(key, tr(FLIGHT_FIELDS[key].label) + ' required'))
+                issues.append(Issue(key, tr('{v0} est requis.', v0=tr(FLIGHT_FIELDS[key].label))))
         for key, field in EXTENSIONS[kind].items():
             if field.required and not str(data.get(key, '')).strip():
-                issues.append(Issue(key, tr(field.label) + ' required'))
+                issues.append(Issue(key, tr('{v0} est requis.', v0=tr(field.label))))
         airport = data.get('airport_icao') if kind == 'ATIS' else flight.get('departure_icao')
         if airport and not re.fullmatch('[A-Za-z]{4}', airport):
-            issues.append(Issue('airport_icao' if kind == 'ATIS' else 'departure_icao', 'ICAO: 4 letters'))
+            issues.append(Issue('airport_icao' if kind == 'ATIS' else 'departure_icao', tr('Airport ICAO doit contenir exactement 4 lettres.')))
         runway = data.get('runway') if kind == 'ATIS' else flight.get('departure_runway')
         if runway and not re.fullmatch(r'(?:(?:RWY|RUNWAY)\s*)?(?:0[1-9]|[12][0-9]|3[0-6])[LRC]?', runway, re.I):
-            issues.append(Issue('runway' if kind == 'ATIS' else 'departure_runway', 'Invalid runway'))
+            issues.append(Issue('runway' if kind == 'ATIS' else 'departure_runway', tr('Piste invalide : 01 à 36, éventuellement L/R/C.')))
         if kind == 'ATIS':
             if data.get('information') and not re.fullmatch('[A-Za-z]', data['information']):
-                issues.append(Issue('information', 'Information: A-Z'))
+                issues.append(Issue('information', tr('Information ATIS : une lettre de A à Z.')))
             body = '\n'.join(f'{key.upper()} : {value}' for key, value in data.items() if value)
+            if data.get('qnh') and not re.fullmatch(r'(?:[89]\d{2}|10\d{2}|1100)(?:\s*hpa)?', data['qnh'], re.I):
+                issues.append(Issue('qnh', tr('QNH : 800 à 1100 hPa.')))
         else:
             if kind == 'PUSHBACK' and data.get('pushback') and not re.fullmatch(r'\d{1,3}', data['pushback']):
-                issues.append(Issue('pushback', 'Pushback: minutes'))
-            body = '\n'.join(filter(None, [f"{self.state['pilot_name']} | {flight.get('aircraft', '')}",
+                issues.append(Issue('pushback', tr('Pushback doit être un nombre de minutes.')))
+            if not self.state['pilot_name'].strip():
+                issues.append(Issue('pilot_name', tr('Le pseudo RFS est requis.')))
+            if kind == 'PUSHBACK' and data.get('direction') and data['direction'] not in EXTENSIONS[kind]['direction'].choices:
+                issues.append(Issue('direction', tr('Direction invalide.')))
+            body = '\n'.join(filter(None, [f"PILOT : {self.state['pilot_name']} | {flight.get('aircraft', '')}",
                 f"CALLSIGN : {flight.get('callsign', '')}", f"ICAO : {airport or ''}",
                 f"GATE : {flight.get('departure_gate', '')}", f"RUNWAY : {runway or ''}",
                 *[f'{key.upper()} : {value}' for key, value in data.items() if value]]))
-        options = self.state['presentation']
-        body = _header(kind, options['design']) + '\n\n' + _layout(body, options['design'])
-        if options['emoji_style'] == 'Sans emojis':
-            body = strip_emojis(body)
-        return limit_emojis(body), issues
+        options = deepcopy(self.state['presentation'])
+        custom = self.value['designs'].get(options.get('custom_id', ''))
+        if custom and custom.get('base_design'):
+            options['design'] = custom['base_design']
+        if options['length'] == 'Court':
+            if kind == 'ATIS':
+                body = body.replace('\n', ' · ')
+            else:
+                body = '\n'.join(line for line in body.splitlines() if not line.startswith(('SERVER :', 'NOTE :')))
+        elif options['length'] == 'Détaillé' and kind != 'ATIS':
+            details = [f'{key.upper()} : {flight[key]}' for key in ('airline', 'arrival_icao', 'cruise_fl', 'passengers', 'cargo', 'fuel') if flight.get(key)]
+            if details:
+                body += '\n\n' + '\n'.join(details)
+        operation = []
+        if kind != 'ATIS':
+            pilots = [p for p in flight.get('pilots', []) if kind in p.get('message_types', ANDROID_FLIGHT_TYPES)]
+            runways = [format_runway(flight.get('departure_runway', '')).upper()]
+            parallel = flight.get('departure_mode') == 'Parallèle'
+            if parallel and not pilots:
+                issues.append(Issue('pilots', tr("Opération parallèle au {phase} : ajoutez au moins un autre pilote.", phase=tr('départ'))))
+            for index, pilot in enumerate(pilots, 2):
+                if not pilot.get('name', '').strip():
+                    issues.append(Issue('pilots', tr('Pilote {index} : pseudo requis.', index=index)))
+                extra = pilot_flight(flight, pilot)
+                if not extra.get('callsign'):
+                    issues.append(Issue('pilots', tr('Pilote {index} : callsign requis.', index=index)))
+                own_runway = format_runway(pilot.get('departure_runway', '')).upper()
+                if parallel and (not own_runway or own_runway in runways):
+                    issues.append(Issue('pilots', tr('Pilote {index} : une opération parallèle exige une piste distincte au {phase}.', index=index, phase=tr('départ'))))
+                runways.append(own_runway)
+                if own_runway and not re.fullmatch(r'(?:0[1-9]|[12][0-9]|3[0-6])[LRC]?', own_runway):
+                    issues.append(Issue('pilots', tr('Piste du pilote invalide.')))
+            if pilots:
+                body = _group_identity(body, 'ATC REQUEST', flight, data, self.state['pilot_name'], pilots)
+            mode = OPERATION_LABELS.get(flight.get('departure_mode'))
+            if mode:
+                operation.append('OPERATION : ' + mode + ' departure')
+        return format_message(kind, flight, data, self.state['pilot_name'], _layout(body, options['design']), options, custom, operation), issues
 
     def render(self, regenerate=False):
         kind, flight = self.state['message_type'], self.state['flight']
@@ -337,12 +403,17 @@ class Engine:
         return Criteria(**converted)
 
     def duration_details(self, row):
-        # The shipped snapshot contains identifiable formula-derived duration rows.
-        duration, distance = row.get('duration_min'), row.get('distance_nm')
-        estimated = distance is not None and duration == round(distance / 390 * 60 + 15)
-        return {'origin': 'estimated_or_unverified' if estimated else 'unverified',
-                'note': ('Formula-compatible estimate: 390 kt + 15 min; ±5% arithmetic bounds, not observed precision.'
-                         if estimated else 'Historical database value; observation provenance must be verified.'),
+        origin = duration_provenance(row)
+        observed = origin == 'AGGREGATED_COMPLETE_TRACKS'
+        estimated = origin == 'ESTIMATED_DISTANCE_HEURISTIC'
+        label = finder_tr('duration_observed' if observed else 'duration_estimated' if estimated else 'duration_unverified', self.state['language'])
+        note = label
+        if estimated:
+            note += ' · ' + finder_tr('duration_formula', self.state['language']) + ' · ' + finder_tr('duration_formula_limits', self.state['language'])
+        elif not observed:
+            note += ' · ' + finder_tr('DURATION_POST_IMPORT_UNVERIFIED', self.state['language'])
+        return {'origin': origin, 'label': label, 'note': note,
+                'bounds_kind': 'observed_percentiles' if observed else 'arithmetic_bounds' if estimated else 'unverified_bounds',
                 'bounds': [row.get('duration_p10'), row.get('duration_p90')]}
 
     def handle(self, method, args):
@@ -350,6 +421,14 @@ class Engine:
             self.sync(args['state'])
         if method == 'bootstrap':
             return {'value': deepcopy(self.value), 'metadata': self.metadata(), 'render': self.render()}
+        if method == 'map_route':
+            endpoints = []
+            for key in ('departure_icao', 'arrival_icao'):
+                code = self.state['flight'].get(key, '').upper().strip()
+                coordinates = airport_coordinates(str(self.database), code)
+                endpoints.append({'code': code, 'coordinates': coordinates})
+            origin, destination = [v['coordinates'] for v in endpoints]
+            return {'airports': endpoints, 'route': great_circle(origin, destination) if origin and destination else []}
         if method == 'sources':
             with connect_readonly(self.database) as db:
                 return {'sources': [dict(row) for row in db.execute('SELECT * FROM sources ORDER BY source_id')]}
@@ -453,6 +532,21 @@ class Engine:
             self.commit(candidate)
             self.query, self.rows = None, []
             return {'value': deepcopy(self.value), 'metadata': self.metadata(), 'render': self.render()}
+        elif method == 'import_pc':
+            files = args.get('files', {})
+            expected = {'rfs_state.json', 'rfs_history.json', 'rfs_presets.json', 'rfs_designs.json'}
+            if not isinstance(files, dict) or set(files) != expected:
+                raise ValueError('Select all four PC JSON files: state, history, presets and designs')
+            if any(not isinstance(text, str) for text in files.values()) or sum(len(v.encode('utf-8')) for v in files.values()) > STATE_LIMIT:
+                raise ValueError('PC import exceeds 2 MB')
+            values = {name: json.loads(text.lstrip('\ufeff')) for name, text in files.items()}
+            candidate = self.validate_backup({'schema_version': 1, 'state': pc_state(values['rfs_state.json']),
+                'history': values['rfs_history.json'], 'presets': values['rfs_presets.json'],
+                'designs': values['rfs_designs.json']})
+            atomic_json(self.path.with_suffix('.before-import.json'), self.value)
+            self.commit(candidate)
+            self.query, self.rows = None, []
+            return {'value': deepcopy(self.value), 'metadata': self.metadata(), 'render': self.render()}
         elif method == 'save_flight':
             label = str(args.get('label', '')).strip()
             if not label:
@@ -500,6 +594,63 @@ class Engine:
             candidate['state']['presentation']['custom_id'] = ident
             candidate['state']['preview_edits'] = {}
             self.commit(candidate)
+        elif method == 'library':
+            category, operation, ident = args.get('category'), args.get('operation'), args.get('id')
+            if category not in ('flights', 'presets', 'pilots', 'designs', 'history') or operation not in ('rename', 'delete', 'clear', 'edit', 'create'):
+                raise ValueError('Invalid library operation')
+            candidate = deepcopy(self.value)
+            label = str(args.get('label', '')).strip()
+            if operation == 'rename' and (not label or len(label) > 500):
+                raise ValueError('A name of 1 to 500 characters is required')
+            if category == 'flights' and operation in ('rename', 'delete'):
+                saved = candidate['state']['saved_flights']
+                record = next((v for v in saved if v['id'] == ident), None)
+                if record is None:
+                    raise ValueError('Saved flight no longer exists')
+                if operation == 'rename':
+                    record['label'] = label
+                else:
+                    saved.remove(record)
+                    if candidate['state']['current_flight_id'] == ident:
+                        candidate['state']['current_flight_id'] = ''
+            elif category in ('presets', 'designs') and operation in ('rename', 'delete'):
+                collection = candidate[category]
+                if ident not in collection:
+                    raise ValueError('Item no longer exists')
+                if operation == 'rename' and category == 'presets':
+                    if label != ident and label in collection:
+                        raise ValueError('A favourite already has that name')
+                    collection[label] = collection.pop(ident)
+                elif operation == 'rename':
+                    collection[ident]['name'] = label
+                else:
+                    del collection[ident]
+                    if category == 'designs' and candidate['state']['presentation'].get('custom_id') == ident:
+                        candidate['state']['presentation']['custom_id'] = ''
+                        candidate['state']['preview_edits'] = {}
+            elif category == 'pilots' and operation in ('edit', 'delete', 'create'):
+                pilots = candidate['state']['pilot_library']
+                index = len(pilots) if operation == 'create' else int(ident)
+                if index < 0 or index >= len(pilots) and operation != 'create':
+                    raise ValueError('Pilot no longer exists')
+                if operation == 'delete':
+                    pilots.pop(index)
+                else:
+                    record = deepcopy(args.get('pilot'))
+                    if not isinstance(record, dict) or not isinstance(record.get('name'), str) or not record['name'].strip():
+                        raise ValueError('Pilot name required')
+                    record['name'] = record['name'].strip()
+                    if any(i != index and v['name'].casefold() == record['name'].casefold() for i, v in enumerate(pilots)):
+                        raise ValueError('A known pilot already has that name')
+                    if operation == 'create':
+                        pilots.append(record)
+                    else:
+                        pilots[index] = record
+            elif category == 'history' and operation == 'clear':
+                candidate['history'] = []
+            else:
+                raise ValueError('Unsupported library operation')
+            self.commit(self.validate_backup(candidate))
         elif method == 'clear':
             candidate = deepcopy(self.value)
             candidate['state'].update(flight=empty_flight(), current_flight_id='', preview_edits={})

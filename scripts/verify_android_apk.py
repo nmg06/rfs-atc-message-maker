@@ -11,10 +11,20 @@ import zipfile
 def verify(apk, aapt):
     with zipfile.ZipFile(apk) as package:
         for name in ('assets/www/index.html', 'assets/www/app.js', 'assets/www/app.css',
-                     'assets/engine-manifest.json', 'assets/aviation.database'):
+                     'assets/www/map.js', 'assets/www/world-countries.js',
+                     'assets/notices/WORLD_MAP_LICENSE.md', 'assets/engine-manifest.json', 'assets/aviation.database'):
             if name not in package.namelist():
                 raise ValueError('Missing APK asset: ' + name)
         manifest = json.loads(package.read('assets/database-manifest.json'))
+        engine = json.loads(package.read('assets/engine-manifest.json'))
+        prefix = 'window.FLIGHTDECK_COUNTRIES='
+        source = package.read('assets/www/world-countries.js').decode('utf-8')
+        if not source.startswith(prefix) or not source.endswith(';\n'):
+            raise ValueError('Invalid bundled country data script')
+        countries = json.loads(source[len(prefix):-2])
+        expected = json.loads((Path(__file__).resolve().parents[1] / 'assets/world_countries.json').read_text(encoding='utf-8'))
+        if countries != expected or len(countries['countries']) != 242 or 'map_geometry.py' not in engine:
+            raise ValueError('Bundled map differs from the shared Windows source')
         digest = hashlib.sha256()
         size = 0
         with package.open('assets/aviation.database') as raw, gzip.GzipFile(fileobj=raw) as database:

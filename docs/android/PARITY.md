@@ -13,7 +13,7 @@ modification et le prototype mobile est conservé.
 |---|---|---|---|
 | ATC REQUEST, AIRBORNE, ARRIVAL BOARD, FLIGHT COMPLETED | OK | OK | Moteur identique, tests de génération |
 | ATC ACTIVE, ATC OFFLINE, FLIGHT PLAN, DISPATCH FORM | OK | OK | 1 344 combinaisons au total, exception Dispatch conservée |
-| PUSHBACK / TAXI / ATIS demandés | non porté | partiel | Génération/validation réelles ; extensions sans référence PC, présentation/groupes incomplets |
+| PUSHBACK / TAXI / ATIS demandés | non porté | OK (extensions) | 504 combinaisons de présentation ; designs personnels et groupes PUSHBACK/TAXI validés, sans référence PC |
 | Compagnie, avion, callsign, routes, portes, pistes, FL, ETE, charge, fuel | OK | OK | Tous les champs du schéma, navigation conserve le vol |
 | Pushback, contrôleur, climb, STAR, go-around, champs conditionnels | OK | OK | Schéma et moteurs PC ; tests procédures |
 | Pilotes multiples et sélection par type | OK | OK | Champs/choix portés ; moteur testé |
@@ -22,16 +22,16 @@ modification et le prototype mobile est conservé.
 | Designs guidés/expert / import-export JSON | OK | partiel | Enregistrement/rendu/validation testés ; sélecteur natif à vérifier |
 | Aperçu éditable / validation / limites / alignement Discord | OK | OK | Test copie éditée, 2 000 caractères/6 emojis ; parcours UI |
 | Historique compact / duplication | OK | OK | Compaction PC, conservation/restauration testées ; 200 entrées |
-| Vols sauvegardés / rappel / favoris | OK | partiel | Sauvegarde/restauration testées ; supprimer/renommer à compléter |
-| Bibliothèque pilotes / préférences | OK | partiel | Ajout/rappel/choix conservés ; suggestions/gestion desktop incomplètes |
+| Vols sauvegardés / rappel / favoris | OK | OK | Renommer/supprimer/rappeler, collisions et redémarrage testés ; vol actuel conservé |
+| Bibliothèque pilotes / préférences | OK | OK | Ajouter/modifier/supprimer, choix des messages, rappel et préférences conservés après édition du vol |
 | FR/EN / sombre-clair / 249 pays-drapeaux | OK | partiel | Changement langue testé ; quelques textes techniques non traduits |
 | Finder SQLite local / critères / pagination | OK avec base externe | OK | Snapshot embarqué, 577 résultats LFPG ≤2h, pages 100→200 ; parité PC |
 | UTILISER CE VOL / conservation des inconnues | OK | OK | Mapping PC identique ; UI et champs manuels testés |
-| Fuseaux / DST / avertissements / pistes disponibles | OK | partiel | Moteurs PC, détails/sources ; provenance durées du snapshot limitée |
+| Fuseaux / DST / avertissements / pistes disponibles | OK | OK | Moteurs PC, sources, distinction observé/estimé/non vérifié partagée ; bornes estimées jamais appelées percentiles |
 | 63 avions / 64 arrivées / alternates / formules Fuel | OK | OK | Tous les avions comparés ; A220 /5h/EGLL =12 285 kg |
 | Appliquer avion + fuel / détails exacts | OK | OK | Moteur/UI testés, recalcul avant application |
 | Stockage privé / écriture atomique / relance | JSON local | OK | Nouvelle instance moteur et rechargement UI conservent les collections |
-| Export-import sauvegarde / import état PC | fichiers séparés | partiel | Validation/restauration testées ; état PC seul, autres fichiers séparés |
+| Export-import sauvegarde / import état PC | fichiers séparés | partiel | Les 4 fichiers PC sont désormais importables, validation globale/rollback/migration testés ; sélection multiple native à vérifier sur téléphone |
 | Presse-papiers Android | OK | OK | Texte édité copié exactement sur émulateur API 35, mode avion |
 | Partage natif | OK | partiel | Intent Android implémenté ; choix d'une application destinataire à vérifier |
 | Rapport local / images choisies avec consentement | OK | partiel | ZIP/sélecteur natif implémentés ; test appareil restant |
@@ -41,16 +41,18 @@ modification et le prototype mobile est conservé.
 | Installation / démarrage / mode avion / fermeture processus / copie native | N/A | OK | APK installée API 35, tests natifs, force-stop/relance et UI réelle vérifiés |
 | Catalogue avion recherchable dans le vol / préremplissage Fuel | OK | OK | 63 variantes ; variante Finder unique reprise ; choix requis si ambigu |
 | Finder numérique en heures / pages en cache / Voir moins | OK | OK | Parseur UI dédié ; pas de requête répétée ; résultats conservés |
-| Carte Flightdeck, frontières, sélection pays / zoom | OK | non porté | Desktop natif Qt, tests FR→RO et ressources incluses |
+| Carte Flightdeck, frontières, sélection pays / zoom | OK | partiel | Canvas local, 242 frontières, géométrie PC partagée, zoom/pincement/pays→Finder et reprise testés ; vérification APK installée en cours |
 | Satellite / vents par altitude facultatifs | OK avec Internet | non porté | Deux fournisseurs vérifiés ; Android conserve zéro permission Internet |
 
 ## Résultats enregistrés
 
-- Windows : 113 tests réussis, dont les 71 initiaux et 103 tests Flightdeck, environnement Qt + ETL.
-- Android Python : 16 tests réussis (dont 1 344 combinaisons de messages), import
+- Windows : 114 tests réussis, dont les 71 initiaux et 103 tests Flightdeck ; trois exécutions complètes après correction du cycle des traducteurs Qt.
+- Android Python : 22 tests réussis (1 344 combinaisons PC et 504 extensions), import
   des objets imbriqués et sources sans remise à zéro Finder compris.
 - UI Playwright, 390×844 : navigation, champs, validation, dernier caractère copié,
   Finder 100→200→100→200/transfert, catalogue vol→Fuel A220, rechargement, FR→EN ; zéro erreur JS.
+  Nouveau parcours : carte/frontières/zoom/pincement/reprise/pays→Finder, bibliothèque,
+  préférences pilotes et drapeaux recherchables. Les preuves 0.3.0 complètent la livraison précédente.
 - Build : `android/gradlew.bat -p android assembleDebug assembleDebugAndroidTest`,
   `BUILD SUCCESSFUL`, APK debug produite. Voir README pour les prérequis.
 - Téléphone physique : aucun connecté pendant ce travail. Les contrôles moteur/

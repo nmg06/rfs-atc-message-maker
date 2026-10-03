@@ -302,6 +302,12 @@ def compose(kind: str, flight: dict, data: dict, pilot: str, presentation: dict 
             mode = OPERATION_LABELS.get(flight.get(f"{phase}_mode", "Indépendant"), "")
             if mode:
                 operation.append(f"OPERATION : {mode} {phase}")
+    return format_message(kind, flight, data, pilot, body, options, custom_design, operation)
+
+
+def format_message(kind, flight, data, pilot, body, options, custom_design=None, operation=()):
+    """Common framing, emoji, custom design and Discord rules for local messages."""
+    design = options["design"]
     title = "ATC • ARRIVED" if kind == "FLIGHT COMPLETED" else kind
     text = "\n\n".join(part for part in (_header(title, design), "\n".join(operation), body) if part)
     if options["emoji_style"] == "Alternatif":
@@ -337,7 +343,6 @@ def compose(kind: str, flight: dict, data: dict, pilot: str, presentation: dict 
     if mentions:
         text += "\n\n" + "\n".join(mentions)
     return text
-
 
 def limit_emojis(text, limit=6):
     tokens = list(EMOJI_TOKEN.finditer(text))

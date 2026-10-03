@@ -33,6 +33,45 @@ public class OfflineAppTest {
         assertTrue(envelope.optString("error"),envelope.getBoolean("ok"));
         return envelope.getJSONObject("result");
     }
+    @Test public void offlineMapRendersLocalBordersRouteAndCountrySelection() throws Exception {
+        try (ActivityScenario<MainActivity> scenario=ActivityScenario.launch(MainActivity.class)) {
+            MainActivity a=activity(scenario);
+            JSONObject original=call(a,"bootstrap",new JSONObject()).getJSONObject("value");
+            try {
+                JSONObject state=new JSONObject(original.getJSONObject("state").toString());
+                state.put("intro_seen",true).put("joke_seen",true);
+                state.getJSONObject("flight").put("departure_icao","LFPG").put("arrival_icao","KJFK");
+                call(a,"save",new JSONObject().put("state",state));
+                assertEquals(97,call(a,"map_route",new JSONObject()).getJSONArray("route").length());
+                AtomicReference<String> ready=new AtomicReference<>("false");
+                for(int i=0;i<300;i++) {
+                    InstrumentationRegistry.getInstrumentation().runOnMainSync(()->a.webForTest().evaluateJavascript(
+                        "typeof rpc==='function' && typeof model!=='undefined' && Boolean(model)", ready::set));
+                    if("true".equals(ready.get()))break;
+                    Thread.sleep(100);
+                }
+                assertEquals("WebView bootstrap unavailable", "true",ready.get());
+                InstrumentationRegistry.getInstrumentation().runOnMainSync(()->a.webForTest().evaluateJavascript(
+                    "rpc('bootstrap').then(r=>{setResult(r);screen='map';paint();})",null));
+                AtomicReference<String> rendered=new AtomicReference<>("false");
+                String assertion="Boolean(mobileMap && countryGeometry && countryGeometry.length===242 && mobileMap.data.route.length===97 && mobileMap.canvas.width>0)";
+                for(int i=0;i<600;i++) {
+                    InstrumentationRegistry.getInstrumentation().runOnMainSync(()->a.webForTest().evaluateJavascript(assertion,rendered::set));
+                    if("true".equals(rendered.get()))break;
+                    Thread.sleep(100);
+                }
+                assertEquals("Actual offline WebView map did not render", "true",rendered.get());
+                AtomicReference<String> country=new AtomicReference<>();
+                InstrumentationRegistry.getInstrumentation().runOnMainSync(()->a.webForTest().evaluateJavascript(
+                    "(()=>{const s=mobileMap.scale(),p=[mobileMap.canvas.clientWidth/2+(2.3522-mobileMap.center[0])*s,mobileMap.canvas.clientHeight/2+(MapProjection.y(48.8566)-mobileMap.center[1])*s];return mobileMap.countryAt(p);})()",country::set));
+                for(int i=0;i<100&&country.get()==null;i++)Thread.sleep(100);
+                assertEquals("\"FR\"",country.get());
+            } finally {
+                InstrumentationRegistry.getInstrumentation().runOnMainSync(()->a.webForTest().evaluateJavascript("stopMobileMap()",null));
+                call(a,"import",new JSONObject().put("text",original.toString()));
+            }
+        }
+    }
     @Test public void launchEngineDatabaseFinderFuelAndRestartWithoutInternetPermission() throws Exception {
         Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         assertEquals(android.content.pm.PackageManager.PERMISSION_DENIED,

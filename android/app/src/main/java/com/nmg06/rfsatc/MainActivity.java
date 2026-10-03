@@ -178,6 +178,7 @@ public class MainActivity extends Activity {
                 picker(id, "export", "application/json", "rfs-android-backup.json"); break;
             }
             case "native.import": picker(id, "import", "application/json", null); break;
+            case "native.pcImport": picker(id, "pcImport", "application/json", null); break;
             case "native.designExport": {
                 documentText = args.getJSONObject("design").toString(2);
                 picker(id, "export", "application/json", "rfs-design.json"); break;
@@ -209,7 +210,7 @@ public class MainActivity extends Activity {
             Intent intent = new Intent(name == null ? Intent.ACTION_OPEN_DOCUMENT : Intent.ACTION_CREATE_DOCUMENT)
                 .addCategory(Intent.CATEGORY_OPENABLE).setType(mime);
             if (name != null) intent.putExtra(Intent.EXTRA_TITLE, name);
-            if (mode.equals("images")) intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+            if (mode.equals("images") || mode.equals("pcImport")) intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
             try { startActivityForResult(intent, DOCUMENT); }
             catch (Exception e) { pickerId = null; reply(id, error(e.toString())); }
         });
@@ -243,6 +244,27 @@ public class MainActivity extends Activity {
                     JSONArray list = new JSONArray();
                     for (int i = 0; i < images.size(); i++) list.put("image-" + (i + 1));
                     reply(id, new JSONObject().put("ok", true).put("result", new JSONObject().put("images", list)).toString());
+                } else if (mode.equals("pcImport")) {
+                    List<Uri> selected = new ArrayList<>();
+                    ClipData clips = data.getClipData();
+                    if (clips == null) selected.add(data.getData());
+                    else for (int i = 0; i < clips.getItemCount(); i++) selected.add(clips.getItemAt(i).getUri());
+                    if (selected.size() != 4) throw new IOException("Select the four PC JSON files together");
+                    JSONObject files = new JSONObject();
+                    int remaining = 2 * 1024 * 1024;
+                    for (Uri uri : selected) {
+                        String name;
+                        try (android.database.Cursor cursor = getContentResolver().query(uri,
+                                new String[]{android.provider.OpenableColumns.DISPLAY_NAME}, null, null, null)) {
+                            if (cursor == null || !cursor.moveToFirst()) throw new IOException("File name unavailable");
+                            name = cursor.getString(0);
+                        }
+                        if (files.has(name)) throw new IOException("Duplicate PC file name");
+                        byte[] bytes = readLimited(getContentResolver().openInputStream(uri), remaining);
+                        remaining -= bytes.length;
+                        files.put(name, new String(bytes, StandardCharsets.UTF_8));
+                    }
+                    reply(id, command("import_pc", new JSONObject().put("files", files).toString()));
                 } else if (mode.equals("import") || mode.equals("design")) {
                     String text = new String(readLimited(getContentResolver().openInputStream(data.getData()), 2 * 1024 * 1024), StandardCharsets.UTF_8);
                     JSONObject args = new JSONObject().put(mode.equals("import") ? "text" : "design", mode.equals("import") ? text : new JSONObject(text));
@@ -250,7 +272,7 @@ public class MainActivity extends Activity {
                 } else if (mode.equals("report")) {
                     try (ZipOutputStream zip = new ZipOutputStream(getContentResolver().openOutputStream(data.getData(), "wt"))) {
                         JSONObject content = new JSONObject(report.toString());
-                        content.put("application", "RFS ATC Android 0.1.0");
+                        content.put("application", "RFS Flightdeck Android " + BuildConfig.VERSION_NAME);
                         JSONArray attachments = new JSONArray();
                         if (consent) for (int i = 0; i < images.size(); i++) attachments.put(imageName(i));
                         content.put("attachments", attachments);

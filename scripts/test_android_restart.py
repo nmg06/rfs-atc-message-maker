@@ -22,7 +22,7 @@ def run(adb, serial):
     command('install', '-r', str(ROOT/'android/app/build/outputs/apk/debug/app-debug.apk'))
     command('install', '-r', str(ROOT/'android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk'))
     report = command('shell', 'am', 'instrument', '-w', PACKAGE+'.test/androidx.test.runner.AndroidJUnitRunner')
-    if 'OK (2 tests)' not in report or 'FAILURES' in report:
+    if 'OK (3 tests)' not in report or 'FAILURES' in report:
         raise ValueError('Instrumentation did not pass: ' + report)
     def saved():
         return json.loads(command('shell', 'run-as', PACKAGE, 'cat', 'files/rfs_android.json'))
@@ -50,7 +50,7 @@ def run(adb, serial):
         raise ValueError('Restored flight UI not visible after process restart')
     if saved() != original:
         raise ValueError('Persistent data changed across process restart')
-    print(json.dumps({'airplane_mode': True, 'instrumentation_tests': 2,
+    print(json.dumps({'airplane_mode': True, 'instrumentation_tests': 3,
         'process_restart_persistent': True, 'restored_webview_rendered': True,
         'callsign': callsign, 'fuel': original['state']['flight']['fuel']}))
 

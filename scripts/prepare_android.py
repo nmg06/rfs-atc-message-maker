@@ -9,7 +9,7 @@ import sqlite3
 
 ROOT = Path(__file__).resolve().parents[1]
 ANDROID = ROOT / 'android'
-MODULES = ['rfs_schema.py', 'templates.py', 'validation.py', 'message_builder.py',
+MODULES = ['map_geometry.py', 'rfs_schema.py', 'templates.py', 'validation.py', 'message_builder.py',
            'emoji_tokens.py', 'finder/provenance.py', 'fuel/selection.py', 'fuel/duration.py',
            'history_utils.py', 'country_data.py', 'ui_translations.py',
            'finder/__init__.py', 'finder/database.py', 'finder/search.py',
@@ -62,6 +62,15 @@ def prepare(database=None):
             shutil.copy2(source, dest)
         hashes['docs/fuel/reference/' + name] = digest(source)
     assets.mkdir(parents=True, exist_ok=True)
+    # One authoritative dataset for Windows and Android, transformed at build time.
+    countries = ROOT / 'assets/world_countries.json'
+    world = json.loads(countries.read_text(encoding='utf-8'))
+    web_assets = assets / 'www'
+    web_assets.mkdir(parents=True, exist_ok=True)
+    (web_assets / 'world-countries.js').write_text(
+        'window.FLIGHTDECK_COUNTRIES=' + json.dumps(world, ensure_ascii=False, separators=(',', ':')) + ';\n',
+        encoding='utf-8')
+    hashes['assets/world_countries.json'] = digest(countries)
     for source in bundled.iterdir():
         if source.is_file():
             # AAPT treats a .gz asset specially (strips suffix/decompresses it).
@@ -71,6 +80,7 @@ def prepare(database=None):
     (assets / 'aviation.sqlite.gz').unlink(missing_ok=True)
     notices = assets / 'notices'
     shutil.copytree(ROOT / 'docs/licenses', notices, dirs_exist_ok=True)
+    shutil.copy2(ROOT / 'assets/WORLD_MAP_LICENSE.md', notices / 'WORLD_MAP_LICENSE.md')
     (assets / 'engine-manifest.json').write_text(json.dumps(hashes, indent=2), encoding='utf-8')
     print(f'Android engines staged from {len(hashes)} existing source/data files; database bundled.')
 

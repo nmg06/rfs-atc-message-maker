@@ -29,6 +29,97 @@ def flight():
 
 
 class EngineTests(unittest.TestCase):
+    def test_offline_map_uses_actual_airport_coordinates_shared_arc_and_no_network(self):
+        import socket
+        from map_geometry import great_circle
+        self.engine.state['flight'].update(departure_icao='LFPG', arrival_icao='KJFK')
+        with patch.object(socket, 'socket', side_effect=AssertionError('Network forbidden')):
+            result = self.engine.handle('map_route', {})
+        origin, destination = [v['coordinates'] for v in result['airports']]
+        # Coordinates from the verified bundled SQLite snapshot, not live data.
+        self.assertEqual((49.00896, 2.554117), origin)
+        self.assertEqual((40.639447, -73.779317), destination)
+        self.assertEqual(great_circle(origin, destination), result['route'])
+        self.assertEqual(97, len(result['route']))
+        self.engine.state['flight']['arrival_icao'] = 'ZZZZ'
+        missing = self.engine.handle('map_route', {})
+        self.assertIsNone(missing['airports'][1]['coordinates'])
+        self.assertEqual([], missing['route'])
+        state = deepcopy(self.engine.state)
+        state['map_settings'] = {'center':[3.5,-48], 'zoom':24, 'origin_country':'FR', 'destination_country':'RO'}
+        self.engine.sync(state)
+        self.assertEqual(state['map_settings'], Engine(self.temp.name, self.database).state['map_settings'])
+        for field, value in [('zoom', -1), ('center', [0, 999]), ('origin_country', 'ZZ')]:
+            bad = deepcopy(state);bad['map_settings'][field] = value
+            with self.assertRaises(ValueError):self.engine.sync(bad)
+        self.assertEqual(state['map_settings'], self.engine.state['map_settings'])
+
+    def test_library_rename_delete_preserves_current_flight_and_survives_restart(self):
+        self.engine.handle('save_flight', {'label':'Saved'})
+        ident = self.engine.state['current_flight_id']
+        current = deepcopy(self.engine.state['flight'])
+        self.engine.handle('library', {'category':'flights','operation':'rename','id':ident,'label':'New name'})
+        self.assertEqual('New name', self.engine.state['saved_flights'][0]['label'])
+        self.engine.handle('library', {'category':'flights','operation':'delete','id':ident})
+        self.assertEqual([], self.engine.state['saved_flights'])
+        self.assertEqual('', self.engine.state['current_flight_id'])
+        self.assertEqual(current, self.engine.state['flight'])
+        self.engine.handle('save_preset', {'label':'First'})
+        self.engine.handle('save_preset', {'label':'Second'})
+        original = deepcopy(self.engine.value)
+        with self.assertRaises(ValueError):
+            self.engine.handle('library', {'category':'presets','operation':'rename','id':'First','label':'Second'})
+        self.assertEqual(original, self.engine.value)
+        self.engine.handle('library', {'category':'presets','operation':'rename','id':'First','label':'Renamed'})
+        self.engine.handle('library', {'category':'presets','operation':'delete','id':'Second'})
+        self.assertEqual(['Renamed'], list(self.engine.value['presets']))
+        self.engine.handle('design', {'design':{'name':'Custom','guided':True,'base_design':'Carte'}})
+        custom = self.engine.state['presentation']['custom_id']
+        self.engine.handle('library', {'category':'designs','operation':'delete','id':custom})
+        self.assertEqual('', self.engine.state['presentation']['custom_id'])
+        self.engine.handle('copy', {})
+        self.engine.handle('library', {'category':'history','operation':'clear'})
+        self.assertEqual([], self.engine.value['history'])
+        self.assertEqual(self.engine.value, Engine(self.temp.name, self.database).value)
+
+    def test_known_pilot_preferences_and_invalid_edits_preserve_live_data(self):
+        pilot = {'name':'Wing','callsign':'WING2','aircraft':'Airbus A220-300','message_types':['AIRBORNE']}
+        self.engine.handle('library', {'category':'pilots','operation':'create','pilot':pilot})
+        self.assertEqual(pilot, self.engine.state['pilot_library'][0])
+        original = deepcopy(self.engine.value)
+        with self.assertRaises(ValueError):
+            self.engine.handle('library', {'category':'pilots','operation':'create','pilot':{**pilot,'name':'wing'}})
+        with self.assertRaises(ValueError):
+            self.engine.handle('library', {'category':'pilots','operation':'edit','id':0,'pilot':{**pilot,'callsign':42}})
+        self.assertEqual(original, self.engine.value)
+        self.engine.handle('library', {'category':'pilots','operation':'edit','id':0,'pilot':{**pilot,'callsign':'NEW'}})
+        self.assertEqual('NEW', Engine(self.temp.name, self.database).state['pilot_library'][0]['callsign'])
+        self.engine.handle('library', {'category':'pilots','operation':'delete','id':0})
+        self.assertEqual([], self.engine.state['pilot_library'])
+
+    def test_complete_pc_import_validates_all_four_files_before_replacing_data(self):
+        self.engine.handle('save_flight', {'label':'Route française'})
+        self.engine.handle('save_preset', {'label':'Favourite'})
+        self.engine.handle('design', {'design':{'name':'Custom','guided':True,'heading':'Hello','base_design':'Carte'}})
+        self.engine.handle('copy', {})
+        expected = deepcopy(self.engine.value)
+        files = {f'rfs_{name}.json': '\ufeff'+json.dumps(expected[key], ensure_ascii=False)
+                 for name,key in [('state','state'),('history','history'),('presets','presets'),('designs','designs')]}
+        self.engine.handle('clear', {})
+        before = deepcopy(self.engine.value)
+        with self.assertRaises(ValueError):self.engine.handle('import_pc', {'files':{'rfs_state.json':files['rfs_state.json']}})
+        with self.assertRaises(ValueError):self.engine.handle('import_pc', {'files':{**files,'rfs_history.json':'{}'}})
+        self.assertEqual(before, self.engine.value)
+        self.engine.handle('import_pc', {'files':files})
+        self.assertEqual(expected, self.engine.value)
+        self.assertEqual(before, json.loads(self.engine.path.with_suffix('.before-import.json').read_text(encoding='utf-8')))
+        self.assertEqual(expected, Engine(self.temp.name, self.database).value)
+        legacy = deepcopy(expected['state'])
+        legacy.pop('language');legacy.pop('joke_seen');legacy['finder_language'] = 'en'
+        self.engine.handle('import_pc', {'files':{**files,'rfs_state.json':json.dumps(legacy)}})
+        self.assertEqual('en', self.engine.state['language'])
+        self.assertTrue(self.engine.state['joke_seen'])
+
     def test_fuel_bare_decimal_hours_and_pc_formats_are_identical(self):
         from fuel.duration import duration_hours
         for text in ('5', '2,75', '5h', '5h30', '03:00', '1:2', '25'):
@@ -216,6 +307,51 @@ class EngineTests(unittest.TestCase):
             r=self.engine.render()
             self.assertIn(kind,r['preview'])
             self.assertTrue(r['can_copy'],r['issues'])
+
+    def test_extensions_share_design_emoji_custom_rules_and_validate_parallel_pilots(self):
+        for kind,data in [('PUSHBACK',{'pushback':'5','direction':'Left'}),('TAXI',{'taxi_route':'A B C','hold_short':'27L'}),('ATIS',{'airport_icao':'LFPG','information':'A','qnh':'1013'})]:
+            self.engine.state['message_type']=kind
+            self.engine.state['per_type'][kind].update(data)
+            for design in BUILTIN_DESIGNS:
+                for length in ('Court','Moyen','Détaillé'):
+                    for emoji in EMOJI_STYLES:
+                        self.engine.state['presentation'].update(design=design,length=length,emoji_style=emoji)
+                        result=self.engine.render()
+                        self.assertTrue(result['can_copy'],(kind,design,length,emoji,result['issues']))
+                        self.assertLessEqual(result['emojis'],6)
+                        if emoji=='Sans emojis':self.assertEqual(0,result['emojis'])
+            self.engine.handle('design',{'design':{'name':'Guided','guided':True,'base_design':'Carte','heading':'Heading','footer':'Footer'}})
+            self.assertIn('Heading',self.engine.render()['preview'])
+            self.assertIn('Footer',self.engine.render()['preview'])
+            self.engine.handle('design',{'design':{'name':'Expert','template':'{{callsign}}\n{{message}}'}})
+            self.assertIn('AFR123',self.engine.render()['preview'])
+            self.engine.state['presentation']['custom_id']=''
+        self.engine.state['message_type']='PUSHBACK'
+        self.engine.state['flight'].update(departure_mode='Parallèle',pilots=[{
+            'name':'Wing','callsign':'WING2','departure_runway':'27R','message_types':['PUSHBACK']}])
+        rendered=self.engine.render()
+        self.assertTrue(rendered['can_copy'],rendered['issues'])
+        self.assertIn('WING2',rendered['preview'])
+        self.assertIn('Parallel departure',rendered['preview'])
+        self.engine.state['flight']['pilots'][0]['departure_runway']='27L'
+        self.assertTrue(any(v['field']=='pilots' for v in self.engine.render()['issues']))
+        self.engine.state['message_type']='TAXI'
+        self.engine.state['flight']['departure_mode']='Indépendant'
+        self.assertNotIn('WING2',self.engine.render()['preview'])
+        self.engine.state['message_type']='ATIS'
+        self.engine.state['per_type']['ATIS']['qnh']='9999'
+        self.assertFalse(self.engine.render()['can_copy'])
+
+    def test_finder_duration_provenance_matches_windows_without_false_percentiles(self):
+        from finder.provenance import duration_provenance
+        for row in ({'duration_min':75,'distance_nm':390,'n_complete':4},
+                    {'duration_min':75,'distance_nm':390,'n_complete':0},
+                    {'duration_min':77,'distance_nm':390,'n_complete':0}):
+            details=self.engine.duration_details(row)
+            self.assertEqual(duration_provenance(row),details['origin'])
+            self.assertEqual(details['origin']=='AGGREGATED_COMPLETE_TRACKS', details['bounds_kind']=='observed_percentiles')
+        estimated=self.engine.duration_details({'duration_min':75,'distance_nm':390,'n_complete':0})
+        self.assertIn('390',estimated['note'])
 
     def test_nested_saved_records_are_checked_before_import(self):
         self.engine.handle('save_flight',{'label':'Saved'})

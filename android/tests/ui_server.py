@@ -22,6 +22,12 @@ class Handler(SimpleHTTPRequestHandler):
     def __init__(self,*args,**kwargs):
         super().__init__(*args,directory=str(ROOT/'android/app/src/main/assets/www'),**kwargs)
     def log_message(self,*args):pass
+    def do_GET(self):
+        if self.path == '/world-countries.js':
+            raw=(ROOT/'android/app/build/generated/assets/www/world-countries.js').read_bytes()
+            self.send_response(200);self.send_header('Content-Type','application/javascript');self.end_headers();self.wfile.write(raw)
+        else:
+            super().do_GET()
     def do_POST(self):
         body=json.loads(self.rfile.read(int(self.headers['Content-Length'])))
         try:

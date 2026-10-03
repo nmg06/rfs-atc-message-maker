@@ -23,11 +23,28 @@ Android 7.0 minimum (API 24), appareils **ARM64** et émulateurs **x86_64**.
 L'APK debug universelle contient les deux architectures, environ
 60 à 66 Mo selon le build. Prévoir environ 250 Mo libres pour l'installation et la base privée.
 
-Version Flightdeck `0.2.0-flightdeck`, identifiant `com.nmg06.rfsatc` conservé.
+Version Flightdeck `0.3.0-flightdeck`, identifiant `com.nmg06.rfsatc` conservé.
 Catalogue d'avions recherchable dans le vol, variante unique Finder préremplie
 dans Fuel, recherches mises en cache et boutons Voir plus/Voir moins.
 Dans le Finder, `10` signifie 10 heures ; les formats explicites restent acceptés.
 [Guide d'installation Windows/Android et état iPhone](../INSTALLATION.md).
+
+Cette version ajoute la carte vectorielle hors ligne avec les mêmes 242 frontières
+Natural Earth que Windows, trajet orthodromique partagé, glissement/zoom au doigt,
+pincement et cadrage conservé. Choisir les pays puis **Trouver ces vols** transmet
+les critères au Finder local ; les autres filtres restent actifs. Les couches
+satellite/vents demeurent propres au PC.
+
+Dans **Bibliothèque** : renommage/suppression des vols et favoris, ajout/modification/
+suppression des pilotes connus avec préférences, gestion des designs et nettoyage
+de l'historique. Supprimer un vol sauvegardé garde le vol actuel. Les drapeaux
+disposent d'un catalogue recherchable par nom/code, et les panneaux ouverts restent
+ouverts lors des changements du formulaire.
+
+PUSHBACK/TAXI partagent maintenant les designs/longueurs/emojis, designs personnels
+et règles de groupes/parallèle ; ATIS utilise la même présentation et valide
+ICAO, lettre d'information, piste et QNH. Ces trois modèles sont des extensions
+Android, sans équivalent Windows servant de référence.
 
 ## Construire
 
@@ -97,7 +114,7 @@ adb shell am start -n com.nmg06.rfsatc/.MainActivity
 ```
 
 Le premier lancement décompresse la base locale puis initialise Python.
-Onglets : Vol, Messages, Aperçu, Finder, Fuel, Bibliothèque ; paramètres en haut.
+Onglets : Vol, Carte, Messages, Aperçu, Finder, Fuel, Bibliothèque ; paramètres en haut.
 Les champs et préférences sont enregistrés après chaque modification.
 La copie utilise le vrai presse-papiers Android ; collez ensuite dans Discord.
 Les erreurs du formulaire et les limites du message empêchent la copie.
@@ -108,6 +125,15 @@ Le stockage privé `/data/user/0/com.nmg06.rfsatc/files/` contient
 `rfs_android.json` et `aviation.sqlite`. Les préférences FR/EN/thème, pseudo,
 pilotes, vol, champs des messages, aperçus édités, vols enregistrés, historique,
 favoris, designs, critères Finder et dernières entrées Fuel sont conservés.
+Le cadrage et les pays sélectionnés sur la carte sont également conservés.
+
+**Importer les 4 fichiers PC** ouvre le sélecteur Android avec sélection multiple.
+Copier auparavant les fichiers `rfs_state.json`, `rfs_history.json`, `rfs_presets.json`
+et `rfs_designs.json` depuis le dossier `data` d'une application PC fermée normalement,
+puis sélectionner les quatre ensemble. Les noms doivent rester identiques.
+Tout le lot est validé avant remplacement ; limite totale 2 Mo et copie locale
+`.before-import.json` conservée. Les anciennes préférences de langue PC sont adaptées.
+Ne pas sélectionner un journal, la base Finder ou le dossier entier.
 L'écriture JSON est atomique ; un fichier corrompu est conservé pour récupération.
 L'historique garde les 200 dernières entrées.
 
