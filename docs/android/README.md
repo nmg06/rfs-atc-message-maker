@@ -21,7 +21,7 @@ facultatif s'ouvre uniquement à la demande dans le navigateur du téléphone.
 
 Android 7.0 minimum (API 24), appareils **ARM64** et émulateurs **x86_64**.
 L'APK debug universelle contient les deux architectures, environ
-66 Mo. Prévoir environ 250 Mo libres pour l'installation et la base privée.
+60 à 66 Mo selon le build. Prévoir environ 250 Mo libres pour l'installation et la base privée.
 
 Version Flightdeck `0.2.0-flightdeck`, identifiant `com.nmg06.rfsatc` conservé.
 Catalogue d'avions recherchable dans le vol, variante unique Finder préremplie

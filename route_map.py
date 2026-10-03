@@ -570,7 +570,7 @@ class RouteMap(QWidget):
             painter.drawEllipse(point, 1.5, 1.5)
             label_width = painter.fontMetrics().horizontalAdvance(self._codes[index]) + 16
             x = max(8, min(self.width() - label_width - 8, point.x() + 10))
-            y = max(40, min(self.height() - 57, point.y() - 27 if index == 0 else point.y() + 8))
+            y = max(44, min(self.height() - 80, point.y() - 27 if index == 0 else point.y() + 8))
             label = QRectF(x, y, label_width, 24)
             painter.setPen(Qt.PenStyle.NoPen)
             painter.setBrush(QColor(ocean))

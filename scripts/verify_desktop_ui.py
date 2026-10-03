@@ -29,6 +29,9 @@ window._rebuild_forms()
 window.render_preview()
 window.show()
 app.processEvents()
+if window.store.state['theme'] != 'Sombre':
+    window.toggle_theme()
+    app.processEvents()
 window.grab().save(str(output/'desktop-dark.png'))
 switches = []
 for _ in range(4):
