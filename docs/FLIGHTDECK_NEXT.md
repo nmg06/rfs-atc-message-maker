@@ -39,19 +39,22 @@ restent désactivées tant que l'utilisateur ne les choisit pas.
 
 ## Vérifications et mesures
 
-- Suite Windows : **112 tests passent**, aucun test historique supprimé.
-- Android : **15 tests Python**, parité des 1 344 générations, Finder cache et
+- Suite Windows : **113 tests passent**, aucun test historique supprimé.
+- Android : **16 tests Python**, parité des 1 344 générations, Finder cache et
   préremplissage avion/carburant. La carte Qt et les couches Internet sont exclues de l'APK.
 - Comparaison avec le code Flightdeck public précédent, même SQLite et même heure :
   Air France **3,82 s → 0,155 s**, page suivante **0,016 s** ; France→Roumanie
   **7,86 s → 0,152 s**. Toutes les réponses comparées sont identiques, y compris
   ordre, scores, avertissements, décompte et pagination. Détails : [mesures](finder-performance.json).
-- Changement de thème et traitement du rafraîchissement : environ **0,36 s**
+- Changement de thème et traitement du rafraîchissement : environ **0,4 s**
   sur ce poste, écriture différée. Ce n'est pas une garantie de zéro délai sur tout PC.
 - Vérification sur les vrais fournisseurs : six tuiles EOX rendues, 17 points
   Open-Meteo à 250 hPa, altitude géopotentielle et prévision datée. Les flèches
   représentent des échantillons, sans inventer une météo continue ou une météo RFS.
 - Sélection FR→RO : critères du Finder transmis, vol actuel conservé.
+- Le parseur de durée Fuel Windows est extrait dans `fuel/duration.py` et partagé
+  avec Android : nombres simples en heures, décimales, HH:MM et heures/minutes
+  donnent les mêmes résultats. Le calcul Android accepte aussi `330min` explicite.
 
 Les noms des EXE, fichiers de profil et package Android sont conservés. Le nom
 affiché devient RFS Flightdeck. Les livraisons restent des paquets d'essai

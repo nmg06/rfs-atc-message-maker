@@ -1,24 +1,13 @@
 from i18n import tr, set_language, language
 """Fuel calculator view; explicit variant selection and explicit current-flight update."""
 from copy import deepcopy
-import re
 from PySide6.QtCore import Qt, Signal, QEvent, QTimer, QObject
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QFormLayout, QLabel, QComboBox, QLineEdit, QPushButton, QTableWidget, QTableWidgetItem, QHeaderView, QAbstractItemView, QCompleter, QPlainTextEdit
 from aircraft_picker import AircraftPicker
 from .calculator import calculate_fuel, find_aircraft, load_json, DISCLAIMER
 from .selection import resolve_aircraft
+from .duration import duration_hours
 COMPONENTS = (('taxi_out_kg', 'Taxi départ · 6 min × 1,4'), ('trip_kg', 'Trajet'), ('contingency_kg', 'Contingence · 5 % du trajet'), ('alternate_kg', 'Alternate · distance / 450 kt + 15 min'), ('final_reserve_kg', 'Réserve finale · 30 min'), ('taxi_in_kg', 'Taxi arrivée · 4 min × 1,4'))
-
-def duration_hours(text):
-    text = str(text or '').strip().lower()
-    match = re.fullmatch('(\\d+)\\s*(?:h|:)\\s*(\\d{1,2})\\s*m?', text)
-    if match:
-        hours, minutes = map(int, match.groups())
-        return hours + minutes / 60 if minutes < 60 else None
-    try:
-        return float(text.rstrip('h').replace(',', '.')) if text else None
-    except ValueError:
-        return None
 
 class FuelDialog(QDialog):
     selected = Signal(dict)

@@ -46,8 +46,8 @@ modification et le prototype mobile est conservé.
 
 ## Résultats enregistrés
 
-- Windows : 112 tests réussis, dont les 71 initiaux et 103 tests Flightdeck, environnement Qt + ETL.
-- Android Python : 15 tests réussis (dont 1 344 combinaisons de messages), import
+- Windows : 113 tests réussis, dont les 71 initiaux et 103 tests Flightdeck, environnement Qt + ETL.
+- Android Python : 16 tests réussis (dont 1 344 combinaisons de messages), import
   des objets imbriqués et sources sans remise à zéro Finder compris.
 - UI Playwright, 390×844 : navigation, champs, validation, dernier caractère copié,
   Finder 100→200→100→200/transfert, catalogue vol→Fuel A220, rechargement, FR→EN ; zéro erreur JS.

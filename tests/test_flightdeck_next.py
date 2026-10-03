@@ -157,6 +157,20 @@ class NewFlightdeckUiTests(unittest.TestCase):
 
 
 class WeatherTests(unittest.TestCase):
+    def test_online_error_uses_backoff_and_retains_offline_map(self):
+        from map_online import OnlineLayers, Task
+        from unittest.mock import Mock
+        service = Mock()
+        Task(service, 'tile', (0,0,0), lambda: (_ for _ in ()).throw(OSError('offline'))).run()
+        service.completed.emit.assert_called_once_with('tile',(0,0,0),None,'offline')
+        app = QApplication.instance() or QApplication([])
+        widget = RouteMap()
+        widget.online.finish('tile',(0,0,0),None,'offline')
+        self.assertIn(('tile',(0,0,0)), widget.online.failed_until)
+        self.assertFalse(widget.grab().isNull())
+        self.assertEqual('offline', widget.layer.currentData())
+        widget.close()
+
     def test_wind_from_direction_and_tail_head_components(self):
         east, north = wind_components(100, 270)
         self.assertAlmostEqual(100, east)

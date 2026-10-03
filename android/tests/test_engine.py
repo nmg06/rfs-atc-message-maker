@@ -29,6 +29,16 @@ def flight():
 
 
 class EngineTests(unittest.TestCase):
+    def test_fuel_bare_decimal_hours_and_pc_formats_are_identical(self):
+        from fuel.duration import duration_hours
+        for text in ('5', '2,75', '5h', '5h30', '03:00', '1:2', '25'):
+            inputs = self.engine.state['fuel_inputs']
+            inputs.update(aircraft='airbus_a220_300', duration=text, arrival='EGLL')
+            expected = calculate_fuel('airbus_a220_300', duration_hours(text), 'EGLL')
+            self.assertEqual(expected, self.engine.handle('fuel', {}))
+        inputs['duration'] = '330min'
+        self.assertEqual(calculate_fuel('airbus_a220_300', 5.5, 'EGLL'), self.engine.handle('fuel', {}))
+
     def test_finder_bare_hours_cache_and_fuel_prefill_unique_variant(self):
         from unittest.mock import patch
         from finder.search import search

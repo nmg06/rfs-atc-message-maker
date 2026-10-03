@@ -20,6 +20,7 @@ from finder.i18n import tr as finder_tr
 from finder.rfs_catalogue import TYPE_BY_ID
 from fuel.calculator import calculate_fuel, load_json
 from fuel.selection import resolve_aircraft
+from fuel.duration import duration_hours
 from history_utils import duplicate_index
 from i18n import set_language, tr
 from message_builder import (compose, validate_group, preview_text, clipboard_text,
@@ -157,6 +158,15 @@ def validate_design(value):
     if not value.get('guided'):
         apply_custom(value['template'], custom_context('ATC REQUEST', empty_flight(), {}, '', ''))
     return deepcopy(value)
+
+
+def fuel_hours(text):
+    # Same bare-hour/decimal/HH:MM grammar as Windows, plus explicit mobile minutes.
+    hours = duration_hours(text)
+    if hours is None and re.search(r'(?:m|min|minutes?)$', str(text).strip().lower()):
+        minutes = parse_minutes(text)
+        return minutes/60 if minutes is not None else None
+    return hours
 
 
 class Engine:
@@ -415,15 +425,15 @@ class Engine:
         elif method == 'fuel':
             inputs = self.state['fuel_inputs']
             self.fuel_result = None
-            minutes = parse_minutes(inputs.get('duration', ''))
-            if minutes is None:
+            hours = fuel_hours(inputs.get('duration', ''))
+            if hours is None:
                 raise ValueError('Duration required: 5h, 5h30, 330min')
-            self.fuel_result = calculate_fuel(inputs.get('aircraft', ''), minutes / 60, inputs.get('arrival', ''))
+            self.fuel_result = calculate_fuel(inputs.get('aircraft', ''), hours, inputs.get('arrival', ''))
             return deepcopy(self.fuel_result)
         elif method == 'fuel_use':
             inputs = self.state['fuel_inputs']
             # Recalculate on apply; a stale UI result cannot apply old inputs.
-            result = calculate_fuel(inputs.get('aircraft', ''), (parse_minutes(inputs.get('duration', '')) or 0) / 60, inputs.get('arrival', ''))
+            result = calculate_fuel(inputs.get('aircraft', ''), fuel_hours(inputs.get('duration', '')) or 0, inputs.get('arrival', ''))
             candidate = deepcopy(self.value)
             flight = candidate['state']['flight']
             flight.update(fuel=f"{result['total_block_fuel_kg_exact']:.0f}", aircraft=result['aircraft']['name'],
