@@ -2,6 +2,7 @@ package com.nmg06.rfsatc;
 
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.view.WindowManager;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -16,7 +17,16 @@ import static org.junit.Assert.*;
 public class OfflineAppTest {
     private MainActivity activity(ActivityScenario<MainActivity> scenario) {
         AtomicReference<MainActivity> result = new AtomicReference<>();
-        scenario.onActivity(result::set); return result.get();
+        scenario.onActivity(a -> {
+            // Only this test activity: slow emulator work must not let the screen
+            // lock and remove focus required by Android's clipboard privacy rule.
+            a.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            if (android.os.Build.VERSION.SDK_INT >= 27) {
+                a.setShowWhenLocked(true); a.setTurnScreenOn(true);
+            }
+            result.set(a);
+        });
+        return result.get();
     }
     private JSONObject call(MainActivity a, String method, JSONObject args) throws Exception {
         JSONObject envelope = new JSONObject(a.requestForTest(method,args.toString()).get(120,TimeUnit.SECONDS));

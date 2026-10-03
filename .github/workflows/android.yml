@@ -56,6 +56,9 @@ jobs:
             adb shell cmd connectivity airplane-mode enable
             adb shell svc wifi disable
             adb shell svc data disable
+            adb shell input keyevent KEYCODE_WAKEUP
+            adb shell wm dismiss-keyguard
+            adb shell settings put system screen_off_timeout 1800000
             ./gradlew --no-daemon connectedDebugAndroidTest
             python ../scripts/test_android_restart.py --adb "$ANDROID_HOME/platform-tools/adb"
       - uses: actions/upload-artifact@v4
