@@ -106,7 +106,7 @@ def search(path: Path, criteria: Criteria, now_utc: datetime) -> dict:
         codes = [v.strip().upper() for v in getattr(criteria, endpoint) if v.strip()]
         if codes:
             placeholders = ",".join("?" for _ in codes)
-            where.append(f"{endpoint}_id IN (SELECT id FROM airports WHERE icao IN ({placeholders}) OR iata IN ({placeholders}))")
+            where.append(f"{endpoint}_id IN (SELECT id FROM airports WHERE icao IN ({placeholders}) OR iata IN ({placeholders}))")  # nosec B608: fixed endpoint; only bound parameter markers are generated
             params.extend(codes * 2)
         for suffix in ("country", "continent", "region"):
             in_filter([endpoint + "_" + suffix], getattr(criteria, endpoint + "_" + suffix))
@@ -114,8 +114,8 @@ def search(path: Path, criteria: Criteria, now_utc: datetime) -> dict:
         ex_codes = [v.strip().upper() for v in criteria.excluded_airports if v.strip()]
         if ex_codes:
             placeholders = ",".join("?" for _ in ex_codes)
-            where.append(f"origin_id NOT IN (SELECT id FROM airports WHERE icao IN ({placeholders}) OR iata IN ({placeholders}))")
-            where.append(f"destination_id NOT IN (SELECT id FROM airports WHERE icao IN ({placeholders}) OR iata IN ({placeholders}))")
+            where.append(f"origin_id NOT IN (SELECT id FROM airports WHERE icao IN ({placeholders}) OR iata IN ({placeholders}))")  # nosec B608: codes bound separately; placeholders contain only question marks
+            where.append(f"destination_id NOT IN (SELECT id FROM airports WHERE icao IN ({placeholders}) OR iata IN ({placeholders}))")  # nosec B608: codes bound separately; placeholders contain only question marks
             params.extend(ex_codes * 4)
     if criteria.airline.strip():
         term = criteria.airline.strip()
