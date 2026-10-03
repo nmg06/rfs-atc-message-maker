@@ -90,7 +90,7 @@ public class MainActivity extends Activity {
         String expected = manifest.getString("database_sha256");
         if (target.isFile() && hash(target).equals(expected)) return target;
         File temporary = new File(getFilesDir(), "aviation.sqlite.installing");
-        try (InputStream in = new GZIPInputStream(getAssets().open("aviation.sqlite.gz")); FileOutputStream out = new FileOutputStream(temporary)) {
+        try (InputStream in = new GZIPInputStream(getAssets().open("aviation.database")); FileOutputStream out = new FileOutputStream(temporary)) {
             byte[] buffer = new byte[65536]; int count;
             while ((count = in.read(buffer)) != -1) out.write(buffer, 0, count);
             out.getFD().sync();

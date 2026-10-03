@@ -61,7 +61,11 @@ def prepare(database=None):
     assets.mkdir(parents=True, exist_ok=True)
     for source in bundled.iterdir():
         if source.is_file():
-            shutil.copy2(source, assets / source.name)
+            # AAPT treats a .gz asset specially (strips suffix/decompresses it).
+            # Keep gzip bytes under a neutral name to match native installation.
+            name = 'aviation.database' if source.name == 'aviation.sqlite.gz' else source.name
+            shutil.copy2(source, assets / name)
+    (assets / 'aviation.sqlite.gz').unlink(missing_ok=True)
     notices = assets / 'notices'
     shutil.copytree(ROOT / 'docs/licenses', notices, dirs_exist_ok=True)
     (assets / 'engine-manifest.json').write_text(json.dumps(hashes, indent=2), encoding='utf-8')
