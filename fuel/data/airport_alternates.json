@@ -1,0 +1,917 @@
+{
+  "schema_version": 1,
+  "exported_from": "RFS Fuel Helper active local project",
+  "export_date": "2026-10-01",
+  "units": {
+    "distance": "nautical_miles"
+  },
+  "selection_rule": "Select the candidate with the smallest distance_nm.",
+  "warning": "Static suggestions for RFS only; not operational alternates for real aviation.",
+  "destination_count": 64,
+  "destinations": {
+    "CYVR": {
+      "candidates": [
+        {
+          "icao": "KSEA",
+          "distance_nm": 110.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "KSEA",
+        "distance_nm": 110.0
+      },
+      "provenance": "later_static_addition"
+    },
+    "CYYC": {
+      "candidates": [
+        {
+          "icao": "CYEG",
+          "distance_nm": 132.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "CYEG",
+        "distance_nm": 132.0
+      },
+      "provenance": "real_routes_addition"
+    },
+    "CYYZ": {
+      "candidates": [
+        {
+          "icao": "CYHM",
+          "distance_nm": 33.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "CYHM",
+        "distance_nm": 33.0
+      },
+      "provenance": "later_static_addition"
+    },
+    "EDDF": {
+      "candidates": [
+        {
+          "icao": "EDDK",
+          "distance_nm": 80.0
+        },
+        {
+          "icao": "EDDS",
+          "distance_nm": 90.0
+        },
+        {
+          "icao": "EDDM",
+          "distance_nm": 160.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "EDDK",
+        "distance_nm": 80.0
+      },
+      "provenance": "recovered_original"
+    },
+    "EDDM": {
+      "candidates": [
+        {
+          "icao": "LOWS",
+          "distance_nm": 59.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "LOWS",
+        "distance_nm": 59.0
+      },
+      "provenance": "later_static_addition"
+    },
+    "EGKK": {
+      "candidates": [
+        {
+          "icao": "EGLL",
+          "distance_nm": 22.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "EGLL",
+        "distance_nm": 22.0
+      },
+      "provenance": "later_static_addition"
+    },
+    "EGLL": {
+      "candidates": [
+        {
+          "icao": "EGKK",
+          "distance_nm": 30.0
+        },
+        {
+          "icao": "EGSS",
+          "distance_nm": 40.0
+        },
+        {
+          "icao": "EGCC",
+          "distance_nm": 160.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "EGKK",
+        "distance_nm": 30.0
+      },
+      "provenance": "recovered_original"
+    },
+    "EHAM": {
+      "candidates": [
+        {
+          "icao": "EBBR",
+          "distance_nm": 85.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "EBBR",
+        "distance_nm": 85.0
+      },
+      "provenance": "later_static_addition"
+    },
+    "FAOR": {
+      "candidates": [
+        {
+          "icao": "FALE",
+          "distance_nm": 258.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "FALE",
+        "distance_nm": 258.0
+      },
+      "provenance": "later_static_addition"
+    },
+    "GCLP": {
+      "candidates": [
+        {
+          "icao": "GCTS",
+          "distance_nm": 63.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "GCTS",
+        "distance_nm": 63.0
+      },
+      "provenance": "real_routes_addition"
+    },
+    "GCXO": {
+      "candidates": [
+        {
+          "icao": "GCTS",
+          "distance_nm": 29.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "GCTS",
+        "distance_nm": 29.0
+      },
+      "provenance": "real_routes_addition"
+    },
+    "HECA": {
+      "candidates": [
+        {
+          "icao": "HEBA",
+          "distance_nm": 101.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "HEBA",
+        "distance_nm": 101.0
+      },
+      "provenance": "later_static_addition"
+    },
+    "KATL": {
+      "candidates": [
+        {
+          "icao": "KBHM",
+          "distance_nm": 116.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "KBHM",
+        "distance_nm": 116.0
+      },
+      "provenance": "later_static_addition"
+    },
+    "KDEN": {
+      "candidates": [
+        {
+          "icao": "KCOS",
+          "distance_nm": 63.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "KCOS",
+        "distance_nm": 63.0
+      },
+      "provenance": "later_static_addition"
+    },
+    "KDFW": {
+      "candidates": [
+        {
+          "icao": "KOKC",
+          "distance_nm": 152.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "KOKC",
+        "distance_nm": 152.0
+      },
+      "provenance": "later_static_addition"
+    },
+    "KJFK": {
+      "candidates": [
+        {
+          "icao": "KEWR",
+          "distance_nm": 35.0
+        },
+        {
+          "icao": "KPHL",
+          "distance_nm": 95.0
+        },
+        {
+          "icao": "KBOS",
+          "distance_nm": 185.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "KEWR",
+        "distance_nm": 35.0
+      },
+      "provenance": "recovered_original"
+    },
+    "KLAX": {
+      "candidates": [
+        {
+          "icao": "KSNA",
+          "distance_nm": 35.0
+        },
+        {
+          "icao": "KONT",
+          "distance_nm": 45.0
+        },
+        {
+          "icao": "KSAN",
+          "distance_nm": 95.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "KSNA",
+        "distance_nm": 35.0
+      },
+      "provenance": "recovered_original"
+    },
+    "KMIA": {
+      "candidates": [
+        {
+          "icao": "KRSW",
+          "distance_nm": 90.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "KRSW",
+        "distance_nm": 90.0
+      },
+      "provenance": "later_static_addition"
+    },
+    "KORD": {
+      "candidates": [
+        {
+          "icao": "KMKE",
+          "distance_nm": 58.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "KMKE",
+        "distance_nm": 58.0
+      },
+      "provenance": "later_static_addition"
+    },
+    "KSFO": {
+      "candidates": [
+        {
+          "icao": "KSMF",
+          "distance_nm": 74.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "KSMF",
+        "distance_nm": 74.0
+      },
+      "provenance": "later_static_addition"
+    },
+    "LEBL": {
+      "candidates": [
+        {
+          "icao": "LEZG",
+          "distance_nm": 142.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "LEZG",
+        "distance_nm": 142.0
+      },
+      "provenance": "later_static_addition"
+    },
+    "LEMD": {
+      "candidates": [
+        {
+          "icao": "LEZG",
+          "distance_nm": 134.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "LEZG",
+        "distance_nm": 134.0
+      },
+      "provenance": "later_static_addition"
+    },
+    "LFPG": {
+      "candidates": [
+        {
+          "icao": "LFPO",
+          "distance_nm": 25.0
+        },
+        {
+          "icao": "LFOB",
+          "distance_nm": 35.0
+        },
+        {
+          "icao": "EBBR",
+          "distance_nm": 140.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "LFPO",
+        "distance_nm": 25.0
+      },
+      "provenance": "recovered_original"
+    },
+    "LGAV": {
+      "candidates": [
+        {
+          "icao": "LGKL",
+          "distance_nm": 105.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "LGKL",
+        "distance_nm": 105.0
+      },
+      "provenance": "real_routes_addition"
+    },
+    "LGSR": {
+      "candidates": [
+        {
+          "icao": "LGIR",
+          "distance_nm": 65.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "LGIR",
+        "distance_nm": 65.0
+      },
+      "provenance": "real_routes_addition"
+    },
+    "LIMC": {
+      "candidates": [
+        {
+          "icao": "LIMF",
+          "distance_nm": 52.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "LIMF",
+        "distance_nm": 52.0
+      },
+      "provenance": "later_static_addition"
+    },
+    "LIRF": {
+      "candidates": [
+        {
+          "icao": "LIRN",
+          "distance_nm": 107.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "LIRN",
+        "distance_nm": 107.0
+      },
+      "provenance": "later_static_addition"
+    },
+    "LOWW": {
+      "candidates": [
+        {
+          "icao": "LOWG",
+          "distance_nm": 81.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "LOWG",
+        "distance_nm": 81.0
+      },
+      "provenance": "later_static_addition"
+    },
+    "LSZH": {
+      "candidates": [
+        {
+          "icao": "LFSB",
+          "distance_nm": 43.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "LFSB",
+        "distance_nm": 43.0
+      },
+      "provenance": "later_static_addition"
+    },
+    "LTFM": {
+      "candidates": [
+        {
+          "icao": "LTFJ",
+          "distance_nm": 35.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "LTFJ",
+        "distance_nm": 35.0
+      },
+      "provenance": "later_static_addition"
+    },
+    "MMMX": {
+      "candidates": [
+        {
+          "icao": "MMQT",
+          "distance_nm": 95.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "MMQT",
+        "distance_nm": 95.0
+      },
+      "provenance": "later_static_addition"
+    },
+    "NZAA": {
+      "candidates": [
+        {
+          "icao": "NZCH",
+          "distance_nm": 402.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "NZCH",
+        "distance_nm": 402.0
+      },
+      "provenance": "later_static_addition"
+    },
+    "NZCH": {
+      "candidates": [
+        {
+          "icao": "NZNV",
+          "distance_nm": 251.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "NZNV",
+        "distance_nm": 251.0
+      },
+      "provenance": "real_routes_addition"
+    },
+    "NZQN": {
+      "candidates": [
+        {
+          "icao": "NZNV",
+          "distance_nm": 86.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "NZNV",
+        "distance_nm": 86.0
+      },
+      "provenance": "real_routes_addition"
+    },
+    "OEJN": {
+      "candidates": [
+        {
+          "icao": "OEMA",
+          "distance_nm": 175.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "OEMA",
+        "distance_nm": 175.0
+      },
+      "provenance": "later_static_addition"
+    },
+    "OMAA": {
+      "candidates": [
+        {
+          "icao": "OMDW",
+          "distance_nm": 39.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "OMDW",
+        "distance_nm": 39.0
+      },
+      "provenance": "later_static_addition"
+    },
+    "OMDB": {
+      "candidates": [
+        {
+          "icao": "OMSJ",
+          "distance_nm": 15.0
+        },
+        {
+          "icao": "OMDW",
+          "distance_nm": 35.0
+        },
+        {
+          "icao": "OMAA",
+          "distance_nm": 65.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "OMSJ",
+        "distance_nm": 15.0
+      },
+      "provenance": "recovered_original"
+    },
+    "OTHH": {
+      "candidates": [
+        {
+          "icao": "OBBI",
+          "distance_nm": 79.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "OBBI",
+        "distance_nm": 79.0
+      },
+      "provenance": "later_static_addition"
+    },
+    "PHKO": {
+      "candidates": [
+        {
+          "icao": "PHTO",
+          "distance_nm": 57.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "PHTO",
+        "distance_nm": 57.0
+      },
+      "provenance": "real_routes_addition"
+    },
+    "PHNL": {
+      "candidates": [
+        {
+          "icao": "PHKO",
+          "distance_nm": 142.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "PHKO",
+        "distance_nm": 142.0
+      },
+      "provenance": "real_routes_addition"
+    },
+    "PHOG": {
+      "candidates": [
+        {
+          "icao": "PHKO",
+          "distance_nm": 73.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "PHKO",
+        "distance_nm": 73.0
+      },
+      "provenance": "real_routes_addition"
+    },
+    "RJAA": {
+      "candidates": [
+        {
+          "icao": "RJTT",
+          "distance_nm": 40.0
+        },
+        {
+          "icao": "RJGG",
+          "distance_nm": 145.0
+        },
+        {
+          "icao": "RJCC",
+          "distance_nm": 440.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "RJTT",
+        "distance_nm": 40.0
+      },
+      "provenance": "recovered_original"
+    },
+    "RJTT": {
+      "candidates": [
+        {
+          "icao": "RJAA",
+          "distance_nm": 32.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "RJAA",
+        "distance_nm": 32.0
+      },
+      "provenance": "later_static_addition"
+    },
+    "RKSI": {
+      "candidates": [
+        {
+          "icao": "RKTN",
+          "distance_nm": 142.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "RKTN",
+        "distance_nm": 142.0
+      },
+      "provenance": "later_static_addition"
+    },
+    "SAME": {
+      "candidates": [
+        {
+          "icao": "SANU",
+          "distance_nm": 78.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "SANU",
+        "distance_nm": 78.0
+      },
+      "provenance": "real_routes_addition"
+    },
+    "SBGL": {
+      "candidates": [
+        {
+          "icao": "SBGR",
+          "distance_nm": 182.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "SBGR",
+        "distance_nm": 182.0
+      },
+      "provenance": "later_static_addition"
+    },
+    "SBGR": {
+      "candidates": [
+        {
+          "icao": "SBSP",
+          "distance_nm": 15.0
+        },
+        {
+          "icao": "SBKP",
+          "distance_nm": 50.0
+        },
+        {
+          "icao": "SBGL",
+          "distance_nm": 185.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "SBSP",
+        "distance_nm": 15.0
+      },
+      "provenance": "recovered_original"
+    },
+    "SCEL": {
+      "candidates": [
+        {
+          "icao": "SCIE",
+          "distance_nm": 232.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "SCIE",
+        "distance_nm": 232.0
+      },
+      "provenance": "real_routes_addition"
+    },
+    "VABB": {
+      "candidates": [
+        {
+          "icao": "VAPO",
+          "distance_nm": 67.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "VAPO",
+        "distance_nm": 67.0
+      },
+      "provenance": "later_static_addition"
+    },
+    "VHHH": {
+      "candidates": [
+        {
+          "icao": "ZGSZ",
+          "distance_nm": 20.0
+        },
+        {
+          "icao": "ZGGG",
+          "distance_nm": 85.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "ZGSZ",
+        "distance_nm": 20.0
+      },
+      "provenance": "recovered_original"
+    },
+    "VIDP": {
+      "candidates": [
+        {
+          "icao": "VIJP",
+          "distance_nm": 124.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "VIJP",
+        "distance_nm": 124.0
+      },
+      "provenance": "later_static_addition"
+    },
+    "VNKT": {
+      "candidates": [
+        {
+          "icao": "VNBW",
+          "distance_nm": 104.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "VNBW",
+        "distance_nm": 104.0
+      },
+      "provenance": "real_routes_addition"
+    },
+    "VNPR": {
+      "candidates": [
+        {
+          "icao": "VNBW",
+          "distance_nm": 52.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "VNBW",
+        "distance_nm": 52.0
+      },
+      "provenance": "real_routes_addition"
+    },
+    "VTBS": {
+      "candidates": [
+        {
+          "icao": "VTBD",
+          "distance_nm": 16.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "VTBD",
+        "distance_nm": 16.0
+      },
+      "provenance": "later_static_addition"
+    },
+    "WADD": {
+      "candidates": [
+        {
+          "icao": "WADL",
+          "distance_nm": 66.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "WADL",
+        "distance_nm": 66.0
+      },
+      "provenance": "real_routes_addition"
+    },
+    "WIII": {
+      "candidates": [
+        {
+          "icao": "WAHI",
+          "distance_nm": 229.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "WAHI",
+        "distance_nm": 229.0
+      },
+      "provenance": "later_static_addition"
+    },
+    "WMKK": {
+      "candidates": [
+        {
+          "icao": "WMKJ",
+          "distance_nm": 135.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "WMKJ",
+        "distance_nm": 135.0
+      },
+      "provenance": "later_static_addition"
+    },
+    "WSSS": {
+      "candidates": [
+        {
+          "icao": "WMKJ",
+          "distance_nm": 20.0
+        },
+        {
+          "icao": "WMKK",
+          "distance_nm": 170.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "WMKJ",
+        "distance_nm": 20.0
+      },
+      "provenance": "recovered_original"
+    },
+    "YMML": {
+      "candidates": [
+        {
+          "icao": "YMAV",
+          "distance_nm": 28.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "YMAV",
+        "distance_nm": 28.0
+      },
+      "provenance": "later_static_addition"
+    },
+    "YSSY": {
+      "candidates": [
+        {
+          "icao": "YSCB",
+          "distance_nm": 128.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "YSCB",
+        "distance_nm": 128.0
+      },
+      "provenance": "later_static_addition"
+    },
+    "ZBAA": {
+      "candidates": [
+        {
+          "icao": "ZBTJ",
+          "distance_nm": 67.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "ZBTJ",
+        "distance_nm": 67.0
+      },
+      "provenance": "later_static_addition"
+    },
+    "ZGGG": {
+      "candidates": [
+        {
+          "icao": "ZGSZ",
+          "distance_nm": 53.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "ZGSZ",
+        "distance_nm": 53.0
+      },
+      "provenance": "later_static_addition"
+    },
+    "ZGSZ": {
+      "candidates": [
+        {
+          "icao": "ZGGG",
+          "distance_nm": 53.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "ZGGG",
+        "distance_nm": 53.0
+      },
+      "provenance": "later_static_addition"
+    },
+    "ZSPD": {
+      "candidates": [
+        {
+          "icao": "ZSHC",
+          "distance_nm": 90.0
+        }
+      ],
+      "selected_closest": {
+        "icao": "ZSHC",
+        "distance_nm": 90.0
+      },
+      "provenance": "later_static_addition"
+    }
+  }
+}

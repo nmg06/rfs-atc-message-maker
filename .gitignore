@@ -4,6 +4,8 @@ __pycache__/
 build/
 dist/
 data/
+!fuel/data/
+!fuel/data/*.json
 *.log
 *.zip
 backup*/
