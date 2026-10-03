@@ -187,7 +187,6 @@ public class OfflineAppTest {
     }
     @Test public void localReminderAndLauncherIconAreExplicitAndReversible() throws Exception {
         Context context=InstrumentationRegistry.getInstrumentation().getTargetContext();
-        boolean hadPermission=context.checkSelfPermission("android.permission.POST_NOTIFICATIONS")==android.content.pm.PackageManager.PERMISSION_GRANTED;
         try(ActivityScenario<MainActivity> scenario=ActivityScenario.launch(MainActivity.class)) {
             MainActivity a=activity(scenario);call(a,"bootstrap",new JSONObject());
             shell("pm grant "+context.getPackageName()+" android.permission.POST_NOTIFICATIONS");
@@ -196,14 +195,21 @@ public class OfflineAppTest {
             assertEquals(when,a.getSharedPreferences("flight-reminder",0).getLong("when",0));
             new FlightReminder().onReceive(a,new android.content.Intent(a,FlightReminder.class));
             android.app.NotificationManager manager=(android.app.NotificationManager)a.getSystemService(Context.NOTIFICATION_SERVICE);
-            assertTrue(manager.getActiveNotifications().length>0);manager.cancel(4);
+            for(int i=0;i<100&&manager.getActiveNotifications().length==0;i++)Thread.sleep(100);
+            assertTrue("Local notification was not posted",manager.getActiveNotifications().length>0);manager.cancel(4);
             assertEquals(0,a.getSharedPreferences("flight-reminder",0).getLong("when",0));
             a.new Bridge().request("99998","native.icon","{\"icon\":\"Ocean\"}");
-            Thread.sleep(300);
             android.content.ComponentName alias=new android.content.ComponentName(a,a.getPackageName()+".IconOcean");
+            for(int i=0;i<100&&a.getPackageManager().getComponentEnabledSetting(alias)!=android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_ENABLED;i++)Thread.sleep(100);
             assertEquals(android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_ENABLED,a.getPackageManager().getComponentEnabledSetting(alias));
             a.new Bridge().request("99997","native.icon","{\"icon\":\"Default\"}");
-            Thread.sleep(300);
-        }finally{FlightReminder.cancel(context);if(!hadPermission)shell("pm revoke "+context.getPackageName()+" android.permission.POST_NOTIFICATIONS");}
+            android.content.ComponentName original=new android.content.ComponentName(a,a.getPackageName()+".IconDefault");
+            for(int i=0;i<100&&a.getPackageManager().getComponentEnabledSetting(original)!=android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_ENABLED;i++)Thread.sleep(100);
+            assertEquals(android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_ENABLED,a.getPackageManager().getComponentEnabledSetting(original));
+        }finally{
+            FlightReminder.cancel(context);
+            // Revoking a permission kills this package (and instrumentation).
+            // The dedicated emulator is destroyed after the job instead.
+        }
     }
 }
