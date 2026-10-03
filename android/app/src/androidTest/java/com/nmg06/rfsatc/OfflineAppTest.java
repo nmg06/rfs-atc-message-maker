@@ -12,6 +12,9 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.TestName;
+import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -19,6 +22,8 @@ import static org.junit.Assert.*;
 
 @RunWith(AndroidJUnit4.class)
 public class OfflineAppTest {
+    @Rule public final TestName testName=new TestName();
+    @Rule public final Timeout boundedTest=Timeout.seconds(240);
     private String shell(String command) throws Exception {
         try (ParcelFileDescriptor descriptor=InstrumentationRegistry.getInstrumentation()
                 .getUiAutomation().executeShellCommand(command);
@@ -27,12 +32,14 @@ public class OfflineAppTest {
         }
     }
     @Before public void prepareForeground() throws Exception {
+        System.out.println("ANDROID TEST START: "+testName.getMethodName());
         // Dedicated test device only. Reset the lock screen/previous clipboard
         // overlay before each ActivityScenario, rather than relying on boot focus.
         shell("input keyevent KEYCODE_WAKEUP");
         shell("wm dismiss-keyguard");
         shell("input keyevent KEYCODE_HOME");
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+        // ActivityScenario waits for the launched Activity's lifecycle itself.
+        // A global waitForIdleSync can wait forever after launcher icon changes.
     }
     private MainActivity activity(ActivityScenario<MainActivity> scenario) {
         AtomicReference<MainActivity> result = new AtomicReference<>();

@@ -362,7 +362,10 @@ public class MainActivity extends Activity {
     }
 
     @Override protected void onDestroy() {
-        online.enabled=false;network.shutdownNow();worker.shutdown(); super.onDestroy();
+        online.enabled=false;network.shutdownNow();
+        // Release the JS timers and native bridge with their Activity.
+        if(web!=null){web.removeJavascriptInterface("Android");web.stopLoading();web.destroy();}
+        worker.shutdown(); super.onDestroy();
     }
     @Override public void onBackPressed() {
         web.evaluateJavascript("window.goBack && window.goBack()", handled -> {
