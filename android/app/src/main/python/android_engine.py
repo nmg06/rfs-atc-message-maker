@@ -13,12 +13,13 @@ from zoneinfo import available_timezones
 
 from country_data import COUNTRIES
 from finder.database import connect_readonly
-from finder.duration import parse_minutes
+from finder.duration import parse_minutes, parse_finder_hours
 from finder.mapping import use_this_flight
-from finder.search import Criteria, search
+from finder.search import Criteria, SearchSession
 from finder.i18n import tr as finder_tr
 from finder.rfs_catalogue import TYPE_BY_ID
 from fuel.calculator import calculate_fuel, load_json
+from fuel.selection import resolve_aircraft
 from history_utils import duplicate_index
 from i18n import set_language, tr
 from message_builder import (compose, validate_group, preview_text, clipboard_text,
@@ -174,6 +175,7 @@ class Engine:
         self.query = None
         self.query_time = None
         self.rows = []
+        self.finder_session = SearchSession()
         self.fuel_result = None
         set_language(self.state['language'])
 
@@ -311,7 +313,8 @@ class Engine:
             if isinstance(default, list):
                 converted[key] = [x.strip().upper() for x in item.split(',') if x.strip()] if isinstance(item, str) else item
             elif key in ('min_minutes', 'max_minutes', 'target_minutes', 'tolerance_minutes', 'time_tolerance'):
-                value = parse_minutes(item) if isinstance(item, str) else item
+                parser = parse_finder_hours if key in ('min_minutes', 'max_minutes', 'target_minutes') else parse_minutes
+                value = parser(item) if isinstance(item, str) else item
                 if value is not None:
                     converted[key] = value
             elif isinstance(default, bool):
@@ -373,7 +376,7 @@ class Engine:
                 raise ValueError('Search filters changed: run a new search')
             query = deepcopy(self.query)
             query.offset = len(self.rows)
-            result = search(self.database, query, self.query_time)
+            result = self.finder_session.page(self.database, query, self.query_time)
             self.rows.extend(result['results'])
             result['warnings_text'] = [finder_tr(w, self.state['language']) for w in result['warnings']]
             for row in result['results']:
@@ -394,6 +397,21 @@ class Engine:
             candidate['state']['current_flight_id'] = ''
             candidate['state']['preview_edits'] = {}
             self.commit(candidate)
+        elif method == 'fuel_prepare':
+            flight = self.state['flight']
+            signature = json.dumps([flight.get(key) for key in
+                ('aircraft', 'fuel_aircraft_id', 'estimated_flight_time', 'arrival_icao', 'selected_flight')], sort_keys=True)
+            resolved = resolve_aircraft(flight)
+            if self.state['fuel_inputs'].get('_flight_signature') != signature:
+                candidate = deepcopy(self.value)
+                inputs = candidate['state']['fuel_inputs']
+                inputs.update(aircraft=resolved['record']['id'] if resolved['record'] else '',
+                              _flight_signature=signature)
+                for target, source in (('duration','estimated_flight_time'), ('arrival','arrival_icao')):
+                    if flight.get(source):
+                        inputs[target] = flight[source]
+                self.commit(candidate)
+            return {'value': deepcopy(self.value), 'selection': resolved}
         elif method == 'fuel':
             inputs = self.state['fuel_inputs']
             self.fuel_result = None

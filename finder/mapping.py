@@ -1,6 +1,7 @@
 """The sole bridge into the existing current-flight state."""
 from copy import deepcopy
 import re
+from .provenance import duration_provenance
 
 
 def safe_text(value) -> str:
@@ -39,14 +40,17 @@ def use_this_flight(current: dict, result: dict) -> dict:
     if result.get("duration_min") is not None:
         minutes = round(result["duration_min"])
         flight["estimated_flight_time"] = f"{minutes//60}h{minutes%60:02}"
-        known["estimated_flight_time"] = "TYPICAL_AIRBORNE"
+        known["estimated_flight_time"] = ("TYPICAL_AIRBORNE" if duration_provenance(result) == 'AGGREGATED_COMPLETE_TRACKS'
+                                           else duration_provenance(result))
     callsign = result.get("callsign") or ""
     suffix = re.fullmatch(r"[A-Z]{3}(\d{1,4}[A-Z]?)", callsign)
     if suffix and result.get("airline_iata"):
         flight["flight_number"] = safe_text(result["airline_iata"] + suffix[1])
         known["flight_number"] = "DERIVED_FROM_CALLSIGN"
     flight["selected_flight"] = {"schema_version": 1, "pattern_id": result.get("pattern_id"),
+        "aircraft_icao": result.get('aircraft'),
         "source_id": result.get("source_id"), "last_seen": result.get("last_seen"), "fields": known,
         "status": "HISTORICAL_OBSERVED", "n_obs": result.get("n_obs"),
+        "duration_provenance": duration_provenance(result), "n_complete": result.get('n_complete'),
         "sim_departure_utc": result.get("sim_departure_utc"), "sim_arrival_utc": result.get("sim_arrival_utc")}
     return flight

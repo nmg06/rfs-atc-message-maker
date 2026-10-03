@@ -29,6 +29,29 @@ def flight():
 
 
 class EngineTests(unittest.TestCase):
+    def test_finder_bare_hours_cache_and_fuel_prefill_unique_variant(self):
+        from unittest.mock import patch
+        from finder.search import search
+        self.engine.state['finder_filters'] = {'origin':'LFPG','max_minutes':'2'}
+        self.assertEqual(120, self.engine.criteria(self.engine.state['finder_filters']).max_minutes)
+        with patch('finder.search.search', wraps=search) as query:
+            self.engine.handle('finder', {})
+            self.engine.handle('finder', {'more':True})
+            self.assertEqual(1, query.call_count)
+        self.engine.state['flight'].update(aircraft='Airbus A220-300', estimated_flight_time='5h',
+            arrival_icao='EGLL', selected_flight={'aircraft_icao':'BCS3','fields':{'aircraft':'OBSERVED_AIRCRAFT_TYPE'}})
+        prepared = self.engine.handle('fuel_prepare', {})
+        self.assertEqual('airbus_a220_300', prepared['value']['state']['fuel_inputs']['aircraft'])
+        self.assertEqual(12285, self.engine.handle('fuel', {})['total_block_fuel_kg_exact'])
+        # Manual Fuel choices survive navigating away/back until flight context changes.
+        self.engine.state['fuel_inputs']['duration'] = '6h'
+        self.engine.handle('fuel_prepare', {})
+        self.assertEqual('6h', self.engine.state['fuel_inputs']['duration'])
+        self.engine.state['flight']['selected_flight']['aircraft_icao'] = 'B738'
+        self.engine.state['flight']['aircraft'] = 'Boeing 737-800'
+        self.engine.handle('fuel_prepare', {})
+        self.assertEqual('', self.engine.state['fuel_inputs']['aircraft'])
+
     @classmethod
     def setUpClass(cls):
         cls.dbtemp = tempfile.TemporaryDirectory()

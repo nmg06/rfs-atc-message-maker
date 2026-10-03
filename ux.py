@@ -5,9 +5,10 @@ from PySide6.QtWidgets import QApplication, QComboBox, QAbstractSpinBox, QAbstra
 
 class WheelGuard(QObject):
     def eventFilter(self, watched, event):
-        if event.type() == QEvent.Type.Show and isinstance(watched, QAbstractScrollArea):
+        event_type = event.type()
+        if event_type == QEvent.Type.Show and isinstance(watched, QAbstractScrollArea):
             smooth_scroll(watched)
-        if event.type() != QEvent.Type.Wheel:
+        if event_type != QEvent.Type.Wheel:
             return False
         control = watched
         while control is not None and not isinstance(control, (QComboBox, QAbstractSpinBox)):

@@ -10,6 +10,7 @@ import sqlite3
 ROOT = Path(__file__).resolve().parents[1]
 ANDROID = ROOT / 'android'
 MODULES = ['rfs_schema.py', 'templates.py', 'validation.py', 'message_builder.py',
+           'emoji_tokens.py', 'finder/provenance.py', 'fuel/selection.py',
            'history_utils.py', 'country_data.py', 'ui_translations.py',
            'finder/__init__.py', 'finder/database.py', 'finder/search.py',
            'finder/mapping.py', 'finder/time_utils.py', 'finder/duration.py',
@@ -52,6 +53,8 @@ def prepare(database=None):
         dest.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(ROOT / name, dest)
         hashes[name] = digest(ROOT / name)
+    # New exports shared with desktop remain pure Python: Qt/online map modules
+    # are deliberately absent from this list and the APK has no INTERNET permission.
     for name in ['aircraft_fuel_data.json', 'airport_alternates.json']:
         source = ROOT / 'docs/fuel/reference' / name
         for dest in [python / 'fuel/data' / name, ROOT / 'fuel/data' / name]:

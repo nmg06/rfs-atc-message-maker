@@ -8,8 +8,8 @@ EN = {
     "origin_country": "Departure countries (ISO, e.g. FR)", "destination_country": "Arrival countries (ISO)",
     "origin_continent": "Departure continents (EU, AS…)", "destination_continent": "Arrival continents (EU, AS…)",
     "origin_region": "Departure regions (e.g. FR-IDF)", "destination_region": "Arrival regions (ISO subdivision)",
-    "excluded_airports": "Excluded airports (ICAO / IATA)", "min_minutes": "Minimum duration (minutes)",
-    "max_minutes": "Available / maximum duration (minutes)", "target_minutes": "Desired duration (minutes)",
+    "excluded_airports": "Excluded airports (ICAO / IATA)", "min_minutes": "Minimum duration (hours; 10 = 10 h)",
+    "max_minutes": "Available / maximum duration (hours)", "target_minutes": "Desired duration (hours)",
     "departure_time": "Desired departure HH:mm (optional)", "arrival_time": "Desired arrival HH:mm (optional)",
     "departure_date": "Departure date", "arrival_date": "Arrival date",
     "departure_tz": "Departure-time IANA zone", "arrival_tz": "Arrival-time IANA zone",
@@ -90,7 +90,7 @@ EN.update({
  'none':'No usable match in these observations. Coverage may be incomplete or filters too restrictive. This does not mean the real flight does not exist.',
  'active_filters':'Active filters', 'score_help':'Score /100: deterministic ranking of frequency, recency, complete tracks and requested duration/time fit. It is neither a safety probability nor a guarantee of accuracy.',
  'frequency':'Frequency', 'recency':'Recency', 'confidence':'Complete tracks', 'duration':'Duration fit', 'arrival':'Arrival fit',
- 'DURATION_FORMAT':'Invalid duration: use 10h, 7 hours, 9h30, 03:00 or 60 min. Bare numbers mean minutes.',
+ 'DURATION_FORMAT':'Invalid duration: use 10, 10h, 7 hours, 9h30, 03:00 or 60 min. Duration fields use hours; time tolerance uses minutes.',
  'DURATION_RANGE':'Duration must be positive and at most 24 hours.',
  'ZONE_UNKNOWN':'Choose a timezone from the city/country list or enter a valid IANA identifier.',
  'COUNTRY_UNKNOWN':'Country not recognized: choose a suggestion or use an ISO code such as FR, RO or MD.',
@@ -98,8 +98,8 @@ EN.update({
  'airline_hint':'This is the airline name, not a country. Use the country filters for Romania or Moldova.',
  'aircraft':'Aircraft from the supplied RFS catalogue / observed code',
  'origin_country':'Departure countries (name or ISO code)', 'destination_country':'Arrival countries (name or ISO code)',
- 'min_minutes':'Minimum duration (h/min; bare = min)', 'max_minutes':'Maximum duration (h/min; bare = min)',
- 'target_minutes':'Desired duration (h/min; bare = min)',
+ 'min_minutes':'Minimum duration (hours; 10 = 10 h)', 'max_minutes':'Maximum duration (hours)',
+ 'target_minutes':'Desired duration (hours)',
  'arrival_tz':'Your arrival timezone — city / country', 'departure_tz':'Departure timezone — city / country',
  'Duration must be between 1 and 1440 minutes':'Duration must be between 1 and 1440 minutes',
  'Minimum duration exceeds maximum duration':'Minimum duration exceeds maximum duration',
@@ -119,7 +119,7 @@ FR.update({
  'none':'Aucune correspondance exploitable dans ces observations. Couverture incomplète ou filtres trop restrictifs possibles. Cela ne signifie pas que le vol réel n’existe pas.',
  'active_filters':'Filtres actifs', 'score_help':'Score /100 : classement déterministe selon fréquence, récence, traces complètes et correspondance aux durées/horaires demandés. Ni probabilité de sécurité, ni garantie d’exactitude.',
  'frequency':'Fréquence', 'recency':'Récence', 'confidence':'Traces complètes', 'duration':'Durée', 'arrival':'Arrivée',
- 'DURATION_FORMAT':'Durée invalide : utilisez 10h, 7 heures, 9h30, 03:00 ou 60 min. Un nombre seul signifie des minutes.',
+ 'DURATION_FORMAT':'Durée invalide : utilisez 10, 10h, 7 heures, 9h30, 03:00 ou 60 min. Les durées sont en heures ; la tolérance horaire en minutes.',
  'DURATION_RANGE':'La durée doit être positive et ne pas dépasser 24 heures.',
  'ZONE_UNKNOWN':'Sélectionnez un fuseau dans la liste ville/pays ou saisissez un identifiant IANA valide.',
  'COUNTRY_UNKNOWN':'Pays non reconnu : sélectionnez une proposition ou utilisez un code ISO comme FR, RO ou MD.',
@@ -127,8 +127,8 @@ FR.update({
  'airline_hint':'Nom de compagnie, pas de pays. Pour la Roumanie ou la Moldavie, utilisez les filtres de pays.',
  'aircraft':'Avion du catalogue RFS fourni / code observé',
  'origin_country':'Pays de départ (nom ou code ISO)', 'destination_country':'Pays d’arrivée (nom ou code ISO)',
- 'min_minutes':'Durée minimale (h/min ; nombre seul = min)', 'max_minutes':'Durée maximale (h/min ; nombre seul = min)',
- 'target_minutes':'Durée souhaitée (h/min ; nombre seul = min)',
+ 'min_minutes':'Durée minimale (heures ; 10 = 10 h)', 'max_minutes':'Durée maximale (heures)',
+ 'target_minutes':'Durée souhaitée (heures)',
  'arrival_tz':'Votre fuseau d’arrivée — ville / pays', 'departure_tz':'Fuseau de départ — ville / pays',
  'DATA_UNAVAILABLE':'La base locale est absente ou indisponible.', 'UNSUPPORTED_DATABASE_VERSION':'Version de base non prise en charge.',
  'LOW_OBSERVATIONS':'Moins de cinq observations : données limitées.',
@@ -141,5 +141,43 @@ FR.update({
 })
 
 
+EN.update({
+ 'columns':['Airline / callsign', 'Observed route', 'Aircraft', 'Duration / origin', 'Score'],
+ 'diversify':'Limit profiles per airline/route (3, or 10 with an airline filter)',
+ 'duration_observed_short':'observed', 'duration_estimated_short':'estimated', 'duration_unknown_short':'unverified',
+ 'duration_observed':'Observed median duration (complete tracks)',
+ 'duration_estimated':'Estimated duration (matching heuristic)', 'duration_unverified':'Duration of unverified origin',
+ 'duration_formula':'This value matches round(great-circle distance in NM / 390 kt × 60 + 15 min): one assumed speed and a fixed allowance. The original transformation script has not been found.',
+ 'duration_formula_limits':'The stored ±5% bounds are an arithmetic convention, not observed dispersion or guaranteed accuracy. They are not displayed as percentiles. The estimate does not model the actual route, aircraft, winds or weather.',
+ 'DURATION_PROVENANCE_NOTICE':'Duration origin is shown per result: observed median, heuristic estimate or unverified value. Simulator use only.',
+ 'DURATION_ESTIMATED_HEURISTIC':'Duration added after import; it matches a distance heuristic, not an observed median. Check the estimate before using it.',
+ 'DURATION_POST_IMPORT_UNVERIFIED':'Duration added with insufficient complete tracks; its calculation has not been verified. No observed percentiles are claimed.',
+})
+FR.update({
+ 'columns':['Compagnie / callsign', 'Trajet observé', 'Avion', 'Durée / origine', 'Score'],
+ 'diversify':'Limiter les profils par compagnie/trajet (3, ou 10 si compagnie filtrée)',
+ 'duration_observed_short':'observée', 'duration_estimated_short':'estimée', 'duration_unknown_short':'non vérifiée',
+ 'duration_observed':'Durée médiane observée (traces complètes)',
+ 'duration_estimated':'Durée estimée (formule concordante)', 'duration_unverified':'Durée d’origine non vérifiée',
+ 'duration_formula':'Cette valeur correspond à arrondi(distance orthodromique en NM / 390 kt × 60 + 15 min) : une vitesse supposée unique et un supplément fixe. Le script de transformation original n’a pas été retrouvé.',
+ 'duration_formula_limits':'Les bornes ±5 % stockées sont une convention arithmétique, pas une dispersion observée ni une précision garantie. Elles ne sont pas affichées comme percentiles. L’estimation ne modélise pas la route effective, l’avion, le vent ou la météo.',
+ 'DURATION_PROVENANCE_NOTICE':'L’origine de la durée est indiquée par résultat : médiane observée, estimation par formule ou valeur non vérifiée. Simulation uniquement.',
+ 'DURATION_ESTIMATED_HEURISTIC':'Durée ajoutée après import, concordante avec une formule de distance ; ce n’est pas une médiane observée. Vérifiez l’estimation avant utilisation.',
+ 'DURATION_POST_IMPORT_UNVERIFIED':'Durée ajoutée avec trop peu de traces complètes ; son calcul n’a pas été vérifié. Aucun percentile observé n’est revendiqué.',
+})
+
+
 def tr(key, language='fr'):
     return (EN if language == 'en' else FR).get(key, EN.get(key, key))
+
+EN.update({
+    'start_hint': 'Choose an airline, an airport or a duration, then search. You can also search without filters.',
+    'no_match_hint': 'No matching profile. Try removing a filter or widening the duration. Historical coverage is incomplete.',
+})
+FR.update({
+    'start_hint': 'Choisissez une compagnie, un aéroport ou une durée, puis lancez la recherche. Vous pouvez aussi chercher sans filtre.',
+    'no_match_hint': 'Aucun profil correspondant. Retirez un filtre ou élargissez la durée. La couverture historique est incomplète.',
+})
+
+EN.update({"more_count": "Show more · {shown} / {total}", "page_added": "{count} profiles added · showing rows {start}–{end}"})
+FR.update({"more_count": "Voir plus · {shown} / {total}", "page_added": "{count} profils ajoutés · lignes {start}–{end}"})

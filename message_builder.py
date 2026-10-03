@@ -8,6 +8,7 @@ from i18n import tr
 from rfs_schema import FLIGHT_TYPES, FLIGHT_FIELDS, MESSAGE_FIELDS
 from templates import render, format_runway
 from validation import Issue, validate
+from emoji_tokens import EMOJI_TOKEN
 
 DEFAULT_PRESENTATION = {"design": "Classique", "length": "Moyen", "emoji_style": "Aviation",
                         "discord_aligned": True, "custom_id": ""}
@@ -84,7 +85,7 @@ def procedure_data(kind, data):
 
 
 def strip_emojis(text: str) -> str:
-    return re.sub(r"[\U0001F1E6-\U0001FAFF\u2600-\u27BF\u231a\u231b\u23f0-\u23f3\ufe0e\ufe0f\u200d]", "", text)
+    return EMOJI_TOKEN.sub('', text)
 
 
 def _unframe(text: str) -> str:
@@ -188,6 +189,20 @@ def apply_custom(template: str, values: dict) -> str:
             raise ValueError(tr("Variable inconnue : {key}", key=key))
         return values[key]
     return re.sub(r"\{\{\s*([a-z_]+)\s*\}\}", replace, template).strip()
+
+
+def validate_design(value: dict) -> dict:
+    """Reject malformed optional fields before saving an imported design."""
+    if not isinstance(value, dict) or not isinstance(value.get('name'), str) or not value['name'].strip() or not isinstance(value.get('template'), str) or not value['template'].strip():
+        raise ValueError(tr('Le fichier doit contenir un nom et un modèle texte'))
+    for key in ('base_design', 'heading', 'footer'):
+        if key in value and not isinstance(value[key], str):
+            raise ValueError(tr('Champ de design invalide : {field}', field=key))
+    if 'guided' in value and not isinstance(value['guided'], bool):
+        raise ValueError(tr('Champ de design invalide : {field}', field='guided'))
+    if value.get('base_design') and value['base_design'] not in BUILTIN_DESIGNS:
+        raise ValueError(tr('Présentation de base inconnue'))
+    return {k: v for k, v in value.items() if k in ('name', 'template', 'guided', 'base_design', 'heading', 'footer')}
 
 
 def _group_identity(body, kind, flight, data, pilot, extra):
@@ -322,9 +337,6 @@ def compose(kind: str, flight: dict, data: dict, pilot: str, presentation: dict 
     if mentions:
         text += "\n\n" + "\n".join(mentions)
     return text
-
-
-EMOJI_TOKEN = re.compile(r'[\U0001F1E6-\U0001F1FF]{2}|[\U0001F300-\U0001FAFF\u2600-\u27BF\u231a\u231b\u23f0-\u23f3](?:[\ufe0e\ufe0f]|\u200d.)*')
 
 
 def limit_emojis(text, limit=6):

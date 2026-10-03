@@ -169,7 +169,7 @@ class V4Tests(unittest.TestCase):
             self.assertEqual('🇫🇷',picker.value())
 
     def test_wheel_never_changes_closed_combo_or_spinbox_but_scrolls(self):
-        window=RFSWindow();window.show();self.app.processEvents()
+        window=RFSWindow();window.deck_nav[1].click();window.show();self.app.processEvents()
         combo=window.flight_widgets['airline'];combo.addItems(['A','B','C']);combo.setCurrentIndex(0)
         bar=window.form_scroll.verticalScrollBar();bar.setValue(0)
         wheel=QWheelEvent(QPointF(8,8),QPointF(combo.mapToGlobal(QPoint(8,8))),QPoint(),QPoint(0,-120),Qt.MouseButton.NoButton,Qt.KeyboardModifier.NoModifier,Qt.ScrollPhase.NoScrollPhase,False)

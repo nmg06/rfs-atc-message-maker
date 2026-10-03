@@ -11,9 +11,10 @@ from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushB
 
 from .database import connect_readonly
 from .i18n import tr
-from .search import Criteria, search
-from .duration import parse_minutes
+from .search import Criteria, search, SearchSession
+from .duration import parse_minutes, parse_finder_hours
 from .rfs_catalogue import records, TYPE_BY_ID
+from .provenance import duration_provenance
 from country_search import country_rows, resolve_country
 from ux import install_wheel_guard, smooth_scroll
 from zoneinfo import available_timezones
@@ -47,7 +48,7 @@ class SearchWorker(QThread):
     done = Signal(object)
     failed = Signal(str)
 
-    def __init__(self, path, criteria, parent, now=None):
+    def __init__(self, path, criteria, parent, now=None, session=None):
         super().__init__(parent)
         install_wheel_guard()
         self.revision = 0
@@ -56,10 +57,11 @@ class SearchWorker(QThread):
         self.response = None
         self.path, self.criteria = path, criteria
         self.now = now or datetime.now(timezone.utc)
+        self.session = session
 
     def run(self):
         try:
-            self.done.emit(search(self.path, self.criteria, self.now))
+            self.done.emit(self.session.page(self.path, self.criteria, self.now) if self.session else search(self.path, self.criteria, self.now))
         except Exception as error:
             self.failed.emit(str(error))
 
@@ -78,12 +80,16 @@ class FinderDialog(QDialog):
         self.path, self.language = Path(database), language
         self.worker = None
         self.results = []
+        self.session = SearchSession()
+        self.visible_count = 0
         self._runway_cache = {}
         self.sources = []
         self.setWindowTitle("Flight Finder")
         self.resize(1200, 820)
         self.setMinimumSize(920, 620)
         self.outer = QVBoxLayout(self)
+        self.outer.setContentsMargins(20, 18, 20, 18)
+        self.outer.setSpacing(12)
         top = QHBoxLayout()
         self.lang = QComboBox()
         for name, code in (("Français", "fr"), ("English", "en")):
@@ -94,12 +100,15 @@ class FinderDialog(QDialog):
         self.database_button = QPushButton()
         self.database_button.clicked.connect(self.choose_database)
 
+        top.addWidget(QLabel('Flight Finder', objectName='title'))
         top.addStretch()
         self.outer.addLayout(top)
         self.hint = QLabel()
         self.hint.setWordWrap(True)
         self.outer.addWidget(self.hint)
         split = QSplitter()
+        split.setChildrenCollapsible(False)
+        split.setHandleWidth(16)
         self.outer.addWidget(split, 1)
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
@@ -194,7 +203,7 @@ class FinderDialog(QDialog):
                 self.form if key in ('airline', 'aircraft', 'origin', 'destination', 'min_minutes', 'max_minutes', 'target_minutes') else advanced)
             target_form.addRow(label, field)
             if key.endswith('_minutes'):
-                field.setPlaceholderText('10h · 9h30 · 03:00 · 60 min')
+                field.setPlaceholderText('10 = 10h · 9h30 · 03:00 · 60 min')
             if key.endswith('_time'):
                 field.setPlaceholderText('07:00')
             if key == 'aircraft':
@@ -217,6 +226,9 @@ class FinderDialog(QDialog):
         split.addWidget(scroll)
         right = QWidget()
         layout = QVBoxLayout(right)
+        self.empty_state = QLabel(self.t('start_hint'), objectName='emptyState')
+        self.empty_state.setWordWrap(True)
+        layout.addWidget(self.empty_state)
         self.table = QTableWidget(0, 5)
         self.table.setAlternatingRowColors(True)
         self.table.setShowGrid(False)
@@ -232,7 +244,9 @@ class FinderDialog(QDialog):
         layout.addWidget(self.table, 1)
         self.details = QPlainTextEdit(objectName="discordPreview")
         self.details.setReadOnly(True)
-        layout.addWidget(self.details, 1)
+        layout.addWidget(self.details, 0)
+        self.details.setMinimumHeight(170)
+        self.details.setMaximumHeight(235)
         split.addWidget(right)
         split.setSizes([420, 740])
         self.status = QLabel()
@@ -247,9 +261,12 @@ class FinderDialog(QDialog):
         self.more_button = QPushButton(self.t('more'))
         self.more_button.setEnabled(False)
         self.more_button.clicked.connect(lambda: self.run_search(more=True))
+        self.less_button = QPushButton('Voir moins' if language == 'fr' else 'Show less')
+        self.less_button.setEnabled(False)
+        self.less_button.clicked.connect(self.show_less)
         self.close_button = QPushButton()
         self.close_button.clicked.connect(self.reject)
-        for button in (self.search_button, self.more_button, self.use_button, self.close_button):
+        for button in (self.search_button, self.less_button, self.more_button, self.use_button, self.close_button):
             actions.addWidget(button)
         self.outer.addLayout(actions)
         for button in self.findChildren(QPushButton):
@@ -267,12 +284,13 @@ class FinderDialog(QDialog):
             check.toggled.connect(self.invalidate)
         self.load_suggestions()
         self.translate()
-        self.status.setText(str(self.path) if self.path.is_file() else self.t("missing"))
+        self.status.setText(self.t("optional") if self.path.is_file() else self.t("missing"))
 
     def t(self, key):
         return tr(key, self.language)
 
     def translate(self):
+        self.less_button.setText('Voir moins' if self.language == 'fr' else 'Show less')
         self.database_button.setText(self.t("database"))
         self.search_button.setText(self.t("search"))
         self.use_button.setText(self.t("use"))
@@ -337,12 +355,18 @@ class FinderDialog(QDialog):
     def invalidate(self, *_):
         self.revision += 1
         self.results = []
+        self.visible_count = 0
+        self.session.clear()
+        self.less_button.setEnabled(False)
         self.response = None
+        self.empty_state.setText(self.t("changed"))
+        self.empty_state.show()
         self.table.setRowCount(0)
         self.details.clear()
         self.use_button.setEnabled(False)
         self.more_button.setEnabled(False)
         self.status.setText(self.t('changed'))
+        self.more_button.setText(self.t('more'))
 
     def criteria(self):
         values = {}
@@ -361,7 +385,7 @@ class FinderDialog(QDialog):
             elif key in self.list_keys:
                 values[key] = [self.airport_labels.get(text, text).upper()] if text in self.airport_labels else [v.strip().upper() for v in text.split(',') if v.strip()]
             elif key.endswith('_minutes') or key == 'time_tolerance':
-                minutes = parse_minutes(text)
+                minutes = parse_finder_hours(text) if key in ('min_minutes', 'max_minutes', 'target_minutes') else parse_minutes(text)
                 if minutes is not None:
                     values[key] = minutes
             elif key == 'airline':
@@ -378,6 +402,11 @@ class FinderDialog(QDialog):
     def run_search(self, checked=False, more=False):
         if self.worker and self.worker.isRunning():
             return
+        if more and self.query is None:
+            return
+        if more and self.visible_count < len(self.results):
+            self.show_cached_rows(min(len(self.results), self.visible_count + self.query.limit))
+            return
         if not more:
             self.invalidate()
         try:
@@ -389,15 +418,24 @@ class FinderDialog(QDialog):
         if not more:
             self.query = criteria
             self.query_time = datetime.now(timezone.utc)
+        elif self.session.metadata is not None:
+            self.search_revision = self.revision
+            try:
+                self.present(self.session.page(self.path, criteria, self.query_time))
+            except (ValueError, OSError) as error:
+                self.fail(str(error))
+            return
         self.search_revision = self.revision
         self.use_button.setEnabled(False)
         self.more_button.setEnabled(False)
         self.search_button.setEnabled(False)
         self.database_button.setEnabled(False)
+        self.empty_state.setText(self.t("busy"))
+        self.empty_state.show()
         self.status.setText(self.t('busy'))
         if self.worker:
             self.worker.deleteLater()
-        self.worker = SearchWorker(self.path, criteria, self, self.query_time)
+        self.worker = SearchWorker(self.path, criteria, self, self.query_time, self.session)
         self.worker.done.connect(self.present)
         self.worker.failed.connect(self.fail)
         self.worker.finished.connect(self.search_finished)
@@ -406,24 +444,43 @@ class FinderDialog(QDialog):
     def search_finished(self):
         self.search_button.setEnabled(True)
         self.database_button.setEnabled(True)
+        if self.revision == self.search_revision and self.response:
+            self.more_button.setEnabled(self.visible_count < len(self.results) or self.response.get('has_more', False))
 
     def fail(self, message):
+        self.empty_state.setText(self.t("error") + ": " + self.t(message))
+        self.empty_state.show()
         self.status.setText(self.t("error") + ": " + self.t(message))
 
     def present(self, response):
         if self.revision != self.search_revision:
             return
         self.response = response
-        self.results = self.results + response['results'] if response.get('offset') else response['results']
+        appended = bool(response.get('offset'))
+        first_new = len(self.results) if appended else 0
+        self.results = self.results + response['results'] if appended else response['results']
         self.sources = response['sources']
-        self.more_button.setEnabled(response.get('has_more', False))
+        # Keep clicks disabled until the thread has fully finished; otherwise
+        # run_search can silently discard a click between done and finished.
+        self.more_button.setEnabled(response.get('has_more', False) and not (self.worker and self.worker.isRunning()))
+        self.empty_state.setVisible(not self.results)
+        self.empty_state.setText(self.t("no_match_hint"))
         self.table.setRowCount(len(self.results))
-        for index, row in enumerate(self.results):
+        for index in range(first_new, len(self.results)):
+            row = self.results[index]
             minutes = round(row["duration_min"])
+            origin = duration_provenance(row)
+            label = self.t('duration_observed_short' if origin == 'AGGREGATED_COMPLETE_TRACKS'
+                           else 'duration_estimated_short' if origin == 'ESTIMATED_DISTANCE_HEURISTIC'
+                           else 'duration_unknown_short')
             values = (f"{row['airline_name']} / {row['callsign']}", f"{row['origin']} → {row['destination']}",
-                      row.get("aircraft_display", row["aircraft"]), f"{minutes//60}h{minutes%60:02}", f"{row['score']:.1f}")
+                      row.get("aircraft_display", row["aircraft"]), f"{minutes//60}h{minutes%60:02} · {label}", f"{row['score']:.1f}")
             for column, value in enumerate(values):
                 self.table.setItem(index, column, QTableWidgetItem(value))
+        self.visible_count = len(self.results)
+        for index in range(len(self.results)):
+            self.table.setRowHidden(index, False)
+        self.less_button.setEnabled(self.visible_count > self.query.limit)
         status = self.t("count").format(n=len(self.results), candidates=response["candidates"], matches=response["matches"], available=response["available"], dropped=response["diversity_dropped"],
                  last=response["build"].get("last_observation", self.t("unknown"))) if self.results else self.t("none")
         if not self.results:
@@ -439,8 +496,29 @@ class FinderDialog(QDialog):
                     labels.append(f'{self.t(key)} : {value}')
             status += '\n' + self.t('active_filters') + ': ' + ' ; '.join(labels)
         self.status.setText(status + "\n" + " ".join(self.t(w) for w in response["warnings"]))
+        self.more_button.setText(self.t('more_count').format(shown=len(self.results), total=response['available']))
         if self.results:
-            self.table.selectRow(0)
+            selected_row = min(first_new, len(self.results) - 1)
+            self.table.selectRow(selected_row)
+            self.table.scrollToItem(self.table.item(selected_row, 0), QAbstractItemView.ScrollHint.PositionAtTop)
+        if appended and response['results']:
+            self.status.setText(self.t('page_added').format(count=len(response['results']), start=first_new + 1, end=len(self.results)) + '\n' + self.status.text())
+
+    def show_less(self):
+        if self.query and self.visible_count > self.query.limit:
+            self.show_cached_rows(max(self.query.limit, self.visible_count-self.query.limit))
+
+    def show_cached_rows(self, count):
+        self.visible_count = count
+        for index in range(len(self.results)):
+            self.table.setRowHidden(index, index >= count)
+        self.less_button.setEnabled(count > self.query.limit)
+        self.more_button.setEnabled(count < len(self.results) or bool(self.response and self.response.get('has_more')))
+        if count:
+            selected = max(0, count-self.query.limit)
+            self.table.selectRow(selected)
+            self.table.scrollToItem(self.table.item(selected,0),QAbstractItemView.ScrollHint.PositionAtTop)
+        self.status.setText((f'{count} affichés / {len(self.results)} chargés' if self.language == 'fr' else f'{count} visible / {len(self.results)} loaded'))
 
     def show_result(self):
         index = self.table.currentRow()
@@ -449,12 +527,23 @@ class FinderDialog(QDialog):
             self.details.clear()
             return
         row = self.results[index]
+        origin = duration_provenance(row)
+        observed = origin == 'AGGREGATED_COMPLETE_TRACKS'
+        duration_label = ('duration_observed' if observed else 'duration_estimated'
+                          if origin == 'ESTIMATED_DISTANCE_HEURISTIC' else 'duration_unverified')
+        duration_line = f"{self.t(duration_label)}: {row['duration_min']:.0f} min"
+        if observed and row.get('duration_p10') is not None and row.get('duration_p90') is not None:
+            duration_line += f" (P10–P90: {row['duration_p10']:.0f}–{row['duration_p90']:.0f})"
         lines = [self.t("observed"), f"ICAO: {row['aircraft']}", f"{row['airline_name']} • {row['callsign']} • {row.get('aircraft_display') or row['aircraft_model'] or row['aircraft']}",
             f"{row['origin']} — {row['origin_name']} → {row['destination']} — {row['destination_name']}",
-            f"{self.t('typical')}: {row['duration_min']:.0f} min" + (f" (P10–P90: {row['duration_p10']:.0f}–{row['duration_p90']:.0f})" if row.get('duration_p10') is not None and row.get('duration_p90') is not None else ""),
+            duration_line,
             f"{self.t('distance')}: {row['distance_nm']:.0f} NM" if row['distance_nm'] is not None else self.t('unknown'),
             f"{row['n_obs']} {self.t('observations')} • {row['n_complete']} {self.t('coverage')}",
             f"{self.t('times')}: {row['latest_departure']} → {row['latest_arrival']}"]
+        if origin == 'ESTIMATED_DISTANCE_HEURISTIC':
+            lines += [self.t('duration_formula'), self.t('duration_formula_limits')]
+        elif not observed:
+            lines.append(self.t('DURATION_POST_IMPORT_UNVERIFIED'))
         if row.get("sim_departure_utc"):
             dep = datetime.fromisoformat(row["sim_departure_utc"])
             arr = datetime.fromisoformat(row["sim_arrival_utc"])

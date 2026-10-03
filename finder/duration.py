@@ -28,3 +28,11 @@ def parse_minutes(text):
     if not math.isfinite(result) or not 0 < result <= 1440:
         raise ValueError('DURATION_RANGE')
     return result
+
+
+def parse_finder_hours(text):
+    """Phone/desktop duration fields: an unqualified number is hours, not minutes."""
+    value = str(text).strip().lower().replace(',', '.')
+    if re.fullmatch(r'\d+(?:\.\d+)?', value):
+        value += 'h'
+    return parse_minutes(value)

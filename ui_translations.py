@@ -79,3 +79,12 @@ EN.update({
  '🛠️ Modèle Avancé (Sur-mesure)':'Advanced template',
 })
 
+
+EN.update({
+    'Champ de design invalide : {field}': 'Invalid design field: {field}',
+    'Présentation de base inconnue': 'Unknown base design',
+    'Vol Finder chargé. Vérifiez les pistes, portes, carburant et autres pilotes conservés. Distance = référence orthodromique. {duration}.': 'Finder flight loaded. Check retained runways, gates, fuel and additional pilots. Distance = great-circle reference. {duration}.',
+})
+
+# Desktop UX refresh
+EN.update({'Présentation du message': 'Message appearance', '01  Préparer le vol': '01  Prepare your flight', '02  Aperçu Discord': '02  Discord preview', 'Favoris et historique': 'Favourites and history', 'Un favori conserve un modèle de vol ; l’historique retrouve les messages copiés.': 'A favourite saves a flight preset; history keeps copied messages.', 'Recrée le message depuis le formulaire et remplace les modifications manuelles. Ctrl+Entrée': 'Rebuild the message from the form, replacing manual edits. Ctrl+Enter', 'Copier le message — Ctrl+Maj+C': 'Copy message — Ctrl+Shift+C'})

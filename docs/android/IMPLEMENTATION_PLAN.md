@@ -4,7 +4,10 @@
 
 Baseline: GitHub `main` at `8747e0e5b4985eb6ddd540919ca659dca0b32622`.
 The separate local Flightdeck delivery is newer, but is not silently substituted
-for this repository. Windows files, tests and workflows remain authoritative and unchanged.
+for this repository. Windows behavior and tests remain authoritative; existing workflows are preserved.
+The subsequent Flightdeck branch imports the verified public local desktop version,
+retains all 71 original tests, and exports its pure modules automatically to Android.
+See ../FLIGHTDECK_NEXT.md for that audit and implementation step.
 
 `rfs_schema.py` defines eight types: ATC REQUEST, AIRBORNE, ARRIVAL BOARD,
 FLIGHT COMPLETED, ATC ACTIVE, ATC OFFLINE, FLIGHT PLAN and DISPATCH FORM.

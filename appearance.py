@@ -4,7 +4,13 @@ from pathlib import Path
 
 
 def apply_palette(app, dark: bool) -> None:
-    app.setStyle("Fusion")
+    # Replacing the native style repolishes every widget (including hidden
+    # dialogs). Install it once; a theme toggle only changes the palette.
+    if not app.property('_rfs_fusion_initialized'):
+        app.setStyle("Fusion")
+        app.setProperty('_rfs_fusion_initialized', True)
+    if app.property('_rfs_palette_mode') == ('dark' if dark else 'light'):
+        return
     p = QPalette()
     colors = {
         QPalette.ColorRole.Window: "#0B1220" if dark else "#F1F5F9",
@@ -24,6 +30,7 @@ def apply_palette(app, dark: bool) -> None:
         p.setColor(role, QColor(color))
     p.setColor(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Text, QColor("#7E8DA3"))
     app.setPalette(p)
+    app.setProperty('_rfs_palette_mode', 'dark' if dark else 'light')
 
 
 DARK_STYLESHEET = """
@@ -590,9 +597,33 @@ def get_stylesheet(dark: bool) -> str:
         "    QCheckBox::indicator:hover, QCheckBox::indicator:focus { border-color:#60A5FA; }\n"
         f"    QCheckBox::indicator:disabled {{ background:{border}; border-color:{border}; }}\n"
     )
+    result += modern_style(dark)
     _STYLESHEET_CACHE[dark] = result
     return result
 
 
 def extra_style(dark: bool) -> str:
     return ""
+
+
+def modern_style(dark: bool) -> str:
+    chevron = (Path(__file__).resolve().parent / 'assets' / 'chevron.svg').as_posix()
+    surface, text, muted, border, tinted = (
+        ('#121D2E', '#E6EDF7', '#A7B5C9', '#27364B', '#152B45') if dark
+        else ('#FFFFFF', '#0F172A', '#475569', '#D5DFEB', '#EFF6FF')
+    )
+    return f"""
+    QComboBox::drop-down {{ subcontrol-origin:padding; subcontrol-position:top right; width:26px; border:0; background:transparent; }}
+    QComboBox::down-arrow {{ image:url("{chevron}"); width:12px; height:12px; }}
+    QLabel#title {{ font-size:26px; font-weight:700; }}
+    QFrame#settingsPanel {{ background:{surface}; border:1px solid {border}; border-radius:10px; }}
+    QLabel#routeSummary {{ background:{tinted}; color:{text}; border:1px solid {border}; border-radius:8px; padding:12px; font-size:14px; font-weight:600; }}
+    QToolButton#presentationToggle {{ background:transparent; border:1px solid transparent; padding:6px; }}
+    QToolButton#presentationToggle:hover, QToolButton#presentationToggle:focus {{ background:{surface}; border-color:#60A5FA; }}
+    QPushButton[variant="quiet"] {{ background:transparent; color:{muted}; border-color:transparent; }}
+    QPushButton[variant="quiet"]:hover, QPushButton[variant="quiet"]:focus {{ color:{text}; border-color:{border}; }}
+    QGroupBox {{ border:0; border-top:1px solid {border}; border-radius:0; padding-top:16px; margin-top:18px; }}
+    QGroupBox::title {{ background:{surface}; border:0; border-radius:0; padding:2px 6px; color:{muted}; }}
+    QPlainTextEdit#discordPreview {{ border-color:{border}; font-size:14px; }}
+    QLabel#emptyState {{ color:{muted}; background:{tinted}; border:1px solid {border}; border-radius:8px; padding:18px; }}
+    """

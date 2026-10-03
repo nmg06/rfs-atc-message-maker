@@ -1,4 +1,4 @@
-# RFS ATC Message Maker — Android
+# RFS Flightdeck — Android
 
 Première application Android hors ligne, développée à côté de Windows dans
 `android/`. Le prototype `mobile/index.html` reste intact. État vérifié et
@@ -8,8 +8,8 @@ limites : [PARITY.md](PARITY.md). Audit et choix :
 ## Architecture
 
 Une Activity Android Java affiche une nouvelle interface mobile HTML/CSS/JS
-locale. Chaquopy 16.1.0 embarque CPython 3.11 et les moteurs Python Windows
-inchangés : génération, validation, pilotes, Finder, mapping et calcul carburant.
+locale. Chaquopy 16.1.0 embarque CPython 3.11 et les mêmes moteurs Python que Windows :
+génération, validation, pilotes, Finder, mapping et calcul carburant.
 Seuls les libellés Qt ont un adaptateur Android. Pas de React, Capacitor, npm
 en production, PySide6, serveur ou EXE Windows exécuté sur Android.
 
@@ -20,8 +20,14 @@ permission Internet ni permission générale de stockage. Le formulaire externe
 facultatif s'ouvre uniquement à la demande dans le navigateur du téléphone.
 
 Android 7.0 minimum (API 24), appareils **ARM64** et émulateurs **x86_64**.
-La première APK debug universelle contient les deux architectures, environ
+L'APK debug universelle contient les deux architectures, environ
 66 Mo. Prévoir environ 250 Mo libres pour l'installation et la base privée.
+
+Version Flightdeck `0.2.0-flightdeck`, identifiant `com.nmg06.rfsatc` conservé.
+Catalogue d'avions recherchable dans le vol, variante unique Finder préremplie
+dans Fuel, recherches mises en cache et boutons Voir plus/Voir moins.
+Dans le Finder, `10` signifie 10 heures ; les formats explicites restent acceptés.
+[Guide d'installation Windows/Android et état iPhone](../INSTALLATION.md).
 
 ## Construire
 

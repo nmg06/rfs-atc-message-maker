@@ -12,7 +12,7 @@ from app_icon import make_icon
 
 def main() -> int:
     app = QApplication(sys.argv)
-    app.setApplicationName('RFS ATC Message Maker')
+    app.setApplicationName('RFS Flightdeck')
     app.setWindowIcon(make_icon())
 
     def report_exception(exc_type, exc_value, exc_tb) -> None:
@@ -25,6 +25,11 @@ def main() -> int:
     window = RFSWindow()
     window.show()
     if '--smoke-test' in sys.argv:
+        import os
+        if os.name == 'nt' and os.environ.get('QT_QPA_PLATFORM') == 'offscreen':
+            from PySide6.QtGui import QFontDatabase, QFont
+            QFontDatabase.addApplicationFont(str(Path(os.environ['WINDIR'])/'Fonts/segoeui.ttf'))
+            app.setFont(QFont('Segoe UI', 9))
 
         def smoke():
             from storage import DATA_DIR
@@ -36,6 +41,11 @@ def main() -> int:
             from datetime import datetime, timezone
             app_folder = Path(sys.executable).parent if getattr(sys, 'frozen', False) else Path(__file__).parent
             database = app_folder / 'finder-data' / 'aviation.sqlite'
+            from route_map import land_path
+            window.store.state['flight'].update(departure_icao='LFPG', arrival_icao='KJFK')
+            window.render_preview()
+            if not window.route_map._route or land_path().isEmpty():
+                raise RuntimeError('Route map resources or airport coordinates missing')
             dialog = FinderDialog(window, database)
             instant, warnings = local_to_utc(datetime(2026, 3, 29, 2, 30), 'Europe/Paris')
             window.grab().save(str(DATA_DIR / 'smoke-main.png'))
@@ -48,7 +58,7 @@ def main() -> int:
             app.processEvents()
             fuel_dialog.grab().save(str(DATA_DIR / 'smoke-fuel.png'))
             found = search(database, Criteria(origin=['LFPG'], max_minutes=120), datetime.now(timezone.utc)) if database.is_file() else None
-            (DATA_DIR / 'smoke-result.json').write_text(json.dumps({'window': window.windowTitle(), 'finder': dialog.windowTitle(), 'dst_utc': instant.isoformat(), 'warnings': warnings, 'real_database_matches': found['matches'] if found else None, 'fuel_example_kg': calculate_fuel('airbus_a220_300', 5, 'EGLL')['total_block_fuel_kg_exact']}), encoding='utf-8')
+            (DATA_DIR / 'smoke-result.json').write_text(json.dumps({'window': window.windowTitle(), 'finder': dialog.windowTitle(), 'dst_utc': instant.isoformat(), 'warnings': warnings, 'real_database_matches': found['matches'] if found else None, 'fuel_example_kg': calculate_fuel('airbus_a220_300', 5, 'EGLL')['total_block_fuel_kg_exact'], 'map_airports':list(window.route_map._codes), 'map_route_samples':len(window.route_map._route), 'map_land_loaded':not land_path().isEmpty()}), encoding='utf-8')
             window.language_combo.setCurrentIndex(window.language_combo.findData('en'))
             app.processEvents()
             window.grab().save(str(DATA_DIR / 'smoke-main-en.png'))

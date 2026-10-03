@@ -3,6 +3,7 @@ from __future__ import annotations
 from i18n import tr, set_language, language
 from dataclasses import dataclass
 import re
+from emoji_tokens import emoji_count
 from rfs_schema import FLIGHT_FIELDS, FLIGHT_FIELDS_BY_TYPE, MESSAGE_FIELDS
 
 @dataclass(frozen=True)
@@ -80,67 +81,3 @@ def validate(message_type: str, flight: dict, data: dict, pilot_name: str) -> li
         if value and (not re.fullmatch('\\d+(?:\\+)?', value)):
             issues.append(Issue(key, tr('{v0} doit être un nombre saisi par vous.', v0=tr(FLIGHT_FIELDS[key].label) if key in FLIGHT_FIELDS else tr(MESSAGE_FIELDS[message_type][key].label))))
     return issues
-
-def emoji_count(text: str) -> int:
-    """Compte les emojis exactement comme Discord / MEE6.
-
-    Discord compte :
-    - Les emojis Unicode standard (plages 1F300-1FBFF, 2600-27BF, 2B00-2BFF, etc.)
-    - Les drapeaux (paires d'indicateurs régionaux 1F1E6-1F1FF) = 1 emoji par paire
-    - Les séquences ZWJ (plusieurs codepoints = 1 seul emoji visuel)
-    - Les symboles avec variation selector U+FE0F (ex. ↗️, ↘️, ➡️)
-    - Les flèches Unicode et symboles Miscellaneous (2194-21FF, 2300-23FF, 2600-26FF, 2700-27BF)
-    """
-    count = 0
-    index = 0
-    n = len(text)
-    while index < n:
-        code = ord(text[index])
-        # Regional indicator pair → single flag emoji
-        if 0x1F1E6 <= code <= 0x1F1FF:
-            count += 1
-            index += 2 if index + 1 < n and 0x1F1E6 <= ord(text[index + 1]) <= 0x1F1FF else 1
-            continue
-        # Core emoji ranges (covers emoticons, symbols, pictographs, transport, etc.)
-        # Important: arrows like → ↘ (U+2100-21FF) are only emojis on Discord when
-        # followed by variation selector U+FE0F — that case is handled below.
-        # U+2022 • (bullet) and most of U+2000-20FF are punctuation, NOT emojis.
-        is_base_emoji = (
-            0x1F300 <= code <= 0x1FBFF  # Misc symbols, emoticons, transport, pictographs
-            or 0x2600 <= code <= 0x26FF  # Misc symbols (☀☁⛄⛅⛈, etc.)
-            or 0x2700 <= code <= 0x27BF  # Dingbats (✈✉✊✋✌, etc.)
-            or 0x2300 <= code <= 0x23FF  # Misc Technical (⏰⏱⌚⌛, etc.)
-            or 0x2B00 <= code <= 0x2BFF  # Misc symbols and arrows (⬅➡⬆⬇, etc.)
-            or code in (
-                0x00A9, 0x00AE,  # © ®
-                0x203C, 0x2049,  # ‼ ⁉
-                0x25AA, 0x25AB, 0x25B6, 0x25C0,  # ▪▫▶◀
-                0x25FB, 0x25FC, 0x25FD, 0x25FE,  # ◻◼◽◾
-                0x3030, 0x303D,  # 〰 〽
-                0x3297, 0x3299,  # ㊗ ㊙
-            )
-        )
-        if is_base_emoji:
-            count += 1
-            index += 1
-            # Consume variation selector and ZWJ sequences
-            while index < n:
-                next_code = ord(text[index])
-                if next_code in (0xFE0F, 0xFE0E, 0x20E3):  # variation selectors, combining enclosing keycap
-                    index += 1
-                elif next_code == 0x200D and index + 1 < n:  # ZWJ: skip next emoji too
-                    index += 2
-                    # After ZWJ, skip any optional variation selector
-                    if index < n and ord(text[index]) in (0xFE0F, 0xFE0E):
-                        index += 1
-                else:
-                    break
-            continue
-        # Non-emoji: check if next char is variation selector FE0F (makes it an emoji)
-        if index + 1 < n and ord(text[index + 1]) == 0xFE0F:
-            # Preceded by variation selector = counts as emoji on Discord
-            count += 1
-            index += 2
-            continue
-        index += 1
-    return count

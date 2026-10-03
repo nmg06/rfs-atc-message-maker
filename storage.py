@@ -10,6 +10,8 @@ import os
 from pathlib import Path
 import shutil
 import sys
+import tempfile
+import time
 from typing import Any
 
 from rfs_schema import empty_flight, empty_per_type
@@ -96,14 +98,35 @@ def load_json(path: Path, default: Any) -> Any:
 
 
 def save_json(path: Path, value: Any) -> None:
+    temporary = None
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
-        temporary = path.with_name(path.name + ".tmp")
-        temporary.write_text(json.dumps(value, ensure_ascii=False, indent=2), encoding="utf-8")
-        temporary.replace(path)
+        payload = json.dumps(value, ensure_ascii=False, indent=2)
+        with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8', dir=path.parent,
+                                         prefix=path.name + '.', suffix='.tmp', delete=False) as stream:
+            temporary = Path(stream.name)
+            stream.write(payload)
+            stream.flush()
+            os.fsync(stream.fileno())
+        # Windows can briefly lock the destination during another replacement.
+        # Retry only access/sharing failures, then report a persistent disk error.
+        for attempt in range(6):
+            try:
+                temporary.replace(path)
+                break
+            except PermissionError as error:
+                if getattr(error, 'winerror', None) not in (5, 32, 33) or attempt == 5:
+                    raise
+                time.sleep(.02 * (attempt + 1))
     except OSError as error:
         LOGGER.error("Impossible de sauvegarder %s : %s", path, error)
         raise
+    finally:
+        if temporary is not None:
+            try:
+                temporary.unlink(missing_ok=True)
+            except OSError as error:
+                LOGGER.warning('Nettoyage du fichier temporaire impossible : %s', error)
 
 
 class Store:
@@ -139,22 +162,27 @@ class Store:
         save_json(HISTORY_FILE, self.history[:200])
 
     def add_history(self, entry: dict[str, Any]) -> bool:
-        index = duplicate_index(self.history, entry, self.state.get("compact_history", True))
+        history = deepcopy(self.history)
+        entry = deepcopy(entry)
+        index = duplicate_index(history, entry, self.state.get("compact_history", True))
         if index is not None:
-            previous = self.history.pop(index)
+            previous = history.pop(index)
             entry["copies"] = previous.get("copies", 1) + 1
-        self.history.insert(0, entry)
-        self.history = self.history[:200]
-        self.save_history()
+        history.insert(0, entry)
+        history = history[:200]
+        save_json(HISTORY_FILE, history)
+        self.history = history
         return index is not None
 
     def save_design(self, key: str, design: dict) -> None:
-        self.designs[key] = design
-        save_json(DESIGNS_FILE, self.designs)
+        designs = {**self.designs, key: deepcopy(design)}
+        save_json(DESIGNS_FILE, designs)
+        self.designs = designs
 
     def save_preset(self, name: str, preset: dict[str, Any]) -> None:
-        self.presets[name] = preset
-        save_json(PRESETS_FILE, self.presets)
+        presets = {**self.presets, name: deepcopy(preset)}
+        save_json(PRESETS_FILE, presets)
+        self.presets = presets
 
     def remember(self, category: str, value: str) -> None:
         value = value.strip()

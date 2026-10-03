@@ -8,7 +8,7 @@ a = Analysis(
     pathex=[],
     binaries=[],
     datas=collect_data_files('tzdata') + collect_data_files('PySide6', includes=['translations/qtbase_fr.qm', 'translations/qtbase_en.qm']) + [('fuel/data/aircraft_fuel_data.json', 'fuel/data'),
-                                      ('fuel/data/airport_alternates.json', 'fuel/data'), ('assets/check.svg', 'assets')],
+                                      ('fuel/data/airport_alternates.json', 'fuel/data'), ('assets/check.svg', 'assets'), ('assets/chevron.svg', 'assets'), ('assets/world_land.json', 'assets'), ('assets/world_countries.json', 'assets'), ('assets/WORLD_MAP_LICENSE.md', 'assets')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},

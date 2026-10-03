@@ -8,12 +8,12 @@ import json
 from pathlib import Path
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QFont, QKeySequence, QShortcut
-from PySide6.QtWidgets import QAbstractItemView, QApplication, QCheckBox, QComboBox, QDialog, QDialogButtonBox, QFormLayout, QFrame, QGroupBox, QHBoxLayout, QHeaderView, QInputDialog, QLabel, QLineEdit, QMainWindow, QMessageBox, QMenu, QFileDialog, QPlainTextEdit, QPushButton, QScrollArea, QSplitter, QTableWidget, QTableWidgetItem, QTextEdit, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QAbstractItemView, QApplication, QCheckBox, QComboBox, QDialog, QDialogButtonBox, QFormLayout, QFrame, QGroupBox, QHBoxLayout, QHeaderView, QInputDialog, QLabel, QLineEdit, QMainWindow, QMessageBox, QMenu, QFileDialog, QPlainTextEdit, QPushButton, QScrollArea, QSplitter, QTableWidget, QTableWidgetItem, QTextEdit, QToolButton, QGridLayout, QVBoxLayout, QWidget
 from rfs_schema import Field, FLAGS, FLIGHT_FIELDS, FLIGHT_FIELDS_BY_TYPE, FLIGHT_TYPES, MESSAGE_FIELDS, MESSAGE_TYPES, empty_flight, empty_per_type
 from storage import LOGGER, Store
 from templates import render
 from validation import Issue, REQUIRED_FLIGHT, REQUIRED_MESSAGE, emoji_count, validate
-from message_builder import compose, validate_group, DEFAULT_PRESENTATION, additional_pilots, BUILTIN_DESIGNS, EMOJI_STYLES, preview_text, clipboard_text
+from message_builder import compose, validate_group, DEFAULT_PRESENTATION, additional_pilots, BUILTIN_DESIGNS, EMOJI_STYLES, preview_text, clipboard_text, validate_design
 from appearance import apply_palette, extra_style, get_stylesheet, DARK_STYLESHEET as DARK_STYLE, LIGHT_STYLESHEET as LIGHT_STYLE
 from country_picker import CountryPicker
 from dialogs import PilotsDialog, DesignDialog, WelcomeDialog, JokeDialog, GuidedDesignDialog
@@ -27,6 +27,11 @@ class RFSWindow(QMainWindow):
         super().__init__()
         install_wheel_guard()
         self.store = Store()
+        # Install the style before constructing hundreds of child controls.
+        from flightdeck import deck_style
+        self._styled_dark = self.store.state.get('theme', 'Sombre') == 'Sombre'
+        apply_palette(QApplication.instance(), self._styled_dark)
+        self.setStyleSheet(get_stylesheet(self._styled_dark) + deck_style(self._styled_dark))
         set_language(self.store.state["language"])
         self.validation_problems = []
         self.can_copy = False
@@ -34,10 +39,11 @@ class RFSWindow(QMainWindow):
         self.flight_widgets: dict[str, QWidget] = {}
         self.type_widgets: dict[str, QWidget] = {}
         self.render_error = ''
-        self.setWindowTitle(tr('RFS ATC Message Maker'))
+        self.setWindowTitle('RFS Flightdeck')
         self.setWindowIcon(make_icon())
         self.resize(1290, 880)
         self.setMinimumSize(1010, 690)
+        self._presentation_expanded = False
         self.preview_timer = QTimer(self)
         self.preview_timer.setSingleShot(True)
         self.preview_timer.setInterval(250)
@@ -56,6 +62,8 @@ class RFSWindow(QMainWindow):
         self._apply_theme()
         self.render_preview()
         QShortcut(QKeySequence('Ctrl+Return'), self, activated=self.generate_message)
+        QShortcut(QKeySequence('Ctrl+Shift+C'), self, activated=self.copy_message)
+        QShortcut(QKeySequence('Ctrl+S'), self, activated=self.save_current_flight)
         LOGGER.info('RFS ATC Message Maker démarré')
 
     def _card(self) -> tuple[QFrame, QVBoxLayout]:
@@ -72,12 +80,10 @@ class RFSWindow(QMainWindow):
         outer.setSpacing(16)
         header = QHBoxLayout()
         titles = QVBoxLayout()
-        titles.addWidget(QLabel(tr('RFS ATC MESSAGE MAKER'), objectName='title'))
-        titles.addWidget(QLabel(tr('Discord • Real Flight Simulator • un vol, plusieurs messages'), objectName='muted'))
+        titles.addWidget(QLabel('RFS ATC', objectName='title'))
+        titles.addWidget(QLabel('MESSAGE MAKER  /  REAL FLIGHT SIMULATOR', objectName='muted'))
         header.addLayout(titles)
         header.addStretch()
-        local = QLabel(tr('Sauvegarde sur ce PC'), objectName='muted')
-        local.setToolTip(tr("Vos données restent sur ce PC. Aucun compte ou accès Internet n'est nécessaire."))
         help_button = QPushButton(tr('Aide'))
         help_menu = QMenu(help_button)
         self.help_menu = help_menu
@@ -87,10 +93,8 @@ class RFSWindow(QMainWindow):
         header.addWidget(help_button)
         self.finder_button = QPushButton(tr('Flight Finder'))
         self.finder_button.clicked.connect(self.open_finder)
-        header.addWidget(self.finder_button)
         self.fuel_button = QPushButton(tr('Carburant'))
         self.fuel_button.clicked.connect(self.open_fuel)
-        header.addWidget(self.fuel_button)
         self.language_combo = QComboBox()
         self.language_combo.addItem('Français', 'fr')
         self.language_combo.addItem('English', 'en')
@@ -117,24 +121,35 @@ class RFSWindow(QMainWindow):
         self.pilot_name.currentTextChanged.connect(self._pilot_changed)
         quick.addWidget(self.pilot_name)
         quick.addStretch()
+        quick.addWidget(self.finder_button)
+        quick.addWidget(self.fuel_button)
         outer.addLayout(quick)
-        style_row = QHBoxLayout()
-        style_row.addWidget(QLabel(tr('Design')))
+        presentation_bar = QHBoxLayout()
+        self.presentation_toggle = QToolButton()
+        self.presentation_toggle.setObjectName('presentationToggle')
+        self.presentation_toggle.setText(tr('Présentation du message'))
+        self.presentation_toggle.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+        self.presentation_toggle.setCheckable(True)
+        self.presentation_toggle.setChecked(self._presentation_expanded)
+        self.presentation_toggle.setArrowType(Qt.ArrowType.DownArrow if self._presentation_expanded else Qt.ArrowType.RightArrow)
+        presentation_bar.addWidget(self.presentation_toggle)
+        self.presentation_summary = QLabel(objectName='muted')
+        self.presentation_summary.setWordWrap(True)
+        presentation_bar.addWidget(self.presentation_summary, 1)
+        self.presentation_panel = QFrame(objectName='settingsPanel')
+        settings = QGridLayout(self.presentation_panel)
+        settings.setContentsMargins(14, 12, 14, 12)
+        settings.setHorizontalSpacing(16)
+        settings.setVerticalSpacing(8)
         self.design_combo = ChoiceBox()
         self.design_combo.setMinimumWidth(165)
-        style_row.addWidget(self.design_combo)
-        style_row.addWidget(QLabel(tr('Longueur')))
         self.length_combo = ChoiceBox()
         self.length_combo.addItems(['Court', 'Moyen', 'Détaillé'])
         self.length_combo.setToolTip(tr('Détaillé conserve les passagers et les informations facultatives. Ces détails sont rarement utiles à l’ATC ; privilégiez les informations nécessaires au vol.'))
-        style_row.addWidget(self.length_combo)
-        style_row.addWidget(QLabel(tr('Emojis')))
         self.emoji_combo = ChoiceBox()
         self.emoji_combo.addItems(EMOJI_STYLES)
-        style_row.addWidget(self.emoji_combo)
         self.aligned = QCheckBox(tr('Encadrés alignés'))
         self.aligned.setToolTip(tr("Discord utilisera une police monospace. Les marques techniques ne sont pas affichées dans l'aperçu ; elles disparaissent au rendu Discord."))
-        style_row.addWidget(self.aligned)
         designs = QPushButton(tr('Personnaliser…'))
         menu = QMenu(designs)
         menu.addAction(tr('Créer un design'), lambda: self.edit_design(new=True))
@@ -143,16 +158,25 @@ class RFSWindow(QMainWindow):
         menu.addAction(tr('Importer un design JSON'), self.import_design)
         menu.addAction(tr('Exporter le design sélectionné'), self.export_design)
         designs.setMenu(menu)
-        style_row.addWidget(designs)
-        style_row.addStretch()
         self.pilots_button = QPushButton(tr('Pilotes du vol (1)'))
         self.pilots_button.clicked.connect(self.edit_pilots)
-        style_row.addWidget(self.pilots_button)
-        outer.addLayout(style_row)
+        for column, (label, widget) in enumerate(((tr('Design'), self.design_combo), (tr('Longueur'), self.length_combo), (tr('Emojis'), self.emoji_combo))):
+            caption = QLabel(label, objectName='muted')
+            caption.setBuddy(widget)
+            settings.addWidget(caption, 0, column)
+            settings.addWidget(widget, 1, column)
+            settings.setColumnStretch(column, 1)
+        settings.addWidget(self.aligned, 0, 3)
+        settings.addWidget(designs, 1, 3)
+        presentation_bar.addWidget(self.pilots_button)
+        outer.addLayout(presentation_bar)
+        outer.addWidget(self.presentation_panel)
+        self.presentation_panel.setVisible(self._presentation_expanded)
+        self.presentation_toggle.toggled.connect(self._toggle_presentation)
         for combo in (self.design_combo, self.length_combo, self.emoji_combo):
             combo.currentIndexChanged.connect(self._presentation_changed)
         self.aligned.toggled.connect(self._presentation_changed)
-        split = QSplitter(Qt.Orientation.Horizontal)
+        split = self.main_split = QSplitter(Qt.Orientation.Horizontal)
         split.setHandleWidth(16)
         split.setChildrenCollapsible(False)
         left_card, left = self._card()
@@ -161,7 +185,12 @@ class RFSWindow(QMainWindow):
         split.addWidget(right_card)
         split.setStretchFactor(0, 1)
         split.setStretchFactor(1, 1)
+        split.setSizes([600, 580])
         outer.addWidget(split, 1)
+        left.addWidget(QLabel(tr('01  Préparer le vol'), objectName='section'))
+        self.flight_summary = QLabel(objectName='routeSummary')
+        self.flight_summary.setWordWrap(True)
+        left.addWidget(self.flight_summary)
         form_scroll = self.form_scroll = QScrollArea()
         smooth_scroll(form_scroll)
         form_scroll.setWidgetResizable(True)
@@ -184,10 +213,7 @@ class RFSWindow(QMainWindow):
         save_flight.clicked.connect(self.save_current_flight)
         flight_select.addWidget(new_flight)
         flight_select.addWidget(save_flight)
-        flight_box.addLayout(flight_select)
-        self.flight_summary = QLabel(tr('Aucun vol renseigné'), objectName='muted')
-        self.flight_summary.setWordWrap(True)
-        flight_box.addWidget(self.flight_summary)
+        left.insertLayout(2, flight_select)
         self.flight_form = QFormLayout()
         self.flight_form.setSpacing(13)
         flight_box.setContentsMargins(8, 12, 8, 12)
@@ -206,40 +232,44 @@ class RFSWindow(QMainWindow):
         left.addWidget(form_scroll, 1)
         form_actions = QHBoxLayout()
         generate = QPushButton(tr('Générer'))
+        generate.setToolTip(tr('Recrée le message depuis le formulaire et remplace les modifications manuelles. Ctrl+Entrée'))
         generate.clicked.connect(self.generate_message)
         clear = self.clear_button = QPushButton(tr('Effacer le vol'))
         clear.setToolTip(tr('Vide le vol et les messages courants. Les pilotes mémorisés, préférences et vols sauvegardés sont conservés.'))
+        clear.setProperty('variant', 'quiet')
         clear.clicked.connect(self.clear_current_message)
         form_actions.addWidget(generate)
         form_actions.addWidget(clear)
         form_actions.addStretch()
         left.addLayout(form_actions)
-        preset_actions = QHBoxLayout()
-        save_preset = QPushButton(tr('Sauver un favori'))
-        save_preset.clicked.connect(self.save_preset)
-        load_preset = QPushButton(tr('Charger un favori'))
-        load_preset.clicked.connect(self.load_preset)
-        history = QPushButton(tr('Historique'))
-        history.clicked.connect(self.open_history)
-        preset_actions.addWidget(save_preset)
-        preset_actions.addWidget(load_preset)
-        preset_actions.addStretch()
-        preset_actions.addWidget(history)
-        left.addLayout(preset_actions)
+        library = QPushButton(tr('Favoris et historique'))
+        library.setToolTip(tr('Un favori conserve un modèle de vol ; l’historique retrouve les messages copiés.'))
+        library_menu = QMenu(library)
+        library_menu.addAction(tr('Sauver un favori'), self.save_preset)
+        library_menu.addAction(tr('Charger un favori'), self.load_preset)
+        library_menu.addSeparator()
+        library_menu.addAction(tr('Historique'), self.open_history)
+        library.setMenu(library_menu)
+        form_actions.addWidget(library)
         result_header = QHBoxLayout()
-        result_header.addWidget(QLabel(tr('Aperçu Discord'), objectName='section'))
+        result_header.addWidget(QLabel(tr('02  Aperçu Discord'), objectName='section'))
         result_header.addStretch()
         self.emoji_label = QLabel(tr('0 / 6 emojis'), objectName='muted')
-        result_header.addWidget(self.emoji_label)
+        counters = QHBoxLayout()
+        counters.addWidget(self.emoji_label)
         self.character_label = QLabel('', objectName='muted')
-        result_header.addWidget(self.character_label)
+        counters.addStretch()
+        counters.addWidget(self.character_label)
         right.addLayout(result_header)
+        right.addLayout(counters)
         self.preview = QPlainTextEdit(objectName="discordPreview")
         self.preview.setLineWrapMode(QPlainTextEdit.LineWrapMode.WidgetWidth)
         self.preview.setPlaceholderText(tr('Le message se construit pendant la saisie…'))
         font = QFont('Consolas', 11)
         font.setStyleHint(QFont.StyleHint.Monospace)
         self.preview.setFont(font)
+        self.preview.setAccessibleName(tr('Aperçu Discord'))
+        self.preview.document().setDocumentMargin(16)
         self.preview.textChanged.connect(self._preview_edited)
         right.addWidget(self.preview, 1)
         self.issues = QLabel('', objectName='danger')
@@ -250,11 +280,18 @@ class RFSWindow(QMainWindow):
         right.addWidget(self.status)
         copy_row = QHBoxLayout()
         self.copy_button = QPushButton(tr('Copier le message'), objectName='copy')
+        self.copy_button.setToolTip(tr('Copier le message — Ctrl+Maj+C'))
         self.copy_button.clicked.connect(self.copy_message)
         copy_row.addWidget(self.copy_button)
         self.copy_button.setMinimumHeight(44)
         right.addLayout(copy_row)
-        self.setCentralWidget(root)
+        from flightdeck import install_shell
+        install_shell(self, root)
+
+    def _toggle_presentation(self, expanded):
+        self._presentation_expanded = expanded
+        self.presentation_panel.setVisible(expanded)
+        self.presentation_toggle.setArrowType(Qt.ArrowType.DownArrow if expanded else Qt.ArrowType.RightArrow)
 
     def _load_top_state(self) -> None:
         self._building = True
@@ -277,7 +314,19 @@ class RFSWindow(QMainWindow):
         self.saved_flights.blockSignals(False)
 
     def _create_widget(self, key: str, field: Field, value: object, scope: str) -> QWidget:
-        if field.kind == 'flag':
+        if key == 'aircraft' and scope == 'flight':
+            from aircraft_picker import AircraftPicker
+            from fuel.calculator import load_json
+            widget = AircraftPicker(allow_custom=True)
+            widget.addItem(tr('Choisir un avion / variante…'), None)
+            for record in load_json('aircraft_fuel_data.json')['aircraft']:
+                widget.addItem(record['name'],record['id'])
+            current = str(value or '')
+            if current and widget.findText(current) < 0:
+                widget.addItem(current, None) # Keep historical/manual display until an explicit choice.
+            widget.setCurrentIndex(max(0,widget.findText(current)))
+            widget.currentTextChanged.connect(lambda text: self._field_changed('flight','aircraft',text))
+        elif field.kind == 'flag':
             widget = CountryPicker(str(value or ''))
             widget.flagChanged.connect(lambda text, name=key, where=scope: self._field_changed(where, name, text))
         elif field.kind == 'bool':
@@ -352,6 +401,10 @@ class RFSWindow(QMainWindow):
                     label.setWordWrap(True)
                     label.setMinimumWidth(145)
                     label.setMaximumWidth(175)
+                    field_item = form.itemAt(row, QFormLayout.ItemRole.FieldRole)
+                    if field_item and field_item.widget():
+                        label.setBuddy(field_item.widget())
+                        field_item.widget().setAccessibleName(label.text())
         self._building = False
         self._apply_conditional_visibility()
         self._update_flight_summary()
@@ -381,6 +434,13 @@ class RFSWindow(QMainWindow):
         self.reset_copy_feedback()
         if scope == 'flight':
             self.store.state['flight'][key] = value
+            if key == 'aircraft':
+                from fuel.calculator import find_aircraft, load_json
+                record = find_aircraft(value,load_json('aircraft_fuel_data.json')['aircraft'])
+                self.store.state['flight'].pop('fuel_calculation',None)
+                self.store.state['flight'].pop('fuel_aircraft_id',None)
+                if record:
+                    self.store.state['flight']['fuel_aircraft_id'] = record['id']
             provenance = self.store.state['flight'].get('selected_flight', {}).get('fields', {})
             if key in provenance:
                 provenance[key] = 'USER_INPUT'
@@ -425,6 +485,7 @@ class RFSWindow(QMainWindow):
             self.flight_summary.setText(tr('Renseignez un vol : ses données suivront chaque type de message.'))
 
     def render_preview(self) -> None:
+        self.presentation_summary.setText(' / '.join(combo.itemText(combo.currentIndex()) for combo in (self.design_combo, self.length_combo, self.emoji_combo)))
         message_type = self.message_type.currentText()
         if not message_type:
             return
@@ -487,6 +548,8 @@ class RFSWindow(QMainWindow):
         self.issues.style().unpolish(self.issues)
         self.issues.style().polish(self.issues)
         self.validation_problems = problems
+        from flightdeck import refresh
+        refresh(self)
         self.can_copy = not problems and bool(self.preview.toPlainText().strip())
         self.copy_button.setEnabled(True)
         for form, widgets in ((self.flight_form, self.flight_widgets), (self.message_form, self.type_widgets)):
@@ -494,7 +557,7 @@ class RFSWindow(QMainWindow):
                 errors = [p.text for p in problems if p.field == key]
                 is_invalid = bool(errors)
                 widget.setAccessibleDescription(' • '.join(errors))
-                if widget.property('invalid') != is_invalid:
+                if bool(widget.property('invalid')) != is_invalid:
                     widget.setProperty('invalid', is_invalid)
                     widget.style().unpolish(widget)
                     widget.style().polish(widget)
@@ -520,6 +583,8 @@ class RFSWindow(QMainWindow):
             self.render_preview()
         self._refresh_validation()
         if not self.can_copy:
+            from flightdeck import show_page
+            show_page(self, 1)
             self.issues.setStyleSheet('color: #ef4444; font-weight: 700;')
             QTimer.singleShot(650, self.issues, lambda: self.issues.setStyleSheet(''))
             for issue in self.validation_problems:
@@ -558,12 +623,14 @@ class RFSWindow(QMainWindow):
         self.store.remember('controllers', str(data.get('controller', '')))
         self.store.remember('servers', str(data.get('server', '')))
 
-    def save_state(self) -> None:
+    def save_state(self) -> bool:
         try:
             self.store.save_state()
+            return True
         except Exception:
             LOGGER.exception('Autosauvegarde impossible')
             self.status.setText(tr('Autosauvegarde impossible. La saisie reste affichée.'))
+            return False
 
     def _flight_selected(self, index: int) -> None:
         if self._building:
@@ -581,8 +648,9 @@ class RFSWindow(QMainWindow):
             self.store.state['per_type'][kind] = {**defaults[kind], **deepcopy(item.get('per_type', {}).get(kind, {}))}
         self.store.state['preview_edits'] = {}
         self._rebuild_forms()
-        self.save_state()
-        self.status.setText(tr('Vol chargé : {v0}.', v0=item.get('label', 'Vol')))
+        saved = self.save_state()
+        if saved:
+            self.status.setText(tr('Vol chargé : {v0}.', v0=item.get('label', 'Vol')))
 
     def new_flight(self) -> None:
         self.store.state['current_flight_id'] = ''
@@ -593,8 +661,9 @@ class RFSWindow(QMainWindow):
         self.store.state['preview_edits'] = {}
         self._refresh_saved_flights()
         self._rebuild_forms()
-        self.save_state()
-        self.status.setText(tr('Nouveau vol. Les anciens vols enregistrés restent disponibles.'))
+        saved = self.save_state()
+        if saved:
+            self.status.setText(tr('Nouveau vol. Les anciens vols enregistrés restent disponibles.'))
 
     def open_feedback_form(self):
         from report_dialog import open_feedback_form
@@ -605,7 +674,7 @@ class RFSWindow(QMainWindow):
         from report_dialog import ReportDialog
         ReportDialog(self).exec()
 
-    def open_finder(self):
+    def open_finder(self, countries=None):
         try:
             from finder.ui import FinderDialog
             from storage import DATA_DIR
@@ -616,11 +685,18 @@ class RFSWindow(QMainWindow):
             elif saved_path and Path(saved_path).exists():
                 path = Path(saved_path)
             else:
-                path = local_db
+                from route_map import default_database
+                path = default_database() or local_db
             dialog = FinderDialog(self, path, self.store.state['language'])
+            if isinstance(countries, dict):
+                for key in ('origin_country', 'destination_country'):
+                    dialog.fields[key].setText(countries.get(key) or '')
+                dialog.advanced_toggle.setChecked(True)
+                QTimer.singleShot(0, dialog.run_search)
             dialog.selected.connect(self.use_found_flight)
             dialog.exec()
             self.store.state['finder_database'] = str(dialog.path)
+            self.route_map.set_database_path(dialog.path)
             self.save_state()
         except Exception as error:
             LOGGER.exception('Flight Finder indisponible')
@@ -634,8 +710,17 @@ class RFSWindow(QMainWindow):
         self._refresh_saved_flights()
         self._rebuild_forms()
         self.render_preview()
-        self.save_state()
-        self.status.setText(tr('Vol Finder chargé. Vérifiez les pistes, portes, carburant et autres pilotes conservés. Distance = référence orthodromique ; durée = typique en vol.'))
+        from flightdeck import show_page
+        show_page(self, 0)
+        saved = self.save_state()
+        if saved:
+            from finder.i18n import tr as finder_tr
+            from finder.provenance import duration_provenance
+            origin = duration_provenance(result)
+            kind = ('duration_observed' if origin == 'AGGREGATED_COMPLETE_TRACKS' else
+                    'duration_estimated' if origin == 'ESTIMATED_DISTANCE_HEURISTIC' else 'duration_unverified')
+            self.status.setText(tr('Vol Finder chargé. Vérifiez les pistes, portes, carburant et autres pilotes conservés. Distance = référence orthodromique. {duration}.',
+                                   duration=finder_tr(kind, self.store.state['language'])))
 
     def open_fuel(self):
         try:
@@ -659,8 +744,9 @@ class RFSWindow(QMainWindow):
         self.store.state['preview_edits'] = {}
         self._rebuild_forms()
         self.render_preview()
-        self.save_state()
-        self.status.setText(tr('Carburant RFS appliqué : ') + result['display']['total_block_fuel'] + tr(' — estimation pour simulation uniquement, jamais pour un vol réel.'))
+        saved = self.save_state()
+        if saved:
+            self.status.setText(tr('Carburant RFS appliqué : ') + result['display']['total_block_fuel'] + tr(' — estimation pour simulation uniquement, jamais pour un vol réel.'))
 
     def save_current_flight(self) -> None:
         flight = deepcopy(self.store.state['flight'])
@@ -669,6 +755,8 @@ class RFSWindow(QMainWindow):
         if not ok or not name.strip():
             return
         flight_id = self.store.state.get('current_flight_id') or uuid.uuid4().hex
+        previous_saved = deepcopy(self.store.state['saved_flights'])
+        previous_id = self.store.state.get('current_flight_id', '')
         item = {'id': flight_id, 'label': name.strip(), 'flight': flight, 'per_type': {kind: deepcopy(self.store.state['per_type'][kind]) for kind in FLIGHT_TYPES}}
         saved = self.store.state['saved_flights']
         for index, previous in enumerate(saved):
@@ -679,7 +767,11 @@ class RFSWindow(QMainWindow):
             saved.append(item)
         self.store.state['current_flight_id'] = flight_id
         self._remember_frequent_values({})
-        self.save_state()
+        if not self.save_state():
+            self.store.state['saved_flights'] = previous_saved
+            self.store.state['current_flight_id'] = previous_id
+            self._refresh_saved_flights()
+            return
         self._refresh_saved_flights()
         self.status.setText(tr('Vol enregistré et disponible pour tous les messages du vol.'))
 
@@ -695,7 +787,8 @@ class RFSWindow(QMainWindow):
         self._rebuild_forms()
         self.render_preview()
         self.reset_copy_feedback()
-        self.save_state()
+        if not self.save_state():
+            return
         self.clear_button.setText(tr('✓ Effacé'))
         QTimer.singleShot(2200, self.clear_button, lambda: self.clear_button.setText(tr('Effacer le vol')))
         self.status.setText(tr('Vol courant effacé. Pilotes mémorisés et vols enregistrés conservés.'))
@@ -738,8 +831,8 @@ class RFSWindow(QMainWindow):
         self.message_type.setCurrentText(message_type)
         self._refresh_saved_flights()
         self._rebuild_forms()
-        self.save_state()
-        self.status.setText(tr('Preset « {v0} » chargé.', v0=name))
+        if self.save_state():
+            self.status.setText(tr('Preset « {v0} » chargé.', v0=name))
 
     def open_history(self) -> None:
         dialog = QDialog(self)
@@ -798,8 +891,8 @@ class RFSWindow(QMainWindow):
             self._rebuild_forms()
             self.preview.setPlainText(item.get('message', ''))
             self.preview_timer.stop()
-            self.save_state()
-            self.status.setText(tr('Message dupliqué. Ses champs sont modifiables.'))
+            if self.save_state():
+                self.status.setText(tr('Message dupliqué. Ses champs sont modifiables.'))
             dialog.accept()
 
         def copy_selected() -> None:
@@ -819,20 +912,31 @@ class RFSWindow(QMainWindow):
     def toggle_theme(self) -> None:
         self.store.state['theme'] = 'Clair' if self.store.state.get('theme') == 'Sombre' else 'Sombre'
         self._apply_theme()
-        self.save_state()
+        # Let the new palette paint before a possibly slow OneDrive disk write.
+        self.save_timer.start(250)
 
     def _apply_theme(self) -> None:
         dark = self.store.state.get('theme', 'Sombre') == 'Sombre'
-        apply_palette(QApplication.instance(), dark)
-        self.setStyleSheet(get_stylesheet(dark))
-        self.theme_button.setText(tr('☀ Mode clair') if dark else tr('☾ Mode sombre'))
+        from flightdeck import deck_style, tx
+        self.setUpdatesEnabled(False)
+        try:
+            apply_palette(QApplication.instance(), dark)
+            if getattr(self, '_styled_dark', None) != dark:
+                self.setStyleSheet(get_stylesheet(dark) + deck_style(dark))
+                self._styled_dark = dark
+            self.route_map.set_dark(dark)
+            self.theme_button.setText(tx('Clair', 'Light') if dark else tx('Sombre', 'Dark'))
+        finally:
+            self.setUpdatesEnabled(True)
 
     def closeEvent(self, event) -> None:
         self.preview_timer.stop()
         self.save_timer.stop()
         self.copy_feedback_timer.stop()
-        self.save_state()
-        event.accept()
+        if self.save_state():
+            event.accept()
+        else:
+            event.ignore()
 
     def reset_copy_feedback(self):
         self.copy_feedback_timer.stop()
@@ -853,7 +957,9 @@ class RFSWindow(QMainWindow):
         self._load_top_state()
         self._rebuild_forms()
         dark = self.store.state.get('theme', 'Sombre') == 'Sombre'
-        self.theme_button.setText(tr('☀ Mode clair') if dark else tr('☾ Mode sombre'))
+        self.route_map.set_dark(dark)
+        from flightdeck import tx
+        self.theme_button.setText(tx('Clair', 'Light') if dark else tx('Sombre', 'Dark'))
         self.render_preview()
         self.save_state()
         old.deleteLater()
@@ -962,10 +1068,9 @@ class RFSWindow(QMainWindow):
             if Path(path).stat().st_size > 100000:
                 raise ValueError(tr('Fichier trop volumineux'))
             value = json.loads(Path(path).read_text(encoding='utf-8-sig'))
-            if not isinstance(value, dict) or not isinstance(value.get('name'), str) or (not isinstance(value.get('template'), str)):
-                raise ValueError(tr('Le fichier doit contenir un nom et un modèle texte'))
+            design = validate_design(value)
             key = uuid.uuid4().hex
-            self.store.save_design(key, {k: v for k, v in value.items() if k in ('name', 'template', 'guided', 'base_design', 'heading', 'footer')})
+            self.store.save_design(key, design)
             self.store.state['presentation']['custom_id'] = key
             self._load_presentation()
             self._presentation_changed()

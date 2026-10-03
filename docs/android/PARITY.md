@@ -1,6 +1,9 @@
 # Windows / Android — parité vérifiée
 
-Référence : GitHub main `8747e0e5b4985eb6ddd540919ca659dca0b32622`.
+Référence initiale : GitHub main `8747e0e5b4985eb6ddd540919ca659dca0b32622`.
+La branche Flightdeck ajoute la version desktop locale vérifiée (103 tests
+conservant les 71 tests initiaux) et ses améliorations, avec les mêmes moteurs
+purs exportés automatiquement dans Android. Les formules Fuel restent identiques.
 Vérifications du 3 octobre 2026. `OK` = comportement implémenté et testé ;
 `partiel` = limite connue ou validation Android restante ; `non porté` = absent.
 L'interface téléphone est nouvelle ; les moteurs Windows sont réutilisés sans
@@ -36,15 +39,18 @@ modification et le prototype mobile est conservé.
 | Sans compte/API/CDN/télémétrie | OK | OK | Ressources locales, sockets interdits dans tests, aucune permission Internet déclarée |
 | APK debug construite | N/A | OK | assembleDebug + assembleDebugAndroidTest réussis localement |
 | Installation / démarrage / mode avion / fermeture processus / copie native | N/A | OK | APK installée API 35, tests natifs, force-stop/relance et UI réelle vérifiés |
-| Carte Flightdeck de la livraison locale séparée | hors GitHub main | non porté | Code non substitué silencieusement à la référence GitHub |
+| Catalogue avion recherchable dans le vol / préremplissage Fuel | OK | OK | 63 variantes ; variante Finder unique reprise ; choix requis si ambigu |
+| Finder numérique en heures / pages en cache / Voir moins | OK | OK | Parseur UI dédié ; pas de requête répétée ; résultats conservés |
+| Carte Flightdeck, frontières, sélection pays / zoom | OK | non porté | Desktop natif Qt, tests FR→RO et ressources incluses |
+| Satellite / vents par altitude facultatifs | OK avec Internet | non porté | Deux fournisseurs vérifiés ; Android conserve zéro permission Internet |
 
 ## Résultats enregistrés
 
-- Windows : 71 tests de référence réussis, environnement complet Qt + ETL.
-- Android Python : 14 tests réussis (dont 1 344 combinaisons de messages), import
+- Windows : 112 tests réussis, dont les 71 initiaux et 103 tests Flightdeck, environnement Qt + ETL.
+- Android Python : 15 tests réussis (dont 1 344 combinaisons de messages), import
   des objets imbriqués et sources sans remise à zéro Finder compris.
 - UI Playwright, 390×844 : navigation, champs, validation, dernier caractère copié,
-  Finder 100→200/transfert, Fuel A220, rechargement, FR→EN réussis, zéro erreur JS.
+  Finder 100→200→100→200/transfert, catalogue vol→Fuel A220, rechargement, FR→EN ; zéro erreur JS.
 - Build : `android/gradlew.bat -p android assembleDebug assembleDebugAndroidTest`,
   `BUILD SUCCESSFUL`, APK debug produite. Voir README pour les prérequis.
 - Téléphone physique : aucun connecté pendant ce travail. Les contrôles moteur/
@@ -59,6 +65,8 @@ modification et le prototype mobile est conservé.
 - Vérification de l'APK elle-même : ressources UI présentes, base embarquée
   décompressable à 94 892 032 octets et SHA-256 vérifié, aucune permission.
   `scripts/verify_android_apk.py` est exécuté avant mise à disposition de l'artefact.
-- Les contrôles Windows GitHub (71 tests, dépendances, analyse, build EXE) passent
-  sur `ba6af47` ; les workflows Windows sont inchangés. Trois commentaires ciblés
-  documentent les paramètres SQL déjà liés, sans modifier la logique Finder.
+- Les contrôles Windows GitHub initiaux (71 tests, dépendances, analyse, build EXE)
+  et Android installée passent sur `9013687` ; workflows Windows existants conservés.
+  La recherche Flightdeck optimisée est comparée à la version précédente sur la
+  vraie base : mêmes lignes, scores, avertissements et pages. Mesures :
+  [finder-performance.json](../finder-performance.json).

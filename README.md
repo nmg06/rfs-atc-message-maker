@@ -1,7 +1,14 @@
-# RFS ATC Message Maker
+# RFS Flightdeck
 
-Application Windows personnelle pour préparer des messages Discord de Real
-Flight Simulator. Les huit modèles fonctionnent sans compte, API ou Internet.
+Ancien nom : RFS ATC Message Maker. Messages Discord, Flight Finder local,
+RFS Fuel Helper et aperçu cartographique pour Real Flight Simulator.
+Les fonctions principales Windows et Android fonctionnent sans compte ni Internet.
+
+**[Téléchargement et installation Windows / Android / état iPhone](docs/INSTALLATION.md)**
+
+Les améliorations Flightdeck sont sur `feat/flightdeck-map-performance`, la première
+APK sur `feat/android-offline`. Les workflows produisent des artefacts de test,
+sans publier automatiquement une nouvelle release.
 
 ## Utiliser
 
@@ -106,8 +113,9 @@ sont sous `docs/finder/`, et le transfert carburant sous `docs/fuel/reference/`.
 Distribuez le dossier portable complet (pas le seul `.exe`), avec `finder-data/`
 et ses licences pour le Finder. Ne publiez jamais le dossier personnel `data/`.
 Les sources, workflows GitHub et données publiques peuvent être partagés séparément.
-Voir `SECURITY.md`. Le prototype PWA historique, les API live et les livrées
-vérifiées restent hors de la version Windows ; Android est documenté séparément.
+Voir `SECURITY.md`. La carte Windows ajoute des frontières locales et deux options
+Internet explicites : satellite EOX et vents Open-Meteo. Le prototype PWA reste
+historique ; aucune version native iPhone n'est livrée. Android est documenté séparément.
 
 ## Note sur les emojis
 

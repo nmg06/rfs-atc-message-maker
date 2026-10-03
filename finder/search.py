@@ -1,6 +1,7 @@
 """Deterministic filtering/ranking. No network, LLM, random values or hidden clock."""
 from __future__ import annotations
 from dataclasses import dataclass, field
+from copy import deepcopy
 from datetime import datetime, timedelta, timezone
 import math
 import json
@@ -9,6 +10,7 @@ from pathlib import Path
 from .database import connect_readonly
 from .time_utils import resolve_local
 from .rfs_catalogue import SUPPORTED_TYPES, TYPE_BY_ID, observation_name
+from .provenance import duration_provenance
 
 
 @dataclass
@@ -63,12 +65,12 @@ class Criteria:
 ALIASES = {"a320neo": "A20N", "a321neo": "A21N", "a319neo": "A19N", "b737max8": "B38M"}
 
 
-def search(path: Path, criteria: Criteria, now_utc: datetime) -> dict:
+def search(path: Path, criteria: Criteria, now_utc: datetime, *, _include_population=False) -> dict:
     criteria.validate()
     if now_utc.tzinfo is None:
         raise ValueError("now_utc must be timezone-aware")
     now_utc = now_utc.astimezone(timezone.utc)
-    warnings = ["DURATION_IS_AIRBORNE", "HISTORICAL_NOT_SCHEDULED"]
+    warnings = ["DURATION_PROVENANCE_NOTICE", "HISTORICAL_NOT_SCHEDULED"]
     departure = arrival = None
     for endpoint in ("departure", "arrival"):
         if getattr(criteria, endpoint + "_time"):
@@ -106,24 +108,28 @@ def search(path: Path, criteria: Criteria, now_utc: datetime) -> dict:
         codes = [v.strip().upper() for v in getattr(criteria, endpoint) if v.strip()]
         if codes:
             placeholders = ",".join("?" for _ in codes)
-            where.append(f"{endpoint}_id IN (SELECT id FROM airports WHERE icao IN ({placeholders}) OR iata IN ({placeholders}))")  # nosec B608: fixed endpoint; only bound parameter markers are generated
+            where.append(f"{endpoint}_id IN (SELECT id FROM airports WHERE icao IN ({placeholders}) OR iata IN ({placeholders}))")  # nosec B608: fixed endpoint and bound parameter markers only
             params.extend(codes * 2)
         for suffix in ("country", "continent", "region"):
-            in_filter([endpoint + "_" + suffix], getattr(criteria, endpoint + "_" + suffix))
+            values = getattr(criteria, endpoint + "_" + suffix)
+            if values:
+                placeholders = ','.join('?' for _ in values)
+                where.append(f"{endpoint}_id IN (SELECT id FROM airports WHERE COALESCE(UPPER({suffix}), '') IN ({placeholders}))")  # nosec B608: fixed endpoint/suffix and bound markers only
+                params.extend(v.strip().upper() for v in values)
     if criteria.excluded_airports:
         ex_codes = [v.strip().upper() for v in criteria.excluded_airports if v.strip()]
         if ex_codes:
             placeholders = ",".join("?" for _ in ex_codes)
-            where.append(f"origin_id NOT IN (SELECT id FROM airports WHERE icao IN ({placeholders}) OR iata IN ({placeholders}))")  # nosec B608: codes bound separately; placeholders contain only question marks
-            where.append(f"destination_id NOT IN (SELECT id FROM airports WHERE icao IN ({placeholders}) OR iata IN ({placeholders}))")  # nosec B608: codes bound separately; placeholders contain only question marks
+            where.append(f"origin_id NOT IN (SELECT id FROM airports WHERE icao IN ({placeholders}) OR iata IN ({placeholders}))")  # nosec B608: bound parameter markers only
+            where.append(f"destination_id NOT IN (SELECT id FROM airports WHERE icao IN ({placeholders}) OR iata IN ({placeholders}))")  # nosec B608: bound parameter markers only
             params.extend(ex_codes * 4)
     if criteria.airline.strip():
         term = criteria.airline.strip()
         if len(term) <= 3 and term.isalnum():
-            where.append("(airline = ? COLLATE NOCASE OR airline_iata = ? COLLATE NOCASE)")
+            where.append("airline IN (SELECT icao FROM airlines WHERE icao = ? COLLATE NOCASE OR iata = ? COLLATE NOCASE)")
             params.extend([term] * 2)
         else:
-            where.append("instr(lower(airline_name), lower(?)) > 0")
+            where.append("airline IN (SELECT icao FROM airlines WHERE instr(lower(name), lower(?)) > 0)")
             params.append(term)
     if criteria.rfs_only:
         in_filter(['aircraft'], SUPPORTED_TYPES)
@@ -148,9 +154,22 @@ def search(path: Path, criteria: Criteria, now_utc: datetime) -> dict:
         params.append(criteria.max_minutes)
     if criteria.international_only:
         where.append("origin_country IS NOT NULL AND destination_country IS NOT NULL AND origin_country != destination_country")
+    if target is not None:
+        tolerance = max(criteria.tolerance_minutes, .15 * target)
+        # Exclude irrelevant durations before the documented candidate cap.
+        # Keep strict boundaries: fit == 0 is rejected by the score below.
+        where.append("duration_min > ? AND duration_min < ?")
+        params.extend((target - tolerance, target + tolerance))
+    # For a duration target SQLite can otherwise scan the ranking index until
+    # exhaustion to preserve ORDER BY, ignoring the selective duration index.
+    # Unary + keeps the same value/order while requiring the small set to sort.
+    selective = target is not None or bool(criteria.airline.strip()) or any(
+        getattr(criteria, endpoint+'_'+suffix) for endpoint in ('origin', 'destination')
+        for suffix in ('country', 'continent', 'region'))
+    order = "+n_obs DESC,last_seen DESC,pattern_id ASC" if selective else "n_obs DESC,last_seen DESC,pattern_id ASC"
     with connect_readonly(path) as db:
         candidates = [dict(row) for row in db.execute("SELECT * FROM v_pattern_search WHERE " + " AND ".join(where) +  # nosec B608 - SQL fragments/columns are fixed; all filter values bound
-                      f" ORDER BY n_obs DESC,last_seen DESC,pattern_id ASC LIMIT {min(20001, max(1200, (criteria.offset + criteria.limit) * 10))}", params)]
+                      " ORDER BY " + order + " LIMIT 20001", params)]
         sources = [dict(r) for r in db.execute("SELECT * FROM sources ORDER BY source_id")]
         build = dict(db.execute("SELECT key,value FROM build_info"))
     if len(candidates) > 20000:
@@ -190,11 +209,16 @@ def search(path: Path, criteria: Criteria, now_utc: datetime) -> dict:
         row["score"] = round(100 * sum(w*s for w,s in parts.values())/sum(w for w,s in parts.values()), 3)
         row["subscores"] = {k: round(v[1], 4) for k,v in parts.items()}
         row["warnings"] = []
+        row['duration_provenance'] = duration_provenance(row)
         if row["n_obs"] < 5:
             row["warnings"].append("LOW_OBSERVATIONS")
         if age_days > 45:
             row["warnings"].append("STALE_DATA")
-        if row["n_complete"] < row["n_obs"]:
+        if row['duration_provenance'] == 'ESTIMATED_DISTANCE_HEURISTIC':
+            row['warnings'].append('DURATION_ESTIMATED_HEURISTIC')
+        elif row['duration_provenance'] == 'POST_IMPORT_UNVERIFIED':
+            row['warnings'].append('DURATION_POST_IMPORT_UNVERIFIED')
+        elif row["n_complete"] < row["n_obs"]:
             row["warnings"].append("PARTIAL_TRACKS_EXCLUDED_FROM_DURATION")
         if len(json.loads(row["type_mix"] or "[]")) > 1:
             row["warnings"].append("MIXED_AIRCRAFT_TYPES")
@@ -212,8 +236,41 @@ def search(path: Path, criteria: Criteria, now_utc: datetime) -> dict:
         if not criteria.diversify or counts.get(key, 0) < max_per_route:
             diversified.append(row)
             counts[key] = counts.get(key, 0) + 1
-    return {"results": diversified[criteria.offset:criteria.offset + criteria.limit], "warnings": sorted(set(warnings)),
+    response = {"results": diversified[criteria.offset:criteria.offset + criteria.limit], "warnings": sorted(set(warnings)),
             "available": len(diversified), "diversity_dropped": len(results) - len(diversified),
             "offset": criteria.offset, "has_more": criteria.offset + criteria.limit < len(diversified),
             "candidates": len(candidates), "matches": len(results), "sources": sources, "build": build,
             "now_utc": now_utc.isoformat(), "implied_minutes": implied}
+    if _include_population:
+        response['_population'] = diversified
+    return response
+
+
+class SearchSession:
+    """Cache the complete ranked population for one exact query/database/clock."""
+    def __init__(self):
+        self.clear()
+
+    def clear(self):
+        self.key = None
+        self.population = []
+        self.metadata = None
+
+    def query_key(self, path, criteria, now):
+        path = Path(path).resolve()
+        stat = path.stat()
+        filters = {key: value for key, value in vars(criteria).items() if key not in ('offset', 'limit')}
+        return (str(path), stat.st_mtime_ns, stat.st_size, json.dumps(filters, sort_keys=True), now.isoformat())
+
+    def page(self, path, criteria, now):
+        criteria.validate()
+        key = self.query_key(path, criteria, now)
+        if key != self.key:
+            response = search(path, criteria, now, _include_population=True)
+            population = response.pop('_population')
+            response.pop('results')
+            self.population, self.metadata, self.key = population, response, key
+        result = deepcopy(self.metadata)
+        result.update(results=deepcopy(self.population[criteria.offset:criteria.offset+criteria.limit]),
+            offset=criteria.offset, has_more=criteria.offset+criteria.limit < len(self.population))
+        return result
