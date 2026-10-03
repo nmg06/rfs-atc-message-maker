@@ -184,7 +184,15 @@ public class MainActivity extends Activity {
             case "native.online": online.enabled=args.getBoolean("enabled");reply(id,"{\"ok\":true,\"result\":{}}");break;
             case "native.appearance": {
                 int color=android.graphics.Color.parseColor(args.getString("color"));boolean light=args.optBoolean("light");
-                runOnUiThread(()->{root.setBackgroundColor(color);androidx.core.view.WindowInsetsControllerCompat controller=new androidx.core.view.WindowInsetsControllerCompat(getWindow(),root);controller.setAppearanceLightStatusBars(light);controller.setAppearanceLightNavigationBars(light);});
+                runOnUiThread(()->{
+                    root.setBackgroundColor(color);
+                    // API 35 uses transparent bars over the parent. Older
+                    // versions honour these colours and need matching contrast.
+                    getWindow().setStatusBarColor(color);
+                    getWindow().setNavigationBarColor(light&&android.os.Build.VERSION.SDK_INT<26?0xff10151d:color);
+                    androidx.core.view.WindowInsetsControllerCompat controller=new androidx.core.view.WindowInsetsControllerCompat(getWindow(),root);
+                    controller.setAppearanceLightStatusBars(light);controller.setAppearanceLightNavigationBars(light);
+                });
                 reply(id,"{\"ok\":true,\"result\":{}}");break;
             }
             case "native.icon": {
