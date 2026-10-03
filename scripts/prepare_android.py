@@ -69,7 +69,7 @@ def prepare(database=None):
     web_assets.mkdir(parents=True, exist_ok=True)
     (web_assets / 'world-countries.js').write_text(
         'window.FLIGHTDECK_COUNTRIES=' + json.dumps(world, ensure_ascii=False, separators=(',', ':')) + ';\n',
-        encoding='utf-8')
+        encoding='utf-8', newline='\n')
     hashes['assets/world_countries.json'] = digest(countries)
     for source in bundled.iterdir():
         if source.is_file():
