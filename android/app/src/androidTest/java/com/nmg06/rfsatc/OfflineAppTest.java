@@ -3,11 +3,15 @@ package com.nmg06.rfsatc;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.view.WindowManager;
+import android.os.ParcelFileDescriptor;
+import java.io.FileInputStream;
+import java.nio.charset.StandardCharsets;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 import org.json.JSONObject;
 import org.junit.Test;
+import org.junit.Before;
 import org.junit.runner.RunWith;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -15,6 +19,21 @@ import static org.junit.Assert.*;
 
 @RunWith(AndroidJUnit4.class)
 public class OfflineAppTest {
+    private String shell(String command) throws Exception {
+        try (ParcelFileDescriptor descriptor=InstrumentationRegistry.getInstrumentation()
+                .getUiAutomation().executeShellCommand(command);
+             FileInputStream stream=new FileInputStream(descriptor.getFileDescriptor())) {
+            return new String(stream.readAllBytes(),StandardCharsets.UTF_8);
+        }
+    }
+    @Before public void prepareForeground() throws Exception {
+        // Dedicated test device only. Reset the lock screen/previous clipboard
+        // overlay before each ActivityScenario, rather than relying on boot focus.
+        shell("input keyevent KEYCODE_WAKEUP");
+        shell("wm dismiss-keyguard");
+        shell("input keyevent KEYCODE_HOME");
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+    }
     private MainActivity activity(ActivityScenario<MainActivity> scenario) {
         AtomicReference<MainActivity> result = new AtomicReference<>();
         scenario.onActivity(a -> {
@@ -118,6 +137,10 @@ public class OfflineAppTest {
                 InstrumentationRegistry.getInstrumentation().runOnMainSync(()->focused.set(a.hasWindowFocus()));
                 if(focused.get())break;
                 Thread.sleep(100);
+            }
+            if(!focused.get()) {
+                System.err.println("Clipboard focus diagnostics: "+shell("dumpsys window windows"));
+                System.err.println(shell("dumpsys power"));
             }
             assertTrue("Clipboard reads require the resumed activity to have window focus",focused.get());
             String payload=new JSONObject().put("state",state).toString();
