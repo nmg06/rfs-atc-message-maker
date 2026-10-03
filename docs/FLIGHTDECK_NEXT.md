@@ -39,9 +39,12 @@ restent désactivées tant que l'utilisateur ne les choisit pas.
 
 ## Vérifications et mesures
 
-- Suite Windows : **113 tests passent**, aucun test historique supprimé.
-- Android : **16 tests Python**, parité des 1 344 générations, Finder cache et
-  préremplissage avion/carburant. La carte Qt et les couches Internet sont exclues de l'APK.
+- Suite Windows : **114 tests passent**, aucun test historique supprimé ; trois suites
+  complètes après correction du cycle des traducteurs Qt.
+- Android : **22 tests Python**, parité des 1 344 générations et 504 extensions,
+  Finder cache, préremplissage avion/carburant, carte locale, bibliothèque et import PC.
+  Trois tests natifs et arrêt/relance passent sur API 35 en mode avion :
+  [bilan 0.3](android/PROGRESS_0.3.md). Les couches Internet sont exclues de l'APK.
 - Comparaison avec le code Flightdeck public précédent, même SQLite et même heure :
   Air France **3,82 s → 0,155 s**, page suivante **0,016 s** ; France→Roumanie
   **7,86 s → 0,152 s**. Toutes les réponses comparées sont identiques, y compris
@@ -80,4 +83,4 @@ de release existants sont conservés, aucune nouvelle release n'est déclenchée
   licence non commerciale et disponibilité dépendant du fournisseur ; aucun téléchargement massif.
 - Vent : prévision horaire réelle, grille visible et trajet, huit recherches en cache,
   rafraîchissement toutes les 15 min seulement si activé. Les formules Fuel et durées historiques restent inchangées.
-- Android : carte/satellite/vents non portés ; iOS natif non construit.
+- Android : carte vectorielle locale portée ; satellite/vents non portés et iOS natif non construit.

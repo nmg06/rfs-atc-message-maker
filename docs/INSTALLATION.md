@@ -6,13 +6,13 @@ l'application, sans télémétrie. Aucune publication Google Play/App Store.
 
 ## Télécharger depuis GitHub
 
-Paquets vérifiés le **3 octobre 2026**, version `0.2.0-flightdeck` :
+Paquets vérifiés le **3 octobre 2026**, version `0.3.0-flightdeck` :
 
-- [Télécharger Windows x64](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37135488231/artifacts/11278727220).
-- [Télécharger Android APK](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37135488244/artifacts/11278442657).
-- [Preuves, commandes et limites](VERIFICATION_2026-10-03.md).
+- [Télécharger Windows x64](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37151621344/artifacts/11284226950).
+- [Télécharger Android APK](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37151621335/artifacts/11283749270).
+- [Preuves 0.3, commandes et limites](android/PROGRESS_0.3.md).
 
-Ces liens correspondent au commit `fb9640f` et expirent le **2 novembre 2026**.
+Ces liens correspondent au commit `6bdc5a8` et expirent le **2 novembre 2026**.
 Leur téléchargement demande une connexion GitHub. Pour retrouver les builds suivants :
 
 Sur https://github.com/nmg06/rfs-atc-message-maker/actions :
@@ -48,10 +48,12 @@ OneDrive évite les ralentissements de synchronisation.
 
 ## Android 7 ou plus, ARM64 / x86_64
 
-1. Transférez `app-debug.apk` sur le téléphone, puis ouvrez-le dans le gestionnaire de fichiers.
-2. Android peut demander **Autoriser l'installation depuis cette source** pour ce gestionnaire : activez cette autorisation pour installer le fichier, puis désactivez-la si souhaité.
-3. Installez **RFS Flightdeck**, puis ouvrez l'application.
-4. Testez en mode avion : messages, copie, Finder et Fuel Helper restent disponibles.
+1. Téléchargez et décompressez l'artefact pour obtenir `app-debug.apk` (la copie locale peut s'appeler `RFSFlightdeck-Android-0.3.0-debug.apk`).
+2. Branchez le téléphone au PC avec un câble USB, déverrouillez-le et choisissez **Transfert de fichiers** dans sa notification USB.
+3. Sur le PC, ouvrez le téléphone dans l'Explorateur et copiez l'APK dans **Stockage interne > Download / Téléchargements**.
+4. Sur le téléphone, ouvrez **Fichiers > Téléchargements**, puis touchez l'APK. Autorisez **Installer depuis cette source** si Android le demande et appuyez sur **Installer**.
+5. Touchez **Ouvrir**, ou retrouvez **RFS Flightdeck** dans la liste des applications du téléphone. Vous pourrez ajouter son icône à l'écran d'accueil.
+6. Testez en mode avion : messages, copie, carte/frontières, Finder et Fuel Helper restent disponibles. Le premier lancement initialise la base embarquée et peut être plus long.
 
 APK debug destinée aux essais. La signature debug d'un build local et celle d'un
 autre environnement de build peuvent différer. Si Android refuse une mise à jour
@@ -60,8 +62,10 @@ Une désinstallation efface le stockage privé. Une future APK de distribution
 nécessitera une clé stable détenue par le propriétaire du projet.
 
 Dans **Paramètres**, export/import permet de sauvegarder les données privées.
-L'import accepte aussi un `rfs_state.json` Windows ; les quatre fichiers PC ne
-constituent pas encore une migration complète automatique. Aucune permission
+Le bouton **Importer les 4 fichiers PC** accepte `rfs_state.json`, `rfs_history.json`,
+`rfs_presets.json` et `rfs_designs.json`, préalablement copiés depuis le dossier
+`data` d'une application PC fermée. Le lot est validé avant remplacement ; le
+sélecteur multiple reste à vérifier sur téléphone physique. Aucune permission
 Internet ou accès général au stockage n'est demandée par l'APK.
 
 ## iPhone / iPad
@@ -88,7 +92,9 @@ Les images EOX sont sous CC BY-NC-SA 4.0, pour l'usage non commercial ; les vent
 Open-Meteo sont des prévisions du monde réel, qui peuvent différer de RFS. Les
 altitudes sont en mètres AMSL ; le niveau de pression n'est pas une altitude fixe.
 Les vents ne changent pas les durées historiques ni les formules Fuel Helper.
-La carte et ces deux options ne sont pas encore portées dans l'APK.
+Android possède aussi la carte vectorielle, les frontières, le zoom/pincement,
+le trajet et la sélection des pays hors ligne. Les options satellite et vents
+restent uniquement sur Windows.
 
 Voir [Android](android/README.md), [parité](android/PARITY.md) et
 [changements Flightdeck](FLIGHTDECK_NEXT.md) pour les détails et limites.

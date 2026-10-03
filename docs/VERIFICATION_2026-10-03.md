@@ -1,5 +1,11 @@
 # Livraison vérifiée — 3 octobre 2026
 
+**Ce document conserve les preuves de la livraison 0.2.** La version 0.3 et ses
+nouveaux téléchargements sont documentés dans [PROGRESS_0.3.md](android/PROGRESS_0.3.md)
+et [INSTALLATION.md](INSTALLATION.md) : carte Android locale, bibliothèque/import
+PC, extensions de messages et correction des traducteurs Qt (114 tests Windows,
+22 tests Android, trois tests natifs et reprise du processus sur API 35).
+
 Nom affiché : **RFS Flightdeck**. Version Android `0.2.0-flightdeck`.
 Les paquets ci-dessous correspondent au commit
 `fb9640f5ca83695924cb9d602c56c7e66bd5afc7` de `feat/flightdeck-map-performance`.

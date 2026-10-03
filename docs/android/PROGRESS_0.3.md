@@ -33,8 +33,18 @@
 - Contrôle de l'APK : `python scripts/verify_android_apk.py ... --aapt ...` compare
   la carte embarquée à la source Windows et vérifie toujours l'absence de permissions.
 
-L'installation sur l'émulateur, trois tests natifs et la fermeture complète/relance
-sont exécutées par GitHub Actions ; leur résultat sera lié après achèvement.
+L'APK a été installée sur un émulateur API 35 en mode avion : trois tests natifs
+réussis, dont la carte WebView réelle (242 frontières, trajet de 97 points,
+identification de la France) et la copie exacte de l'aperçu édité. L'arrêt complet
+du processus puis la relance conservent le JSON privé et affichent le vol restauré.
+[Android 0.3 vérifié](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37151621335),
+commit `6bdc5a8` ; [Windows vérifié](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37151621352).
+
+Le nouveau Windows autonome a également démarré localement : 577 correspondances
+Finder LFPG ≤2h, Fuel A220/5h/EGLL =12 285 kg, carte LFPG→KJFK de 97 points.
+APK locale : 62 032 617 octets, SHA-256
+`61596e47f1997a43b81bee2a5046200559b6a0dd118b7de4136e7fb0dc09a327`.
+[Téléchargement et installation](../INSTALLATION.md).
 
 ## Encore à vérifier / développer
 

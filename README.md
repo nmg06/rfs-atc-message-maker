@@ -37,7 +37,8 @@ exécutable. Les fichiers JSON de l'ancienne application restent intacts.
 
 Une première application **Android installable et hors ligne** existe désormais
 dans `android/`, à côté de Windows : moteurs Python partagés, Flight Finder avec
-base embarquée, Fuel Helper, stockage privé et copie native. L'APK debug est
+base embarquée, Fuel Helper, carte locale/frontières, bibliothèque, import des
+quatre fichiers PC, stockage privé et copie native. Version Android 0.3.0. L'APK debug est
 construite et testée sur émulateur API 35, y compris en mode avion et après arrêt
 complet du processus. [Installation, build et limites](docs/android/README.md) ;
 [parité détaillée](docs/android/PARITY.md). Le workflow **Android offline APK**

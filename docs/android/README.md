@@ -95,10 +95,10 @@ L'APK debug locale et celle de GitHub peuvent avoir des signatures différentes 
 exportez vos données avant de désinstaller pour changer de provenance.
 
 Build et installation vérifiés le 3 octobre 2026 sur émulateur API 35 en mode
-avion : moteurs, Finder/Fuel, presse-papiers, arrêt complet/relance du processus
+avion : moteurs, Finder/Fuel, carte locale/frontières, presse-papiers, arrêt complet/relance du processus
 et affichage du vol restauré passent.
-[Exécution Flightdeck et artefacts](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37135488244),
-commit `fb9640f` ; [bilan de livraison](../VERIFICATION_2026-10-03.md).
+[Exécution Flightdeck 0.3 et artefacts](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37151621335),
+commit `6bdc5a8`, trois tests natifs ; [bilan de livraison](PROGRESS_0.3.md).
 La base gzip est embarquée sous `assets/aviation.database` pour éviter que AAPT
 décompresse/renomme automatiquement les fichiers portant l'extension `.gz`.
 `scripts/verify_android_apk.py` vérifie le contenu réel et l'absence de permissions.
@@ -143,7 +143,7 @@ sauvegarde privée antérieure à l'import est également conservée. Une
 désinstallation/effacement des données supprime tout : exportez avant.
 Les sauvegardes cloud Android sont désactivées.
 
-Import Windows initial : sélectionnez explicitement `data/rfs_state.json`.
+L'ancien import d'un seul état Windows reste disponible : sélectionnez `data/rfs_state.json`.
 Les vols/pilotes/préférences de ce fichier sont adaptés, mais l'historique,
 les favoris et les designs des fichiers Windows séparés ne sont pas importés
 automatiquement. Les designs JSON s'importent séparément dans Paramètres.

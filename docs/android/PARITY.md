@@ -41,7 +41,7 @@ modification et le prototype mobile est conservé.
 | Installation / démarrage / mode avion / fermeture processus / copie native | N/A | OK | APK installée API 35, tests natifs, force-stop/relance et UI réelle vérifiés |
 | Catalogue avion recherchable dans le vol / préremplissage Fuel | OK | OK | 63 variantes ; variante Finder unique reprise ; choix requis si ambigu |
 | Finder numérique en heures / pages en cache / Voir moins | OK | OK | Parseur UI dédié ; pas de requête répétée ; résultats conservés |
-| Carte Flightdeck, frontières, sélection pays / zoom | OK | partiel | Canvas local, 242 frontières, géométrie PC partagée, zoom/pincement/pays→Finder et reprise testés ; vérification APK installée en cours |
+| Carte Flightdeck, frontières, sélection pays / zoom | OK | OK | Canvas local, 242 frontières, géométrie PC partagée ; zoom/pincement/pays→Finder/reprise testés et carte réelle contrôlée sur APK installée API 35 |
 | Satellite / vents par altitude facultatifs | OK avec Internet | non porté | Deux fournisseurs vérifiés ; Android conserve zéro permission Internet |
 
 ## Résultats enregistrés
@@ -58,12 +58,13 @@ modification et le prototype mobile est conservé.
 - Téléphone physique : aucun connecté pendant ce travail. Les contrôles moteur/
   navigateur ne prouvent pas l'installation ou le fonctionnement sur Android.
 
-- Android réel sur émulateur API 35 : deux tests instrumentés passent, puis
+- Android 0.3 sur émulateur API 35 : trois tests instrumentés passent, dont la carte
+  WebView réelle (242 frontières, trajet de 97 points, identification de la France), puis
   réinstallation dédiée, même instrumentation et arrêt complet du processus.
   Relance : vol EJU149U et fuel 12285 conservés, formulaire WebView visible,
   JSON privé identique, mode avion activé, Wi-Fi/données désactivés.
-  [Exécution Flightdeck réussie](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37135488244),
-  commit testé `fb9640f5ca83695924cb9d602c56c7e66bd5afc7`.
+  [Exécution Flightdeck 0.3 réussie](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37151621335),
+  commit testé `6bdc5a830d43470c86a164aedf9e0861ae8a8a1c`.
 - Vérification de l'APK elle-même : ressources UI présentes, base embarquée
   décompressable à 94 892 032 octets et SHA-256 vérifié, aucune permission.
   `scripts/verify_android_apk.py` est exécuté avant mise à disposition de l'artefact.
