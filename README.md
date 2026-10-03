@@ -28,6 +28,14 @@ exécutable. Les fichiers JSON de l'ancienne application restent intacts.
 
 ## Construction et tests
 
+Une première application **Android installable et hors ligne** existe désormais
+dans `android/`, à côté de Windows : moteurs Python partagés, Flight Finder avec
+base embarquée, Fuel Helper, stockage privé et copie native. L'APK debug est
+construite et testée sur émulateur API 35, y compris en mode avion et après arrêt
+complet du processus. [Installation, build et limites](docs/android/README.md) ;
+[parité détaillée](docs/android/PARITY.md). Le workflow **Android offline APK**
+fournit l'artefact `RFS-ATC-Android-debug` sans publication de release automatique.
+
 `build_exe.bat` crée un environnement Python local, installe PySide6 et
 PyInstaller, puis construit le paquet dans `dist\RFSATCMessageMaker`.
 La construction utilise `RFSATCMessageMaker.spec`, qui évite un conflit entre
@@ -98,7 +106,8 @@ sont sous `docs/finder/`, et le transfert carburant sous `docs/fuel/reference/`.
 Distribuez le dossier portable complet (pas le seul `.exe`), avec `finder-data/`
 et ses licences pour le Finder. Ne publiez jamais le dossier personnel `data/`.
 Les sources, workflows GitHub et données publiques peuvent être partagés séparément.
-Voir `SECURITY.md`. Mobile/PWA, API live et livrées vérifiées restent hors de cette version.
+Voir `SECURITY.md`. Le prototype PWA historique, les API live et les livrées
+vérifiées restent hors de la version Windows ; Android est documenté séparément.
 
 ## Note sur les emojis
 

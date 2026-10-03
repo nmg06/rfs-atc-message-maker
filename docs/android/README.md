@@ -71,6 +71,14 @@ le ZIP Windows et l'APK ; la signature release et sa clé restent à configurer.
 L'APK debug locale et celle de GitHub peuvent avoir des signatures différentes :
 exportez vos données avant de désinstaller pour changer de provenance.
 
+Build et installation vérifiés le 3 octobre 2026 sur émulateur API 35 en mode
+avion : moteurs, Finder/Fuel, presse-papiers, arrêt complet/relance du processus
+et affichage du vol restauré passent.
+[Exécution et artefacts](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37129848910).
+La base gzip est embarquée sous `assets/aviation.database` pour éviter que AAPT
+décompresse/renomme automatiquement les fichiers portant l'extension `.gz`.
+`scripts/verify_android_apk.py` vérifie le contenu réel et l'absence de permissions.
+
 ## Installer et utiliser
 
 Téléchargez/récupérez l'APK, ouvrez-la sur le téléphone et autorisez cette source
@@ -165,6 +173,10 @@ La suite Android compare 1 344 combinaisons de messages PC, validations/groupes,
 la recherche et le mapping réels, les 63 avions, restauration/import et absence
 de réseau. L'instrumentation teste démarrage, base embarquée, Finder, Fuel,
 relance d'activité et presse-papiers natif. Pour le parcours UI sur ordinateur,
+`scripts/test_android_restart.py` vérifie en plus l'arrêt complet du processus,
+la conservation du JSON et le rendu WebView restauré en mode avion, exclusivement
+sur un émulateur dédié (il réinstalle l'application de test).
+Pour le parcours UI sur ordinateur,
 `python android/tests/ui_server.py` affiche un port local temporaire ; dans un
 autre terminal : `node android/tests/ui_browser.cjs PORT screenshot.png`
 (Playwright avec Chromium installé, ou `RFS_TEST_BROWSER=chrome`). Ce serveur

@@ -1,10 +1,11 @@
 """Real installed APK/process restart and rendered UI check on a dedicated emulator."""
 import argparse
+import html
 import json
 from pathlib import Path
+import re
 import subprocess
 import time
-import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
 PACKAGE = 'com.nmg06.rfsatc'
@@ -37,12 +38,12 @@ def run(adb, serial):
         try:
             command('shell', 'uiautomator', 'dump', '/sdcard/rfs-test-window.xml')
             xml = command('shell', 'cat', '/sdcard/rfs-test-window.xml')
-            texts = [node.get('text','') for node in ET.fromstring(xml).iter('node')]
+            texts = [html.unescape(text) for text in re.findall(r' text="([^"]*)"', xml)]
             # Header route is set only after the real JS/native bootstrap succeeds.
             visible = any(callsign in text for text in texts) and any(text in ('Votre vol','Your flight') for text in texts)
             if visible:
                 break
-        except (subprocess.CalledProcessError, ET.ParseError):
+        except subprocess.CalledProcessError:
             pass
         time.sleep(1)
     if not visible:

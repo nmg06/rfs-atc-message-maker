@@ -29,23 +29,36 @@ modification et le prototype mobile est conservé.
 | Appliquer avion + fuel / détails exacts | OK | OK | Moteur/UI testés, recalcul avant application |
 | Stockage privé / écriture atomique / relance | JSON local | OK | Nouvelle instance moteur et rechargement UI conservent les collections |
 | Export-import sauvegarde / import état PC | fichiers séparés | partiel | Validation/restauration testées ; état PC seul, autres fichiers séparés |
-| Presse-papiers Android / partage natif | OK | partiel | Code natif et instrumentation construits ; exécution Android en cours |
+| Presse-papiers Android | OK | OK | Texte édité copié exactement sur émulateur API 35, mode avion |
+| Partage natif | OK | partiel | Intent Android implémenté ; choix d'une application destinataire à vérifier |
 | Rapport local / images choisies avec consentement | OK | partiel | ZIP/sélecteur natif implémentés ; test appareil restant |
 | Introduction / blague une seule fois | OK | partiel | Billet factice non interactif adapté ; drapeaux séparés conservés |
 | Sans compte/API/CDN/télémétrie | OK | OK | Ressources locales, sockets interdits dans tests, aucune permission Internet déclarée |
 | APK debug construite | N/A | OK | assembleDebug + assembleDebugAndroidTest réussis localement |
-| Installation / démarrage / mode avion / fermeture processus / copie native | N/A | partiel | Tests instrumentés prêts ; contrôle Android réel encore requis |
+| Installation / démarrage / mode avion / fermeture processus / copie native | N/A | OK | APK installée API 35, tests natifs, force-stop/relance et UI réelle vérifiés |
 | Carte Flightdeck de la livraison locale séparée | hors GitHub main | non porté | Code non substitué silencieusement à la référence GitHub |
 
 ## Résultats enregistrés
 
 - Windows : 71 tests de référence réussis, environnement complet Qt + ETL.
-- Android Python : 12 tests initiaux réussis (dont 1 344 combinaisons de messages).
-  Deux contrôles ajoutés : import des objets imbriqués et sources sans remise à
-  zéro Finder ; résultat mis à jour après exécution.
+- Android Python : 14 tests réussis (dont 1 344 combinaisons de messages), import
+  des objets imbriqués et sources sans remise à zéro Finder compris.
 - UI Playwright, 390×844 : navigation, champs, validation, dernier caractère copié,
   Finder 100→200/transfert, Fuel A220, rechargement, FR→EN réussis, zéro erreur JS.
 - Build : `android/gradlew.bat -p android assembleDebug assembleDebugAndroidTest`,
   `BUILD SUCCESSFUL`, APK debug produite. Voir README pour les prérequis.
 - Téléphone physique : aucun connecté pendant ce travail. Les contrôles moteur/
   navigateur ne prouvent pas l'installation ou le fonctionnement sur Android.
+
+- Android réel sur émulateur API 35 : deux tests instrumentés passent, puis
+  réinstallation dédiée, même instrumentation et arrêt complet du processus.
+  Relance : vol EJU149U et fuel 12285 conservés, formulaire WebView visible,
+  JSON privé identique, mode avion activé, Wi-Fi/données désactivés.
+  [Exécution GitHub réussie](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37129848910),
+  commit testé `7e684f3975e9d4ec21726e43dbe9a9d026e71a8e`.
+- Vérification de l'APK elle-même : ressources UI présentes, base embarquée
+  décompressable à 94 892 032 octets et SHA-256 vérifié, aucune permission.
+  `scripts/verify_android_apk.py` est exécuté avant mise à disposition de l'artefact.
+- Les contrôles Windows GitHub (71 tests, dépendances, analyse, build EXE) passent
+  sur `ba6af47` ; les workflows Windows sont inchangés. Trois commentaires ciblés
+  documentent les paramètres SQL déjà liés, sans modifier la logique Finder.
