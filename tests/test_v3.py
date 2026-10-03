@@ -69,3 +69,16 @@ class RevisedUxTests(unittest.TestCase):
         second=JokeDialog()
         second.reject()
         self.assertTrue(second.revealed)
+
+    def test_joke_does_not_reveal_on_empty_focus_input_method(self):
+        from PySide6.QtGui import QInputMethodEvent
+        dialog=JokeDialog()
+        dialog.show()
+        self.app.processEvents()
+        self.assertFalse(dialog.revealed)
+        self.app.sendEvent(dialog.props[0],QInputMethodEvent())
+        self.assertFalse(dialog.revealed)
+        entered=QInputMethodEvent();entered.setCommitString('4')
+        self.app.sendEvent(dialog.props[0],entered)
+        self.assertTrue(dialog.revealed)
+        self.assertTrue(all(not field.text() for field in dialog.props))

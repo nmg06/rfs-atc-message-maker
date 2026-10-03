@@ -92,6 +92,7 @@ class RFSWindow(QMainWindow):
         self.help_menu = help_menu
         help_menu.addAction(tr('Formulaire en ligne — problème ou suggestion'), self.open_feedback_form)
         help_menu.addAction(tr('Rapport local et pièces jointes…'), self.open_report)
+        help_menu.addAction('Revoir la blague' if language() == 'fr' else 'Replay the joke', self.replay_joke)
         help_button.setMenu(help_menu)
         header.addWidget(help_button)
         self.finder_button = QPushButton(tr('Flight Finder'))
@@ -990,12 +991,17 @@ class RFSWindow(QMainWindow):
                 # Independent of the welcome checkbox, and saved before opening.
                 self.store.state['joke_seen'] = True
                 self.save_state()
-                JokeDialog(self).exec()
-                QMessageBox.information(self, tr('I was kidding !'), tr("C'était une blague ! Aucun paiement ni aucune donnée bancaire : l'application est gratuite. Bienvenue à bord !"))
+                self.replay_joke()
             dialog = WelcomeDialog(self)
             dialog.exec()
             self.store.state['intro_seen'] = dialog.remember.isChecked()
             self.save_state()
+
+    def replay_joke(self):
+        dialog = JokeDialog(self)
+        dialog.exec()
+        if dialog.revealed:
+            QMessageBox.information(self, tr('I was kidding !'), tr("C'était une blague ! Aucun paiement ni aucune donnée bancaire : l'application est gratuite. Bienvenue à bord !"))
 
     def _load_presentation(self):
         previous = self._building

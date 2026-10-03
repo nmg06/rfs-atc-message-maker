@@ -3,11 +3,12 @@ const assert=require('node:assert/strict');
 (async()=>{
  const port=Number(process.argv[2]),browser=await chromium.launch({headless:true,...(process.env.RFS_TEST_BROWSER?{channel:process.env.RFS_TEST_BROWSER}:{})});
  const page=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:3});
- const errors=[],requests=[];page.on('pageerror',e=>errors.push(e.message));
+ const errors=[],requests=[];page.on('pageerror',e=>{errors.push(e.message);console.error(e.message);});
  await page.exposeFunction('testRequest',async(id,method,payload)=>{requests.push(method);if(method==='native.finish'){await page.evaluate(id=>window.androidReply(id,{ok:true,result:{}}),id);return;}const response=await fetch(`http://127.0.0.1:${port}/rpc`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({method,args:JSON.parse(payload)})});await page.evaluate(({id,envelope})=>window.androidReply(id,envelope),{id,envelope:await response.json()});});
  await page.addInitScript(()=>window.Android={request:(...args)=>window.testRequest(...args)});
- await page.goto(`http://127.0.0.1:${port}/index.html`);await page.locator('#welcome-done, #flight-callsign').first().waitFor({state:'attached'});
- if(await page.locator('#welcome-done').count()){await page.locator('#welcome-done').click();await page.locator('#flight-callsign').waitFor({state:'attached'});}
+ await page.goto(`http://127.0.0.1:${port}/index.html`);try{await page.locator('[data-action="welcome-joke"], [data-action="welcome-done"], #flight-callsign').first().waitFor({state:'attached'});}catch(e){console.error(await page.evaluate(()=>({loading:$('loading').textContent,screen,model:!!model,toast:$('toast').textContent})));await browser.close();throw e;}
+ if(await page.locator('[data-action="welcome-joke"]').count())await page.locator('[data-action="welcome-joke"]').click();
+ if(await page.locator('[data-action="welcome-done"]').count()){await page.locator('[data-action="welcome-done"]').click();await page.locator('#flight-callsign').waitFor({state:'attached'});}
  await page.evaluate(async()=>{model.state.language='fr';model.state.finder_filters={};model.state.flight.departure_icao='LFPG';model.state.flight.arrival_icao='KJFK';model.state.flight_log=[];model.state.active_session={};setResult(await rpc('bootstrap',stateArgs()));paint();});
  // Real menu returns to the exact tool and scroll position; reduced-motion CSS.
  await page.locator('[data-screen="finder"]').click();await page.locator('#finder-origin').fill('LFPG');await page.locator('#finder-max_minutes').fill('2h');
@@ -45,6 +46,8 @@ const assert=require('node:assert/strict');
  await page.locator('#settings-open').click();await page.evaluate(()=>window.goBack());await page.waitForFunction(()=>screen==='messages');
  // Drafts must survive settings navigation and a full UI restart without Save.
  await page.locator('#settings-open').click();
+ await page.locator('[data-action="replay-joke"]').click();await page.locator('[data-action="welcome-joke"]').waitFor();assert((await page.locator('main').textContent()).includes('999 €'));assert(!(await page.locator('main').textContent()).includes('étaient une blague'));
+ await page.locator('[data-action="welcome-joke"]').click();await page.waitForFunction(()=>document.querySelector('main').textContent.includes('Les 999 € étaient une blague'));await page.locator('[data-action="welcome-done"]').click();await page.waitForFunction(()=>screen==='settings');
  await page.locator('summary').filter({hasText:'Designs personnels'}).click();
  await page.locator('#design-name').fill('Brouillon sans bouton');await page.locator('#design-heading').fill('MON EN-TETE');
  await page.locator('summary').filter({hasText:'Signaler un problème'}).click();

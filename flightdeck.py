@@ -72,6 +72,7 @@ def install_shell(w, old):
     w.help_menu = QMenu(help_button)
     w.help_menu.addAction(tx('Formulaire en ligne — problème ou suggestion', 'Online form — issue or suggestion'), w.open_feedback_form)
     w.help_menu.addAction(tx('Rapport local et pièces jointes…', 'Local report and attachments…'), w.open_report)
+    w.help_menu.addAction(tx('Revoir la blague', 'Replay the joke'), w.replay_joke)
     help_button.setMenu(w.help_menu)
     nav.addWidget(help_button)
     local = QLabel(tx('LOCAL  /  SANS COMPTE', 'LOCAL  /  NO ACCOUNT'), objectName='navCaption')

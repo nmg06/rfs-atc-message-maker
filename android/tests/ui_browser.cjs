@@ -13,6 +13,8 @@ const assert=require('node:assert/strict');
  });
  await page.addInitScript(()=>{window.Android={request:(id,method,payload)=>window.testRequest(id,method,payload)};});
  await page.goto(`http://127.0.0.1:${port}/index.html`);
+ await page.locator('[data-action="welcome-joke"]').click();
+ await page.waitForFunction(()=>document.querySelector('main').textContent.includes('Les 999 € étaient une blague'));
  await page.locator('[data-action="welcome-done"]').click();
  await page.locator('#flight-callsign').fill('MOBILE123');
  await page.locator('#flight-departure_icao').fill('LFPG');

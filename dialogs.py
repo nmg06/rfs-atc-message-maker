@@ -140,7 +140,10 @@ class JokeDialog(QDialog):
             child.installEventFilter(self)
 
     def eventFilter(self, watched, event):
-        if event.type() in (QEvent.Type.MouseButtonPress, QEvent.Type.KeyPress, QEvent.Type.InputMethod, QEvent.Type.ShortcutOverride):
+        # Qt can send an empty input-method event when focus is initialised.
+        # That is not a user's attempt to type and must not dismiss the prop.
+        entered_text = event.type() == QEvent.Type.InputMethod and bool(event.commitString() or event.preeditString())
+        if event.type() in (QEvent.Type.MouseButtonPress, QEvent.Type.KeyPress) or entered_text:
             self.reveal()
             return True
         return super().eventFilter(watched, event)
