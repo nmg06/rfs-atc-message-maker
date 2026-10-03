@@ -172,7 +172,7 @@ cd android
 La suite Android compare 1 344 combinaisons de messages PC, validations/groupes,
 la recherche et le mapping réels, les 63 avions, restauration/import et absence
 de réseau. L'instrumentation teste démarrage, base embarquée, Finder, Fuel,
-relance d'activité et presse-papiers natif. Pour le parcours UI sur ordinateur,
+relance d'activité et presse-papiers natif.
 `scripts/test_android_restart.py` vérifie en plus l'arrêt complet du processus,
 la conservation du JSON et le rendu WebView restauré en mode avion, exclusivement
 sur un émulateur dédié (il réinstalle l'application de test).

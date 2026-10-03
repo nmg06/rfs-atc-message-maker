@@ -63,11 +63,19 @@ public class OfflineAppTest {
             state.getJSONObject("per_type").getJSONObject("ATC ACTIVE").put("airport_icao","LFPG").put("city","Paris").put("positions","Tower");
             state.getJSONObject("presentation").put("discord_aligned",false);
             state.getJSONObject("preview_edits").put("ATC ACTIVE","ANDROID CLIPBOARD last character Z");
+            assertTrue(call(a,"render",new JSONObject().put("state",state)).getJSONObject("render").getBoolean("can_copy"));
+            AtomicReference<Boolean> focused=new AtomicReference<>(false);
+            for(int i=0;i<300;i++) {
+                InstrumentationRegistry.getInstrumentation().runOnMainSync(()->focused.set(a.hasWindowFocus()));
+                if(focused.get())break;
+                Thread.sleep(100);
+            }
+            assertTrue("Clipboard reads require the resumed activity to have window focus",focused.get());
             String payload=new JSONObject().put("state",state).toString();
             a.new Bridge().request("99999","native.copy",payload);
             ClipboardManager clipboard=(ClipboardManager)a.getSystemService(Context.CLIPBOARD_SERVICE);
             AtomicReference<String> copied=new AtomicReference<>("");
-            for(int i=0;i<100;i++) {
+            for(int i=0;i<300;i++) {
                 InstrumentationRegistry.getInstrumentation().runOnMainSync(()->{
                     if(clipboard.hasPrimaryClip())copied.set(clipboard.getPrimaryClip().getItemAt(0).coerceToText(a).toString());
                 });
