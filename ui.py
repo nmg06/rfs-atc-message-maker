@@ -20,6 +20,8 @@ from dialogs import PilotsDialog, DesignDialog, WelcomeDialog, JokeDialog, Guide
 from app_icon import make_icon
 from localized_widgets import ChoiceBox
 from ux import install_wheel_guard, smooth_scroll
+from visual_themes import THEMES
+from appearance import colourize_stylesheet
 
 class RFSWindow(QMainWindow):
 
@@ -30,8 +32,9 @@ class RFSWindow(QMainWindow):
         # Install the style before constructing hundreds of child controls.
         from flightdeck import deck_style
         self._styled_dark = self.store.state.get('theme', 'Sombre') == 'Sombre'
-        apply_palette(QApplication.instance(), self._styled_dark)
-        self.setStyleSheet(get_stylesheet(self._styled_dark) + deck_style(self._styled_dark))
+        self._styled_identity = self.store.state.get('visual_theme', 'avionique')
+        apply_palette(QApplication.instance(), self._styled_dark, self._styled_identity)
+        self.setStyleSheet(colourize_stylesheet(get_stylesheet(self._styled_dark) + deck_style(self._styled_dark), self._styled_dark, self._styled_identity))
         set_language(self.store.state["language"])
         self.validation_problems = []
         self.can_copy = False
@@ -104,6 +107,13 @@ class RFSWindow(QMainWindow):
         self.theme_button = QPushButton(tr('☀ Mode clair'))
         self.theme_button.clicked.connect(self.toggle_theme)
         header.addWidget(self.theme_button)
+        self.visual_theme_combo = QComboBox()
+        self.visual_theme_combo.setAccessibleName('Palette de couleurs / Colour palette')
+        for ident, name, *_ in THEMES:
+            self.visual_theme_combo.addItem(name, ident)
+        self.visual_theme_combo.setCurrentIndex(max(0,self.visual_theme_combo.findData(self.store.state.get('visual_theme','avionique'))))
+        self.visual_theme_combo.currentIndexChanged.connect(self.change_visual_theme)
+        header.addWidget(self.visual_theme_combo)
         outer.addLayout(header)
         quick = QHBoxLayout()
         quick.addWidget(QLabel(tr('Type de message')))
@@ -915,15 +925,22 @@ class RFSWindow(QMainWindow):
         # Let the new palette paint before a possibly slow OneDrive disk write.
         self.save_timer.start(250)
 
+    def change_visual_theme(self, *_):
+        self.store.state['visual_theme'] = self.visual_theme_combo.currentData()
+        self._apply_theme()
+        self.save_timer.start(250)
+
     def _apply_theme(self) -> None:
         dark = self.store.state.get('theme', 'Sombre') == 'Sombre'
+        identity = self.store.state.get('visual_theme', 'avionique')
         from flightdeck import deck_style, tx
         self.setUpdatesEnabled(False)
         try:
-            apply_palette(QApplication.instance(), dark)
-            if getattr(self, '_styled_dark', None) != dark:
-                self.setStyleSheet(get_stylesheet(dark) + deck_style(dark))
+            apply_palette(QApplication.instance(), dark, identity)
+            if getattr(self, '_styled_dark', None) != dark or getattr(self, '_styled_identity', None) != identity:
+                self.setStyleSheet(colourize_stylesheet(get_stylesheet(dark) + deck_style(dark), dark, identity))
                 self._styled_dark = dark
+                self._styled_identity = identity
             self.route_map.set_dark(dark)
             self.theme_button.setText(tx('Clair', 'Light') if dark else tx('Sombre', 'Dark'))
         finally:

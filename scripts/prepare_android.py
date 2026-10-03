@@ -9,7 +9,7 @@ import sqlite3
 
 ROOT = Path(__file__).resolve().parents[1]
 ANDROID = ROOT / 'android'
-MODULES = ['map_geometry.py', 'rfs_schema.py', 'templates.py', 'validation.py', 'message_builder.py',
+MODULES = ['map_geometry.py', 'visual_themes.py', 'flight_planning.py', 'map_services.py', 'rfs_schema.py', 'templates.py', 'validation.py', 'message_builder.py',
            'emoji_tokens.py', 'finder/provenance.py', 'fuel/selection.py', 'fuel/duration.py',
            'history_utils.py', 'country_data.py', 'ui_translations.py',
            'finder/__init__.py', 'finder/database.py', 'finder/search.py',

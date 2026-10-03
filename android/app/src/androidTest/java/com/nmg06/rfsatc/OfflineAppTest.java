@@ -93,10 +93,11 @@ public class OfflineAppTest {
     }
     @Test public void launchEngineDatabaseFinderFuelAndRestartWithoutInternetPermission() throws Exception {
         Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        assertEquals(android.content.pm.PackageManager.PERMISSION_DENIED,
-            context.checkSelfPermission("android.permission.INTERNET"));
+        // Optional online layers now have a normal INTERNET permission, but
+        // all these real engine/UI operations run with radios disabled in CI.
         try (ActivityScenario<MainActivity> scenario=ActivityScenario.launch(MainActivity.class)) {
             MainActivity a=activity(scenario);
+            assertEquals("Offline launch must make zero provider requests",0,a.networkRequestsForTest());
             JSONObject bootstrap=call(a,"bootstrap",new JSONObject());
             assertEquals(11,bootstrap.getJSONObject("metadata").getJSONArray("types").length());
             JSONObject state=bootstrap.getJSONObject("value").getJSONObject("state");
@@ -156,5 +157,53 @@ public class OfflineAppTest {
             }
             assertEquals("ANDROID CLIPBOARD last character Z",copied.get());
         }
+    }
+    @Test public void viewportIsOutsideSystemBarsAndCutout() throws Exception {
+        try(ActivityScenario<MainActivity> scenario=ActivityScenario.launch(MainActivity.class)) {
+            MainActivity a=activity(scenario);call(a,"bootstrap",new JSONObject());
+            InstrumentationRegistry.getInstrumentation().runOnMainSync(()->{
+                android.view.WindowInsets insets=a.getWindow().getDecorView().getRootWindowInsets();
+                android.graphics.Insets bars=insets.getInsets(android.view.WindowInsets.Type.systemBars()|android.view.WindowInsets.Type.displayCutout());
+                int[] location=new int[2];a.webForTest().getLocationOnScreen(location);
+                android.util.DisplayMetrics display=new android.util.DisplayMetrics();a.getWindowManager().getDefaultDisplay().getRealMetrics(display);
+                assertTrue("Header under status bar",location[1]>=bars.top);
+                assertTrue("Bottom navigation under system bar",location[1]+a.webForTest().getHeight()<=display.heightPixels-bars.bottom);
+                assertTrue("Content under landscape cutout",location[0]>=bars.left);
+                assertEquals(0,a.webForTest().getPaddingTop());
+                assertTrue(a.webForTest().getHeight()>200);
+            });
+            if("true".equals(InstrumentationRegistry.getArguments().getString("online-services","false"))){
+                OnlineMap service=new OnlineMap();service.enabled=true;
+                JSONObject tile=service.request("native.tile",new JSONObject().put("z",2).put("x",2).put("y",1));
+                assertTrue(tile.getString("data").startsWith("data:image/jpeg;base64,"));
+                JSONObject wind=service.request("native.wind",new JSONObject().put("level",250)
+                    .put("points",new org.json.JSONArray("[[48.8566,2.3522]]")));
+                assertEquals(250,wind.getInt("level"));assertTrue(wind.getJSONArray("samples").length()>0);
+                assertTrue(wind.getJSONArray("samples").getJSONObject(0).getDouble("height_m")>0);
+                assertEquals(2,service.requestCount());
+                System.out.println("LIVE ANDROID: EOX JPEG and Open-Meteo 250 hPa/UTC/AMSL verified");
+            }
+        }
+    }
+    @Test public void localReminderAndLauncherIconAreExplicitAndReversible() throws Exception {
+        Context context=InstrumentationRegistry.getInstrumentation().getTargetContext();
+        boolean hadPermission=context.checkSelfPermission("android.permission.POST_NOTIFICATIONS")==android.content.pm.PackageManager.PERMISSION_GRANTED;
+        try(ActivityScenario<MainActivity> scenario=ActivityScenario.launch(MainActivity.class)) {
+            MainActivity a=activity(scenario);call(a,"bootstrap",new JSONObject());
+            shell("pm grant "+context.getPackageName()+" android.permission.POST_NOTIFICATIONS");
+            long when=System.currentTimeMillis()+3600000;
+            FlightReminder.schedule(a,when,"LFPG → KJFK · offline test");
+            assertEquals(when,a.getSharedPreferences("flight-reminder",0).getLong("when",0));
+            new FlightReminder().onReceive(a,new android.content.Intent(a,FlightReminder.class));
+            android.app.NotificationManager manager=(android.app.NotificationManager)a.getSystemService(Context.NOTIFICATION_SERVICE);
+            assertTrue(manager.getActiveNotifications().length>0);manager.cancel(4);
+            assertEquals(0,a.getSharedPreferences("flight-reminder",0).getLong("when",0));
+            a.new Bridge().request("99998","native.icon","{\"icon\":\"Ocean\"}");
+            Thread.sleep(300);
+            android.content.ComponentName alias=new android.content.ComponentName(a,a.getPackageName()+".IconOcean");
+            assertEquals(android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_ENABLED,a.getPackageManager().getComponentEnabledSetting(alias));
+            a.new Bridge().request("99997","native.icon","{\"icon\":\"Default\"}");
+            Thread.sleep(300);
+        }finally{FlightReminder.cancel(context);if(!hadPermission)shell("pm revoke "+context.getPackageName()+" android.permission.POST_NOTIFICATIONS");}
     }
 }

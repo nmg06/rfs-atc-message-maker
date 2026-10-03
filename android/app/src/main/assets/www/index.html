@@ -9,9 +9,11 @@
   <link rel="stylesheet" href="app.css">
   <script src="map.js" defer></script>
   <script src="app.js" defer></script>
+  <script src="experience.js" defer></script>
+  <script src="online-map.js" defer></script>
 </head>
 <body>
-  <header><div><strong>RFS <span>FLIGHTDECK</span></strong><p id="route">Android · Offline</p></div><button id="settings-open" aria-label="Settings">☰</button></header>
+  <header><div><strong>RFS <span>FLIGHTDECK</span></strong><p id="route">Android · Offline</p><small id="save-status" role="status"></small></div><button id="settings-open" aria-label="Settings" aria-expanded="false"><i></i><i></i><i></i></button></header>
   <div id="loading" role="status">Initialisation du moteur et de la base locale…</div>
   <main id="content"></main>
   <div id="toast" role="status" aria-live="polite"></div>

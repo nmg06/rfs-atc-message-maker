@@ -28,7 +28,7 @@ jobs:
       - name: Python parity and offline tests
         run: python -m unittest discover -s android/tests -v
       - name: JavaScript syntax
-        run: node --check android/app/src/main/assets/www/app.js && node --check android/app/src/main/assets/www/map.js
+        run: node --check android/app/src/main/assets/www/app.js && node --check android/app/src/main/assets/www/map.js && node --check android/app/src/main/assets/www/experience.js && node --check android/app/src/main/assets/www/online-map.js
       - name: Assemble installable debug APK and instrumented tests
         working-directory: android
         run: chmod +x gradlew && ./gradlew --no-daemon assembleDebug assembleDebugAndroidTest
@@ -61,6 +61,7 @@ jobs:
             adb shell settings put system screen_off_timeout 1800000
             ./gradlew --no-daemon connectedDebugAndroidTest
             python ../scripts/test_android_restart.py --adb "$ANDROID_HOME/platform-tools/adb"
+            python ../scripts/test_android_online.py --adb "$ANDROID_HOME/platform-tools/adb"
       - uses: actions/upload-artifact@v4
         if: always()
         with:

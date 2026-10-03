@@ -11,7 +11,7 @@ import zipfile
 def verify(apk, aapt):
     with zipfile.ZipFile(apk) as package:
         for name in ('assets/www/index.html', 'assets/www/app.js', 'assets/www/app.css',
-                     'assets/www/map.js', 'assets/www/world-countries.js',
+                     'assets/www/map.js', 'assets/www/experience.js', 'assets/www/online-map.js', 'assets/www/world-countries.js',
                      'assets/notices/WORLD_MAP_LICENSE.md', 'assets/engine-manifest.json', 'assets/aviation.database'):
             if name not in package.namelist():
                 raise ValueError('Missing APK asset: ' + name)
@@ -34,10 +34,14 @@ def verify(apk, aapt):
         if digest.hexdigest() != manifest['database_sha256'] or size != manifest['database_bytes']:
             raise ValueError('APK database checksum or size mismatch')
     permissions = subprocess.check_output([str(aapt), 'dump', 'permissions', str(apk)], text=True)
-    if any(line.strip().startswith('uses-permission') for line in permissions.splitlines()):
+    import re
+    actual = set(re.findall(r"uses-permission: name='([^']+)'", permissions))
+    allowed = {'android.permission.INTERNET','android.permission.POST_NOTIFICATIONS','android.permission.RECEIVE_BOOT_COMPLETED',
+               'com.nmg06.rfsatc.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION'}
+    if actual != allowed:
         raise ValueError('Unexpected permission in actual APK: ' + permissions)
     print(json.dumps({'apk': str(Path(apk).resolve()), 'bytes': Path(apk).stat().st_size,
-        'database_bytes': size, 'database_sha256': digest.hexdigest(), 'permissions': []}))
+        'database_bytes': size, 'database_sha256': digest.hexdigest(), 'permissions': sorted(actual)}))
 
 
 if __name__ == '__main__':

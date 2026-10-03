@@ -1,15 +1,17 @@
 """Thème officiel « Avionique Sobre » : sombre et clair, inspiré de l'aéronautique moderne."""
 from PySide6.QtGui import QColor, QPalette
 from pathlib import Path
+from visual_themes import theme_colors
 
 
-def apply_palette(app, dark: bool) -> None:
+def apply_palette(app, dark: bool, identity='avionique') -> None:
     # Replacing the native style repolishes every widget (including hidden
     # dialogs). Install it once; a theme toggle only changes the palette.
     if not app.property('_rfs_fusion_initialized'):
         app.setStyle("Fusion")
         app.setProperty('_rfs_fusion_initialized', True)
-    if app.property('_rfs_palette_mode') == ('dark' if dark else 'light'):
+    mode = ('dark' if dark else 'light') + ':' + identity
+    if app.property('_rfs_palette_mode') == mode:
         return
     p = QPalette()
     colors = {
@@ -28,9 +30,26 @@ def apply_palette(app, dark: bool) -> None:
     }
     for role, color in colors.items():
         p.setColor(role, QColor(color))
+    selected = theme_colors(identity, dark)
+    for role, key in ((QPalette.ColorRole.Window,'bg'), (QPalette.ColorRole.Base,'field'),
+                      (QPalette.ColorRole.Button,'card'), (QPalette.ColorRole.Highlight,'accent'),
+                      (QPalette.ColorRole.HighlightedText,'accent_text')):
+        p.setColor(role, QColor(selected[key]))
     p.setColor(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Text, QColor("#7E8DA3"))
     app.setPalette(p)
-    app.setProperty('_rfs_palette_mode', 'dark' if dark else 'light')
+    app.setProperty('_rfs_palette_mode', mode)
+
+
+def colourize_stylesheet(text, dark, identity):
+    """Apply a shared identity to both the established editor and Flightdeck shell."""
+    import re
+    c = theme_colors(identity, dark)
+    replacements = {'#0b1220':c['bg'], '#10151d':c['bg'], '#0d1726':c['field'],
+        '#121d2e':c['card'], '#171e29':c['card'], '#1c2b40':c['card'],
+        '#2563eb':c['accent'], '#60a5fa':c['accent'], '#70e4cd':c['accent'],
+        '#93c5fd':c['accent'], '#1d4ed8':c['accent'], '#1e40af':c['accent']}
+    result = re.sub(r'#[0-9a-fA-F]{6}', lambda m: replacements.get(m[0].lower(),m[0]), text)
+    return result + f'\nQScrollBar::handle:vertical {{ background:{c["accent"]}; }} QPushButton#copy {{ color:{c["accent_text"]}; }}'
 
 
 DARK_STYLESHEET = """

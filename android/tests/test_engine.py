@@ -29,6 +29,47 @@ def flight():
 
 
 class EngineTests(unittest.TestCase):
+    def test_planning_lists_real_runways_without_inventing_gate_or_assignment(self):
+        self.engine.state['flight'].update(departure_icao='LFPG',arrival_icao='ZZZZ')
+        result=self.engine.handle('planning',{})
+        self.assertEqual('LFPG',result['departure']['airport']['icao'])
+        self.assertGreater(len(result['departure']['runways']),0)
+        self.assertEqual([],result['departure']['gates'])
+        self.assertIsNone(result['arrival']['airport'])
+        self.assertEqual([],result['arrival']['runways'])
+        self.assertNotIn('assigned_runway',result['departure'])
+        self.assertTrue(any(v['code']=='LFPG' for v in self.engine.handle('lookup',{'kind':'airport','query':'CDG'})['items']))
+        self.assertTrue(any(v['code']=='AFR' for v in self.engine.handle('lookup',{'kind':'airline','query':'Air France'})['items']))
+
+    def test_flight_log_counts_confirmed_sessions_and_restores_running_clock(self):
+        from flight_planning import elapsed_seconds
+        self.engine.state['flight'].update(departure_icao='LFPG',arrival_icao='KJFK')
+        self.engine.handle('session',{'operation':'start'})
+        active=deepcopy(self.engine.state['active_session'])
+        self.assertEqual(0,len(self.engine.state['flight_log']))
+        restarted=Engine(self.temp.name,self.database)
+        self.assertEqual(active,restarted.state['active_session'])
+        start=datetime.fromisoformat(active['started_at'])
+        from datetime import timedelta
+        self.assertEqual(3600,elapsed_seconds(active,start+timedelta(hours=1)))
+        self.engine.handle('session',{'operation':'pause'})
+        self.assertNotIn('started_at',self.engine.state['active_session'])
+        self.engine.handle('session',{'operation':'resume'})
+        self.engine.handle('session',{'operation':'finish'})
+        self.assertEqual({},self.engine.state['active_session'])
+        self.assertEqual(1,len(self.engine.state['flight_log']))
+        self.assertEqual('LFPG',self.engine.state['flight_log'][0]['flight']['departure_icao'])
+        with self.assertRaises(ValueError):self.engine.handle('session',{'operation':'finish'})
+        broken=deepcopy(self.engine.value);broken['state']['flight_log'][0]['seconds']=-1
+        with self.assertRaises(ValueError):self.engine.validate_backup(broken)
+
+    def test_lightweight_updates_keep_data_and_do_not_return_full_library(self):
+        state=deepcopy(self.engine.state);state['flight']['callsign']='SAVED-WITHOUT-BUTTON';state['visual_theme']='sunset'
+        response=self.engine.handle('update',{'state':state})
+        self.assertEqual({'render','saved'},set(response))
+        self.assertEqual('SAVED-WITHOUT-BUTTON',Engine(self.temp.name,self.database).state['flight']['callsign'])
+        self.assertEqual(10,len(self.engine.metadata()['visual_themes']))
+        self.assertEqual({'saved':True},self.engine.handle('persist',{}))
     def test_offline_map_uses_actual_airport_coordinates_shared_arc_and_no_network(self):
         import socket
         from map_geometry import great_circle

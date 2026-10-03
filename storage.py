@@ -40,6 +40,7 @@ DEFAULT_STATE: dict[str, Any] = {
     "pilot_library": [],
     "server": "",
     "theme": "Sombre",
+    "visual_theme": "avionique",
     "message_type": "ATC REQUEST",
     "current_flight_id": "",
     "flight": empty_flight(),

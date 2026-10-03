@@ -11,6 +11,10 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.FrameLayout;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.graphics.Insets;
 import androidx.webkit.WebViewAssetLoader;
 import com.chaquo.python.Python;
 import com.chaquo.python.android.AndroidPlatform;
@@ -33,8 +37,14 @@ public class MainActivity extends Activity {
     private static final String ORIGIN = "https://appassets.androidplatform.net";
     private static final int DOCUMENT = 10;
     private final ExecutorService worker = Executors.newSingleThreadExecutor();
+    private final java.util.concurrent.ThreadPoolExecutor network = new java.util.concurrent.ThreadPoolExecutor(3,3,0L,java.util.concurrent.TimeUnit.MILLISECONDS,new java.util.concurrent.ArrayBlockingQueue<>(24));
+    private final OnlineMap online=new OnlineMap();
+    private String reminderId;
+    private long reminderWhen;
+    private String reminderText;
     private final List<Uri> images = new ArrayList<>();
     private WebView web;
+    private FrameLayout root;
     private String startupError;
     private String pickerId, pickerMode, documentText;
     private JSONObject report;
@@ -42,14 +52,22 @@ public class MainActivity extends Activity {
 
     @Override public void onCreate(Bundle saved) {
         super.onCreate(saved);
+        androidx.core.view.WindowCompat.setDecorFitsSystemWindows(getWindow(),false);
         web = new WebView(this);
         web.setBackgroundColor(0xff10151d);
-        web.setOnApplyWindowInsetsListener((view, insets) -> {
-            view.setPadding(insets.getSystemWindowInsetLeft(), insets.getSystemWindowInsetTop(),
-                insets.getSystemWindowInsetRight(), insets.getSystemWindowInsetBottom());
-            return insets.consumeSystemWindowInsets();
+        // Padding on WebView does not inset its CSS viewport/fixed navigation.
+        // Give the WebView a genuinely smaller viewport through its parent.
+        root = new FrameLayout(this);
+        root.setBackgroundColor(0xff10151d);
+        root.addView(web,new FrameLayout.LayoutParams(-1,-1));
+        ViewCompat.setOnApplyWindowInsetsListener(root,(view,insets)->{
+            Insets bars=insets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
+            Insets ime=insets.getInsets(WindowInsetsCompat.Type.ime());
+            view.setPadding(bars.left,bars.top,bars.right,Math.max(bars.bottom,ime.bottom));
+            return WindowInsetsCompat.CONSUMED;
         });
-        setContentView(web);
+        setContentView(root);
+        ViewCompat.requestApplyInsets(root);
         web.getSettings().setJavaScriptEnabled(true);
         web.getSettings().setDomStorageEnabled(false);
         web.getSettings().setAllowFileAccess(false);
@@ -141,6 +159,11 @@ public class MainActivity extends Activity {
     public class Bridge {
         @JavascriptInterface public void request(String id, String method, String payload) {
             if (!id.matches("[0-9]{1,12}") || payload.length() > 2 * 1024 * 1024) return;
+            if(method.equals("native.tile")||method.equals("native.wind")){
+                try{network.execute(()->{try{reply(id,new JSONObject().put("ok",true).put("result",online.request(method,new JSONObject(payload))).toString());}catch(Exception e){reply(id,error(e.toString()));}});}
+                catch(java.util.concurrent.RejectedExecutionException e){reply(id,error("Map request queue full"));}
+                return;
+            }
             worker.execute(() -> {
                 try {
                     JSONObject args = new JSONObject(payload);
@@ -153,6 +176,29 @@ public class MainActivity extends Activity {
 
     private void nativeRequest(String id, String method, JSONObject args) throws Exception {
         switch (method) {
+            case "native.online": online.enabled=args.getBoolean("enabled");reply(id,"{\"ok\":true,\"result\":{}}");break;
+            case "native.appearance": {
+                int color=android.graphics.Color.parseColor(args.getString("color"));boolean light=args.optBoolean("light");
+                runOnUiThread(()->{root.setBackgroundColor(color);androidx.core.view.WindowInsetsControllerCompat controller=new androidx.core.view.WindowInsetsControllerCompat(getWindow(),root);controller.setAppearanceLightStatusBars(light);controller.setAppearanceLightNavigationBars(light);});
+                reply(id,"{\"ok\":true,\"result\":{}}");break;
+            }
+            case "native.icon": {
+                String selected=args.getString("icon");if(!java.util.Arrays.asList("Default","Ocean","Sunset").contains(selected))throw new IllegalArgumentException("Unknown icon");
+                android.content.pm.PackageManager pm=getPackageManager();
+                // Enable the new alias before disabling others: never lose launch access.
+                pm.setComponentEnabledSetting(new android.content.ComponentName(this,getPackageName()+".Icon"+selected),android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_ENABLED,android.content.pm.PackageManager.DONT_KILL_APP);
+                for(String name:new String[]{"Default","Ocean","Sunset"})if(!name.equals(selected))pm.setComponentEnabledSetting(new android.content.ComponentName(this,getPackageName()+".Icon"+name),android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED,android.content.pm.PackageManager.DONT_KILL_APP);
+                reply(id,"{\"ok\":true,\"result\":{}}");break;
+            }
+            case "native.reminderCancel": FlightReminder.cancel(this);reply(id,"{\"ok\":true,\"result\":{}}");break;
+            case "native.reminder": {
+                long when=args.getLong("when");String text=args.getString("text");
+                if(when<=System.currentTimeMillis()||when>System.currentTimeMillis()+365L*86400000||text.length()>1000)throw new IllegalArgumentException("Invalid reminder");
+                if(android.os.Build.VERSION.SDK_INT>=33&&checkSelfPermission("android.permission.POST_NOTIFICATIONS")!=android.content.pm.PackageManager.PERMISSION_GRANTED){
+                    if(reminderId!=null)throw new IllegalStateException("Notification permission request already open");
+                    reminderId=id;reminderWhen=when;reminderText=text;runOnUiThread(()->requestPermissions(new String[]{"android.permission.POST_NOTIFICATIONS"},42));
+                }else{FlightReminder.schedule(this,when,text);reply(id,"{\"ok\":true,\"result\":{}}");}break;
+            }
             case "native.copy": case "native.share": {
                 JSONObject result = new JSONObject(command("copy", args.toString()));
                 if (!result.getBoolean("ok")) { reply(id, result.toString()); return; }
@@ -299,9 +345,19 @@ public class MainActivity extends Activity {
         return worker.submit(() -> command(method, payload));
     }
     WebView webForTest() { return web; }
+    int networkRequestsForTest(){return online.requestCount();}
+    @Override public void onRequestPermissionsResult(int request,String[] permissions,int[] grants){
+        super.onRequestPermissionsResult(request,permissions,grants);
+        if(request==42&&reminderId!=null){String id=reminderId;reminderId=null;if(grants.length>0&&grants[0]==android.content.pm.PackageManager.PERMISSION_GRANTED){FlightReminder.schedule(this,reminderWhen,reminderText);reply(id,"{\"ok\":true,\"result\":{}}");}else reply(id,error("Notifications disabled. No reminder scheduled."));}
+    }
+
+    @Override protected void onPause() {
+        if(web!=null)web.evaluateJavascript("window.flushState && window.flushState()",null);
+        super.onPause();
+    }
 
     @Override protected void onDestroy() {
-        worker.shutdown(); super.onDestroy();
+        online.enabled=false;network.shutdownNow();worker.shutdown(); super.onDestroy();
     }
     @Override public void onBackPressed() {
         web.evaluateJavascript("window.goBack && window.goBack()", handled -> {

@@ -91,6 +91,8 @@ def install_shell(w, old):
     w.language_combo.setMinimumWidth(102)
     top.addWidget(w.language_combo)
     top.addWidget(w.theme_button)
+    w.visual_theme_combo.setMaximumWidth(120)
+    top.addWidget(w.visual_theme_combo)
     outer.addLayout(top)
     commands = QHBoxLayout()
     commands.addWidget(QLabel(tx('MESSAGE', 'MESSAGE'), objectName='eyebrow'))

@@ -9,8 +9,8 @@ android {
         applicationId 'com.nmg06.rfsatc'
         minSdk 24
         targetSdk 35
-        versionCode 3
-        versionName '0.3.0-flightdeck'
+        versionCode 4
+        versionName '0.4.0-flightdeck'
         ndk { abiFilters 'arm64-v8a', 'x86_64' }
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
@@ -46,6 +46,7 @@ tasks.configureEach {
 }
 tasks.named('preBuild').configure { dependsOn 'prepareSharedEngine' }
 dependencies {
+    implementation 'androidx.core:core:1.13.1'
     implementation 'androidx.webkit:webkit:1.12.1'
     androidTestImplementation 'androidx.test:runner:1.6.2'
     androidTestImplementation 'androidx.test:rules:1.6.1'

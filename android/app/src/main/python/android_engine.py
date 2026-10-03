@@ -13,6 +13,8 @@ from zoneinfo import available_timezones
 
 from country_data import COUNTRIES
 from map_geometry import airport_coordinates, great_circle
+from visual_themes import THEMES, theme_colors
+from flight_planning import airport_plan, elapsed_seconds, validate_log
 from finder.database import connect_readonly
 from finder.duration import parse_minutes, parse_finder_hours
 from finder.mapping import use_this_flight
@@ -60,7 +62,9 @@ def defaults():
         'per_type': per_type, 'saved_flights': [], 'preview_edits': {},
         'presentation': deepcopy(DEFAULT_PRESENTATION), 'compact_history': True,
         'intro_seen': False, 'joke_seen': False, 'language': 'fr', 'finder_filters': {},
-        'fuel_inputs': {}, 'map_settings': {}, 'recent': {k: [] for k in ('airline', 'aircraft', 'airports', 'controllers', 'servers')}}
+        'fuel_inputs': {}, 'map_settings': {}, 'visual_theme': 'avionique', 'active_session': {}, 'flight_log': [],
+        'design_draft': {}, 'report_draft': {},
+        'recent': {k: [] for k in ('airline', 'aircraft', 'airports', 'controllers', 'servers')}}
 
 
 def atomic_json(path, value):
@@ -109,7 +113,13 @@ def normalise_state(value):
     if state['message_type'] not in ALL_TYPES or state['language'] not in ('fr', 'en'):
         raise ValueError('Unknown message type or language')
     state['flight'] = {**empty_flight(), **state['flight']}
+    if state['visual_theme'] not in {r[0] for r in THEMES}:
+        raise ValueError('Unknown visual theme')
+    validate_log(state['active_session'], state['flight_log'])
     view = state['map_settings']
+    for key in ('satellite', 'winds'):
+        if key in view and type(view[key]) is not bool:
+            raise ValueError('Invalid online map option')
     if 'center' in view and (not isinstance(view['center'], list) or len(view['center']) != 2
             or any(type(v) not in (int, float) or not math.isfinite(v) for v in view['center'])
             or not -180 <= view['center'][1] <= 180 or not -540 <= view['center'][0] <= 540):
@@ -275,6 +285,7 @@ class Engine:
             'finder_fields': {f.name: {'default': deepcopy(getattr(Criteria(), f.name)),
                 'label': finder_tr(f.name, language)} for f in fields(Criteria)},
             'timezones': sorted(available_timezones()), 'rfs_types': TYPE_BY_ID,
+            'visual_themes': [{**theme_colors(r[0]), 'light': theme_colors(r[0], False)} for r in THEMES],
             'warning': self.warning}
 
     def extension(self, kind, flight, data):
@@ -421,6 +432,52 @@ class Engine:
             self.sync(args['state'])
         if method == 'bootstrap':
             return {'value': deepcopy(self.value), 'metadata': self.metadata(), 'render': self.render()}
+        if method == 'update':
+            return {'render': self.render(), 'saved': True}
+        if method == 'persist':
+            return {'saved': True}
+        if method == 'planning':
+            return {k: airport_plan(self.database, self.state['flight'].get(k+'_icao', ''))
+                    for k in ('departure', 'arrival')}
+        if method == 'lookup':
+            query = str(args.get('query', '')).strip().upper()[:80]
+            kind = args.get('kind')
+            with connect_readonly(self.database) as db:
+                if kind == 'airline':
+                    rows = db.execute('SELECT icao AS code,name FROM airlines WHERE icao LIKE ? OR iata LIKE ? OR name LIKE ? ORDER BY name LIMIT 60', (query+'%', query+'%', '%'+query+'%'))
+                elif kind == 'airport':
+                    rows = db.execute('SELECT icao AS code,name FROM airports WHERE icao IS NOT NULL AND (icao LIKE ? OR iata LIKE ? OR name LIKE ?) ORDER BY icao LIMIT 60', (query+'%', query+'%', '%'+query+'%'))
+                else:
+                    raise ValueError('Unknown lookup')
+                return {'items': [dict(r) for r in rows]}
+        if method == 'session':
+            operation = args.get('operation')
+            now = datetime.now(timezone.utc)
+            candidate = deepcopy(self.value)
+            state = candidate['state']
+            current = state['active_session']
+            if operation == 'start':
+                if current:
+                    raise ValueError('A flight session is already open')
+                if not state['flight'].get('departure_icao') or not state['flight'].get('arrival_icao'):
+                    raise ValueError('Choose departure and arrival first')
+                state['active_session'] = {'id': uuid.uuid4().hex, 'flight': deepcopy(state['flight']),
+                    'seconds': 0, 'started_at': now.isoformat()}
+            elif operation in ('pause', 'resume', 'finish'):
+                if not current:
+                    raise ValueError('No flight session started')
+                current['seconds'] = elapsed_seconds(current, now)
+                current.pop('started_at', None)
+                if operation == 'resume':
+                    current['started_at'] = now.isoformat()
+                elif operation == 'finish':
+                    current['completed_at'] = now.isoformat()
+                    state['flight_log'] = [current, *state['flight_log']][:500]
+                    state['active_session'] = {}
+            else:
+                raise ValueError('Unknown flight session operation')
+            self.commit(self.validate_backup(candidate))
+            return {'value': deepcopy(self.value), 'render': self.render()}
         if method == 'map_route':
             endpoints = []
             for key in ('departure_icao', 'arrival_icao'):
@@ -592,6 +649,7 @@ class Engine:
             ident = args.get('id') or uuid.uuid4().hex
             candidate['designs'][ident] = design
             candidate['state']['presentation']['custom_id'] = ident
+            candidate['state']['design_draft'] = {}
             candidate['state']['preview_edits'] = {}
             self.commit(candidate)
         elif method == 'library':
