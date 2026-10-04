@@ -30,10 +30,17 @@ androidTest sont compilées en 0.4.1 (versionCode 5). Une reconstruction finale
 et la vérification du paquet restent en cours ; les tests natifs 0.4.1 ne sont
 pas encore confirmés. Aucune installation sur téléphone physique n’est affirmée.
 
+Le build Windows GitHub, les 122 tests, l’audit de dépendances et CodeQL passent
+sur `9628391`. Le premier test Android échoue sur le focus du presse-papiers :
+le rapport réel identifie une fenêtre **Application Not Responding: com.android.launcher3**
+au-dessus de Flightdeck, qui est visible et réveillé. Le test vérifie désormais
+ce cas exact et ferme uniquement ce lanceur bloqué sur matériel d’émulateur.
+Les assertions de focus, lecture du presse-papiers, copie libre et alertes sont
+conservées ; aucune modification correspondante de l’application livrée.
+
 Source de l’aide : `help_content.py`. Adaptateurs : `help_dialog.py`,
 `assets/help-ui.js`, Android et `mobile/help-adapter.js`. Les préférences
 `strict_validation` et `tutorial_seen` restent dans les sauvegardes locales.
 Le correctif de molette est commun dans `ux.py` ; les palettes traduites gardent
 leurs identifiants canoniques. Le Fuel web auparavant sans fonctions effectives
 utilise les constantes et JSON PC exportés, sans modifier le calcul Windows.
-

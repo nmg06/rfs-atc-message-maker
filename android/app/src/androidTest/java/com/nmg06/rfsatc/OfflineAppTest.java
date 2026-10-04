@@ -147,6 +147,17 @@ public class OfflineAppTest {
             for(int i=0;i<300;i++) {
                 InstrumentationRegistry.getInstrumentation().runOnMainSync(()->focused.set(a.hasWindowFocus()));
                 if(focused.get())break;
+                // A busy CI emulator can show the launcher's own ANR dialog
+                // over our visible activity. Clear only that confirmed system
+                // overlay, only on emulator hardware. Keep the focus assertion
+                // and the real ClipboardManager read below unchanged.
+                if(i==20 && ("ranchu".equals(android.os.Build.HARDWARE) || "goldfish".equals(android.os.Build.HARDWARE))) {
+                    String windows=shell("dumpsys window windows");
+                    if(windows.contains("Application Not Responding: com.android.launcher3")) {
+                        System.out.println("Dedicated emulator: clearing confirmed launcher ANR overlay");
+                        shell("am force-stop com.android.launcher3");
+                    }
+                }
                 Thread.sleep(100);
             }
             if(!focused.get()) {
