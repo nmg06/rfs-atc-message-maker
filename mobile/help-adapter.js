@@ -37,6 +37,7 @@ function translateWebUI() {
  document.getElementById('web-copy-hint').textContent=webT('Désactivez pour copier un texte incomplet. Appuyez sur un avertissement pour remplir le champ.','Disable to copy incomplete text. Tap a warning to fill its field.');
 }
 FlightdeckHelp.init({prototype:true,language:()=>webLanguage,hasSeen:()=>localStorage.getItem('flightdeck-tutorial-seen')==='yes',seen:()=>localStorage.setItem('flightdeck-tutorial-seen','yes'),navigate:(topic,target)=>{
+ if(!['flight','messages','preview','fuel'].includes(topic)){showToast(webT('Cette rubrique est disponible dans les applications Windows et Android.','This section is available in the Windows and Android apps.'));return;}
  const section=topic==='fuel'?'fuel':topic==='preview'?'preview':'form';switchTab(section);
  const ids={departure_icao:'dep_icao',estimated_flight_time:'ete',arrival_ete:'ete'};
  const field=document.getElementById(ids[target]||target);if(field){field.scrollIntoView({block:'center'});field.focus();}

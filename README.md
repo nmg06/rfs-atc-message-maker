@@ -48,7 +48,7 @@ exécutable. Les fichiers JSON de l'ancienne application restent intacts.
 Une première application **Android installable et hors ligne** existe désormais
 dans `android/`, à côté de Windows : moteurs Python partagés, Flight Finder avec
 base embarquée, Fuel Helper, carte locale/frontières, bibliothèque, import des
-quatre fichiers PC, stockage privé et copie native. Version Android 0.4.0 : marges
+quatre fichiers PC, stockage privé et copie native. Depuis Android 0.4 : marges
 Android corrigées, retour des paramètres, détails Finder lisibles, carnet chronométré,
 dix palettes PC/Android, icônes et rappel local facultatif. Satellite/vents en
 option Internet, désactivés au départ. L'APK debug est
@@ -56,6 +56,9 @@ construite et testée sur émulateur API 35, y compris en mode avion et après a
 complet du processus. [Installation, build et limites](docs/android/README.md) ;
 [parité détaillée](docs/android/PARITY.md). Le workflow **Android offline APK**
 fournit l'artefact `RFS-ATC-Android-debug` sans publication de release automatique.
+La 0.4.1 ajoute tutoriel et 30 questions bilingues, copie libre facultative,
+avertissements cliquables et défilement des avions corrigé.
+[État et tests 0.4.1](docs/android/PROGRESS_0.4.1.md) · [English installation guide](docs/INSTALLATION_EN.md).
 
 `build_exe.bat` crée un environnement Python local, installe PySide6 et
 PyInstaller, puis construit le paquet dans `dist\RFSATCMessageMaker`.

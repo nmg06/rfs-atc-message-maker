@@ -1,5 +1,7 @@
 # Installer et utiliser RFS Flightdeck
 
+[Read this guide in English](INSTALLATION_EN.md).
+
 Flightdeck aide à **trouver un vol, préparer le carburant et créer des messages RFS**.
 Vous pouvez l'utiliser sans ATC. Ancien nom : RFS ATC Message Maker.
 Les fonctions principales fonctionnent hors ligne, sans compte ni télémétrie.
@@ -13,13 +15,13 @@ Python n'est pas nécessaire pour installer les fichiers proposés ici.
 | Android 7 ou plus, ARM64 | APK Android | Version de test installable |
 | iPhone / iPad | Aucun pour l'instant | Version iOS non disponible |
 
-**Téléchargements 0.4 vérifiés : [Android](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37202466420/artifacts/11303686722) · [Windows](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37202466582/artifacts/11302894282).**
+**Téléchargements 0.4.1 vérifiés : [Android](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37208845779/artifacts/11305352951) · [Windows](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37208845771/artifacts/11305298080).**
 Connectez-vous à GitHub, cliquez sur votre lien puis décompressez le ZIP reçu.
 Ces fichiers de test expirent le 3 novembre 2026 ; les instructions ci-dessous
 permettent de retrouver un build plus récent.
 
 Les fichiers de test sont dans **GitHub Actions**, sur la branche
-**feat/flightdeck-map-performance**. Le [bilan 0.4](android/PROGRESS_0.4.md)
+**feat/flightdeck-map-performance**. Le [bilan 0.4.1](android/PROGRESS_0.4.1.md)
 donne les liens des builds vérifiés et les limites connues.
 
 1. Ouvrez [les téléchargements Windows](https://github.com/nmg06/rfs-atc-message-maker/actions/workflows/flightdeck.yml) ou [Android](https://github.com/nmg06/rfs-atc-message-maker/actions/workflows/android.yml).
@@ -163,3 +165,8 @@ sur ce poste Windows.
 
 Voir [parité](android/PARITY.md), [architecture/build Android](android/README.md)
 et [preuves 0.4](android/PROGRESS_0.4.md) pour les limites précises.
+
+## Tutoriel et copie libre
+
+[Comprendre les rubriques, rechercher les 30 questions et choisir les contrôles de copie](HELP.md).
+Vous pouvez passer le tutoriel et le retrouver dans Aide ou Paramètres.
