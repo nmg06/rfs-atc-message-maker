@@ -68,7 +68,7 @@ public class OfflineAppTest {
             JSONObject original=call(a,"bootstrap",new JSONObject()).getJSONObject("value");
             try {
                 JSONObject state=new JSONObject(original.getJSONObject("state").toString());
-                state.put("intro_seen",true).put("joke_seen",true);
+                state.put("intro_seen",true).put("joke_seen",true).put("tutorial_seen",true).put("language","en");
                 state.getJSONObject("flight").put("departure_icao","LFPG").put("arrival_icao","KJFK");
                 call(a,"save",new JSONObject().put("state",state));
                 assertEquals(97,call(a,"map_route",new JSONObject()).getJSONArray("route").length());
@@ -90,6 +90,11 @@ public class OfflineAppTest {
                     Thread.sleep(100);
                 }
                 assertEquals("Actual offline WebView map did not render", "true",rendered.get());
+                AtomicReference<String> help=new AtomicReference<>();
+                InstrumentationRegistry.getInstrumentation().runOnMainSync(()->a.webForTest().evaluateJavascript(
+                    "(()=>{FlightdeckHelp.open('map','faq');const box=document.querySelector('.fd-help');const ok=FLIGHTDECK_HELP.faq.length===30 && box.textContent.includes('30 frequently asked questions') && box.querySelectorAll('[data-faq]').length===30;FlightdeckHelp.close();return ok;})()",help::set));
+                for(int i=0;i<100&&help.get()==null;i++)Thread.sleep(100);
+                assertEquals("Offline English guide did not render in actual WebView", "true",help.get());
                 AtomicReference<String> country=new AtomicReference<>();
                 InstrumentationRegistry.getInstrumentation().runOnMainSync(()->a.webForTest().evaluateJavascript(
                     "(()=>{const s=mobileMap.scale(),p=[mobileMap.canvas.clientWidth/2+(2.3522-mobileMap.center[0])*s,mobileMap.canvas.clientHeight/2+(MapProjection.y(48.8566)-mobileMap.center[1])*s];return mobileMap.countryAt(p);})()",country::set));
@@ -111,7 +116,7 @@ public class OfflineAppTest {
             JSONObject bootstrap=call(a,"bootstrap",new JSONObject());
             assertEquals(11,bootstrap.getJSONObject("metadata").getJSONArray("types").length());
             JSONObject state=bootstrap.getJSONObject("value").getJSONObject("state");
-            state.put("intro_seen",true).put("joke_seen",true).put("pilot_name","ANDROID-RESTART-TEST");
+            state.put("intro_seen",true).put("joke_seen",true).put("tutorial_seen",true).put("pilot_name","ANDROID-RESTART-TEST");
             state.put("finder_filters",new JSONObject().put("origin","LFPG").put("max_minutes","2h"));
             call(a,"save",new JSONObject().put("state",state));
             JSONObject found=call(a,"finder",new JSONObject());

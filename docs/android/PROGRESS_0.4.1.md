@@ -38,6 +38,12 @@ ce cas exact et ferme uniquement ce lanceur bloqué sur matériel d’émulateur
 Les assertions de focus, lecture du presse-papiers, copie libre et alertes sont
 conservées ; aucune modification correspondante de l’application livrée.
 
+Les parcours natifs de reprise indiquent explicitement que l’introduction et
+le tutoriel ont été passés, comme le parcours utilisateur testé dans Chrome.
+Le test de carte ouvre aussi réellement la FAQ en anglais dans la WebView,
+vérifie ses 30 questions puis la ferme. Le tutoriel ne doit pas masquer le
+formulaire pendant une vérification de redémarrage.
+
 Source de l’aide : `help_content.py`. Adaptateurs : `help_dialog.py`,
 `assets/help-ui.js`, Android et `mobile/help-adapter.js`. Les préférences
 `strict_validation` et `tutorial_seen` restent dans les sauvegardes locales.
