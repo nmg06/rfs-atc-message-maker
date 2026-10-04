@@ -50,6 +50,8 @@ DEFAULT_STATE: dict[str, Any] = {
     "presentation": deepcopy(DEFAULT_PRESENTATION),
     "compact_history": True,
     "intro_seen": False,
+    "tutorial_seen": False,
+    "strict_validation": True,
     "recent": {"airline": [], "aircraft": [], "airports": [], "controllers": [], "servers": []},
 }
 

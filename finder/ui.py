@@ -102,6 +102,11 @@ class FinderDialog(QDialog):
 
         top.addWidget(QLabel('Flight Finder', objectName='title'))
         top.addStretch()
+        from help_dialog import FlightdeckHelpDialog
+        from i18n import tr as app_tr
+        self.help_button = QPushButton(app_tr('Comprendre cet écran'))
+        self.help_button.clicked.connect(lambda: FlightdeckHelpDialog(self, 'finder').exec())
+        top.addWidget(self.help_button)
         self.outer.addLayout(top)
         self.hint = QLabel()
         self.hint.setWordWrap(True)

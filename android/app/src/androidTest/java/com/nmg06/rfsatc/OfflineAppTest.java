@@ -166,6 +166,23 @@ public class OfflineAppTest {
                 Thread.sleep(100);
             }
             assertEquals("ANDROID CLIPBOARD last character Z",copied.get());
+            // Free copying preserves text even when required fields are empty.
+            state.getJSONObject("per_type").getJSONObject("ATC ACTIVE").put("airport_icao","");
+            state.put("strict_validation",true);
+            assertFalse(call(a,"render",new JSONObject().put("state",state)).getJSONObject("render").getBoolean("can_copy"));
+            state.put("strict_validation",false);
+            state.getJSONObject("preview_edits").put("ATC ACTIVE","ANDROID FREE COPY incomplete Z");
+            JSONObject free=call(a,"render",new JSONObject().put("state",state)).getJSONObject("render");
+            assertTrue(free.getBoolean("can_copy"));assertTrue(free.getJSONArray("issues").length()>0);
+            a.new Bridge().request("99996","native.copy",new JSONObject().put("state",state).toString());
+            for(int i=0;i<100;i++) {
+                InstrumentationRegistry.getInstrumentation().runOnMainSync(()->{
+                    if(clipboard.hasPrimaryClip())copied.set(clipboard.getPrimaryClip().getItemAt(0).coerceToText(a).toString());
+                });
+                if(copied.get().equals("ANDROID FREE COPY incomplete Z"))break;
+                Thread.sleep(100);
+            }
+            assertEquals("ANDROID FREE COPY incomplete Z",copied.get());
         }
     }
     @Test public void viewportIsOutsideSystemBarsAndCutout() throws Exception {
@@ -201,12 +218,15 @@ public class OfflineAppTest {
             MainActivity a=activity(scenario);call(a,"bootstrap",new JSONObject());
             shell("pm grant "+context.getPackageName()+" android.permission.POST_NOTIFICATIONS");
             long when=System.currentTimeMillis()+3600000;
+            a.getSharedPreferences("interface",0).edit().putString("language","en").apply();
             FlightReminder.schedule(a,when,"LFPG → KJFK · offline test");
             assertEquals(when,a.getSharedPreferences("flight-reminder",0).getLong("when",0));
             new FlightReminder().onReceive(a,new android.content.Intent(a,FlightReminder.class));
             android.app.NotificationManager manager=(android.app.NotificationManager)a.getSystemService(Context.NOTIFICATION_SERVICE);
             for(int i=0;i<100&&manager.getActiveNotifications().length==0;i++)Thread.sleep(100);
-            assertTrue("Local notification was not posted",manager.getActiveNotifications().length>0);manager.cancel(4);
+            assertTrue("Local notification was not posted",manager.getActiveNotifications().length>0);
+            assertEquals("RFS Flightdeck · Preparation",manager.getActiveNotifications()[0].getNotification().extras.getString(android.app.Notification.EXTRA_TITLE));
+            manager.cancel(4);
             assertEquals(0,a.getSharedPreferences("flight-reminder",0).getLong("when",0));
             a.new Bridge().request("99998","native.icon","{\"icon\":\"Ocean\"}");
             android.content.ComponentName alias=new android.content.ComponentName(a,a.getPackageName()+".IconOcean");

@@ -23,6 +23,10 @@ class FuelDialog(QDialog):
         self.alternate_data = load_json('airport_alternates.json')
         outer = QVBoxLayout(self)
         outer.addWidget(QLabel(tr('RFS FUEL HELPER'), objectName='title'))
+        from help_dialog import FlightdeckHelpDialog
+        self.help_button = QPushButton(tr('Comprendre cet écran'))
+        self.help_button.clicked.connect(lambda: FlightdeckHelpDialog(self, 'fuel').exec())
+        outer.addWidget(self.help_button)
         disclaimer = QLabel(tr(DISCLAIMER), objectName='danger')
         disclaimer.setWordWrap(True)
         outer.addWidget(disclaimer)

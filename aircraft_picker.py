@@ -1,7 +1,7 @@
 """Catalogue selection with a separate search field; never edits the selected value."""
 from PySide6.QtCore import Qt, QEvent
 from PySide6.QtWidgets import QComboBox, QFrame, QVBoxLayout, QLineEdit, QListWidget, QListWidgetItem, QLabel, QPushButton, QInputDialog
-from i18n import language
+from i18n import language, tr
 
 
 class AircraftPicker(QComboBox):
@@ -19,7 +19,7 @@ class AircraftPicker(QComboBox):
         layout.addWidget(self.options)
         layout.addWidget(self.summary)
         if allow_custom:
-            custom = QPushButton('Autre avion / Custom aircraft', self.popup)
+            custom = QPushButton(tr('Autre avion'), self.popup)
             custom.clicked.connect(self._custom)
             layout.addWidget(custom)
         self.search.textChanged.connect(self._filter)
@@ -39,7 +39,7 @@ class AircraftPicker(QComboBox):
 
     def _custom(self):
         self.hidePopup()
-        value, accepted = QInputDialog.getText(self, 'Avion / Aircraft', 'Nom / Name', text=self.currentText())
+        value, accepted = QInputDialog.getText(self, tr('Avion'), tr('Nom :'), text=self.currentText())
         if accepted and value.strip():
             self.setCurrentText(value.strip())
 

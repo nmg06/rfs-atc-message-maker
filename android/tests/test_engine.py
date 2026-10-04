@@ -29,6 +29,34 @@ def flight():
 
 
 class EngineTests(unittest.TestCase):
+    def test_free_copy_retains_warnings_exact_message_and_persisted_choice(self):
+        self.engine.state['presentation']['discord_aligned']=False
+        self.engine.state['flight']['departure_icao']=''
+        self.engine.state['preview_edits']['ATC REQUEST']='An incomplete flight as-is'
+        self.assertFalse(self.engine.render()['can_copy'])
+        with self.assertRaises(ValueError):self.engine.handle('copy',{})
+        self.engine.state['strict_validation']=False
+        self.assertTrue(self.engine.render()['issues'])
+        result=self.engine.handle('copy',{})
+        self.assertEqual('An incomplete flight as-is',result['text'])
+        restored=Engine(self.temp.name,self.database)
+        self.assertFalse(restored.state['strict_validation'])
+        self.assertEqual('An incomplete flight as-is',restored.render()['clipboard'])
+        restored.state['strict_validation']=True
+        self.assertFalse(restored.render()['can_copy'])
+        restored.state['strict_validation']=False
+        restored.state['preview_edits']['ATC REQUEST']='  '
+        self.assertFalse(restored.render()['can_copy'])
+
+    def test_english_theme_metadata_and_help_flags_restore(self):
+        state=self.engine.state
+        state.update(language='en',tutorial_seen=True,strict_validation=False)
+        self.engine.handle('save',{'state':state})
+        names={v['name'] for v in self.engine.metadata()['visual_themes']}
+        self.assertIn('Avionics',names);self.assertIn('Forest',names)
+        self.assertFalse(names&{'Avionique','Océan','Aurore','Crépuscule','Forêt','Ambre','Lavande'})
+        self.assertTrue(Engine(self.temp.name,self.database).state['tutorial_seen'])
+
     def test_planning_lists_real_runways_without_inventing_gate_or_assignment(self):
         self.engine.state['flight'].update(departure_icao='LFPG',arrival_icao='ZZZZ')
         result=self.engine.handle('planning',{})

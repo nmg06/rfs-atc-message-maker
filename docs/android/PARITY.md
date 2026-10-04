@@ -24,7 +24,7 @@ modification et le prototype mobile est conservé.
 | Historique compact / duplication | OK | OK | Compaction PC, conservation/restauration testées ; 200 entrées |
 | Vols sauvegardés / rappel / favoris | OK | OK | Renommer/supprimer/rappeler, collisions et redémarrage testés ; vol actuel conservé |
 | Bibliothèque pilotes / préférences | OK | OK | Ajouter/modifier/supprimer, choix des messages, rappel et préférences conservés après édition du vol |
-| FR/EN / sombre-clair / 249 pays-drapeaux | OK | partiel | Changement langue testé ; quelques textes techniques non traduits |
+| FR/EN / sombre-clair / 249 pays-drapeaux | OK | partiel | Menus, choix, palettes et aide contrôlés en anglais ; données saisies et fenêtres système gardent leur langue |
 | Finder SQLite local / critères / pagination | OK avec base externe | OK | Snapshot embarqué, 577 résultats LFPG ≤2h, pages 100→200 ; parité PC |
 | UTILISER CE VOL / conservation des inconnues | OK | OK | Mapping PC identique ; UI et champs manuels testés |
 | Fuseaux / DST / avertissements / pistes disponibles | OK | OK | Moteurs PC, sources, distinction observé/estimé/non vérifié partagée ; bornes estimées jamais appelées percentiles |
@@ -97,3 +97,18 @@ vérifie les vrais fournisseurs. Le cinquième test natif, notification/icône,
 est exécuté séparément en dernier et passe également.
 [Exécution 0.4 réussie](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37202466420).
 Ces preuves ne remplacent pas les essais sur le téléphone de l'utilisateur.
+
+## Étape 0.4.1 — aide et corrections
+
+| Fonction | Windows | Android | Prototype web | Vérification |
+|---|---|---|---|---|
+| Tutoriel de 8 rubriques, passer et revoir | OK | OK | OK | Parcours Qt et navigateur, choix conservé après reprise |
+| 30 questions bilingues, recherche et réponses | OK | OK | OK | Contenu unique exporté, FAQ ETE et recherche testées |
+| Copie libre facultative avec alertes conservées | OK | OK | partiel | Moteurs et reprise testés ; contrôles web limités aux champs du prototype |
+| Alertes ouvrant le champ ou l’aperçu | OK | OK | partiel | ICAO focalisé sur PC/Android ; champs présents sur le prototype |
+| Défilement avion par molette et pavé tactile | OK | OK | OK | Qt : liste, en-tête et limites sans changer la sélection ; sélecteurs web natifs |
+| Calcul Fuel web issu des références PC | OK | OK | partiel | 567 combinaisons PC/JS identiques à 10⁻⁶ kg ; application vérifiée ; UI web moins complète |
+
+La traduction des commandes ne traduit pas les textes de l’utilisateur. Le
+prototype ne contient pas le Finder SQLite et ne remplace pas l’APK. Les preuves
+de build/installations de cette étape sont suivies dans [PROGRESS_0.4.1](PROGRESS_0.4.1.md).

@@ -13,9 +13,10 @@ THEMES = (
 )
 
 
-def theme_colors(identity='avionique', dark=True):
+def theme_colors(identity='avionique', dark=True, language='fr'):
     row = next((r for r in THEMES if r[0] == identity), THEMES[0])
-    return dict(id=row[0], name=row[1], accent=row[2] if dark else row[3],
+    from ui_translations import EN
+    return dict(id=row[0], name=EN.get(row[1], row[1]) if language=='en' else row[1], accent=row[2] if dark else row[3],
         bg=row[4] if dark else '#f1f5f9' if row[0]=='avionique' else '#f3f5f8', card=row[5] if dark else '#ffffff',
         field=row[4] if dark else '#f5f7fa', text='#edf4fa' if dark else '#142731',
         muted='#b0bdd0' if dark else '#516172', border='#495768' if dark else '#cbd5df',

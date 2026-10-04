@@ -12,10 +12,24 @@ class WheelGuard(QObject):
             return False
         control = watched
         while control is not None and not isinstance(control, (QComboBox, QAbstractSpinBox)):
+            # A custom aircraft popup contains a real list, nested under its
+            # combo. Its own viewport must scroll before guarding the combo.
+            if isinstance(control, QAbstractScrollArea):
+                return False
             control = control.parentWidget() if hasattr(control, 'parentWidget') else None
         if control is None:
             return False
         if isinstance(control, QComboBox):
+            popup = getattr(control, 'popup', None)
+            options = getattr(control, 'options', None)
+            if popup is not None and popup.isVisible() and options is not None:
+                # Wheels over the popup search/header (or at a list boundary)
+                # must stay in the list, never scroll the form behind it.
+                delta = event.pixelDelta().y() or event.angleDelta().y() / 120 * 54
+                bar = options.verticalScrollBar()
+                bar.setValue(bar.value() - int(delta))
+                event.accept()
+                return True
             view = control.view()
             if view and view.isVisible():
                 return False

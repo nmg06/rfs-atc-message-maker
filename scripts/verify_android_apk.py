@@ -6,16 +6,23 @@ import json
 from pathlib import Path
 import subprocess
 import zipfile
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 
 def verify(apk, aapt):
     with zipfile.ZipFile(apk) as package:
         for name in ('assets/www/index.html', 'assets/www/app.js', 'assets/www/app.css',
                      'assets/www/map.js', 'assets/www/experience.js', 'assets/www/online-map.js', 'assets/www/world-countries.js',
+                     'assets/www/help-content.js', 'assets/www/help-ui.js', 'assets/www/help-ui.css', 'assets/www/help-adapter.js',
                      'assets/notices/WORLD_MAP_LICENSE.md', 'assets/engine-manifest.json', 'assets/aviation.database'):
             if name not in package.namelist():
                 raise ValueError('Missing APK asset: ' + name)
         manifest = json.loads(package.read('assets/database-manifest.json'))
+        from help_content import CONTENT
+        guide = package.read('assets/www/help-content.js').decode('utf-8')
+        if json.loads(guide.removeprefix('window.FLIGHTDECK_HELP=')[:-2]) != CONTENT:
+            raise ValueError('APK guide differs from shared bilingual catalogue')
         engine = json.loads(package.read('assets/engine-manifest.json'))
         prefix = 'window.FLIGHTDECK_COUNTRIES='
         source = package.read('assets/www/world-countries.js').decode('utf-8')

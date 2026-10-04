@@ -17,11 +17,12 @@ public class FlightReminder extends BroadcastReceiver {
         long when=p.getLong("when",0);if(when==0)return;
         if(Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())){if(when>System.currentTimeMillis())schedule(c,when,p.getString("text","RFS Flightdeck"));else cancel(c);return;}
         if(Build.VERSION.SDK_INT>=33&&c.checkSelfPermission("android.permission.POST_NOTIFICATIONS")!=android.content.pm.PackageManager.PERMISSION_GRANTED){cancel(c);return;}
+        boolean english="en".equals(c.getSharedPreferences("interface",0).getString("language","fr"));
         NotificationManager manager=(NotificationManager)c.getSystemService(Context.NOTIFICATION_SERVICE);
-        if(Build.VERSION.SDK_INT>=26)manager.createNotificationChannel(new NotificationChannel("preparation","Flight preparation / Préparation du vol",NotificationManager.IMPORTANCE_DEFAULT));
+        if(Build.VERSION.SDK_INT>=26)manager.createNotificationChannel(new NotificationChannel("preparation",english?"Flight preparation":"Préparation du vol",NotificationManager.IMPORTANCE_DEFAULT));
         Notification.Builder b=Build.VERSION.SDK_INT>=26?new Notification.Builder(c,"preparation"):new Notification.Builder(c);
         Intent open=new Intent(c,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        b.setSmallIcon(R.drawable.notification_icon).setContentTitle("RFS Flightdeck · Préparation / Preparation").setContentText(p.getString("text","Votre vol"))
+        b.setSmallIcon(R.drawable.notification_icon).setContentTitle(english?"RFS Flightdeck · Preparation":"RFS Flightdeck · Préparation").setContentText(p.getString("text",english?"Your flight":"Votre vol"))
             .setContentIntent(PendingIntent.getActivity(c,4,open,PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_IMMUTABLE)).setAutoCancel(true);
         manager.notify(4,b.build());cancel(c);
     }

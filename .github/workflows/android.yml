@@ -3,9 +3,9 @@ on:
   workflow_dispatch:
   push:
     branches: [main, 'feat/android-*', 'feat/flightdeck-*']
-    paths: ['android/**', 'scripts/prepare_android.py', 'scripts/verify_android_apk.py', 'scripts/test_android*.py', '*.py', 'finder/**', 'fuel/**', 'assets/world_countries.json', 'assets/WORLD_MAP_LICENSE.md', 'docs/fuel/reference/**', '.github/workflows/android.yml']
+    paths: ['android/**', 'scripts/prepare_android.py', 'scripts/export_help.py', 'assets/help-ui.*', 'scripts/verify_android_apk.py', 'scripts/test_android*.py', '*.py', 'finder/**', 'fuel/**', 'assets/world_countries.json', 'assets/WORLD_MAP_LICENSE.md', 'docs/fuel/reference/**', '.github/workflows/android.yml']
   pull_request:
-    paths: ['android/**', 'scripts/prepare_android.py', 'scripts/verify_android_apk.py', 'scripts/test_android*.py', '*.py', 'finder/**', 'fuel/**', 'assets/world_countries.json', 'assets/WORLD_MAP_LICENSE.md', 'docs/fuel/reference/**', '.github/workflows/android.yml']
+    paths: ['android/**', 'scripts/prepare_android.py', 'scripts/export_help.py', 'assets/help-ui.*', 'scripts/verify_android_apk.py', 'scripts/test_android*.py', '*.py', 'finder/**', 'fuel/**', 'assets/world_countries.json', 'assets/WORLD_MAP_LICENSE.md', 'docs/fuel/reference/**', '.github/workflows/android.yml']
 permissions:
   contents: read
 jobs:
@@ -29,7 +29,8 @@ jobs:
       - name: Python parity and offline tests
         run: python -m unittest discover -s android/tests -v
       - name: JavaScript syntax
-        run: node --check android/app/src/main/assets/www/app.js && node --check android/app/src/main/assets/www/map.js && node --check android/app/src/main/assets/www/experience.js && node --check android/app/src/main/assets/www/online-map.js
+        run: |
+          for source in android/app/src/main/assets/www/*.js mobile/*.js; do node --check "$source"; done
       - name: Assemble installable debug APK and instrumented tests
         working-directory: android
         run: chmod +x gradlew && ./gradlew --no-daemon assembleDebug assembleDebugAndroidTest

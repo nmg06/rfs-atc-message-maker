@@ -11,6 +11,9 @@ solutions aux problèmes fréquents. Aucune version iPhone installable actuellem
 
 **[Téléchargement et installation Windows / Android / état iPhone](docs/INSTALLATION.md)**
 
+**[Tutoriel, 30 questions fréquentes et copie libre](docs/HELP.md)** — aide
+consultable dans l’application, que l’on peut passer et retrouver ensuite.
+
 Les améliorations Flightdeck sont sur `feat/flightdeck-map-performance`, la première
 APK sur `feat/android-offline`. Les workflows produisent des artefacts de test,
 sans publier automatiquement une nouvelle release.

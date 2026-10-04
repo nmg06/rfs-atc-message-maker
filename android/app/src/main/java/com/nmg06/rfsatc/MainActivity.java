@@ -184,6 +184,10 @@ public class MainActivity extends Activity {
             case "native.online": online.enabled=args.getBoolean("enabled");reply(id,"{\"ok\":true,\"result\":{}}");break;
             case "native.appearance": {
                 int color=android.graphics.Color.parseColor(args.getString("color"));boolean light=args.optBoolean("light");
+                String locale=args.optString("language","fr");
+                if(!locale.equals("fr")&&!locale.equals("en"))throw new IllegalArgumentException("Unknown language");
+                android.content.SharedPreferences preferences=getSharedPreferences("interface",0);
+                if(!locale.equals(preferences.getString("language","fr")))preferences.edit().putString("language",locale).apply();
                 runOnUiThread(()->{
                     root.setBackgroundColor(color);
                     // API 35 uses transparent bars over the parent. Older

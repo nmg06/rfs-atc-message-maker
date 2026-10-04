@@ -22,6 +22,8 @@ def digest(path):
 
 
 def prepare(database=None):
+    from export_help import export
+    export()
     bundled = ANDROID / 'bundled'
     bundled.mkdir(parents=True, exist_ok=True)
     if database:

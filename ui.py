@@ -5,10 +5,11 @@ from copy import deepcopy
 from datetime import datetime
 import uuid
 import json
+from html import escape
 from pathlib import Path
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QFont, QKeySequence, QShortcut
-from PySide6.QtWidgets import QAbstractItemView, QApplication, QCheckBox, QComboBox, QDialog, QDialogButtonBox, QFormLayout, QFrame, QGroupBox, QHBoxLayout, QHeaderView, QInputDialog, QLabel, QLineEdit, QMainWindow, QMessageBox, QMenu, QFileDialog, QPlainTextEdit, QPushButton, QScrollArea, QSplitter, QTableWidget, QTableWidgetItem, QTextEdit, QToolButton, QGridLayout, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QAbstractItemView, QApplication, QCheckBox, QComboBox, QDialog, QDialogButtonBox, QFormLayout, QFrame, QGroupBox, QHBoxLayout, QHeaderView, QInputDialog, QLabel, QLineEdit, QMainWindow, QMessageBox, QMenu, QFileDialog, QPlainTextEdit, QPushButton, QScrollArea, QSplitter, QTableWidget, QTableWidgetItem, QTextEdit, QToolButton, QGridLayout, QVBoxLayout, QWidget, QToolTip
 from rfs_schema import Field, FLAGS, FLIGHT_FIELDS, FLIGHT_FIELDS_BY_TYPE, FLIGHT_TYPES, MESSAGE_FIELDS, MESSAGE_TYPES, empty_flight, empty_per_type
 from storage import LOGGER, Store
 from templates import render
@@ -42,6 +43,7 @@ class RFSWindow(QMainWindow):
         self.flight_widgets: dict[str, QWidget] = {}
         self.type_widgets: dict[str, QWidget] = {}
         self.render_error = ''
+        self.help_dialog = None
         self.setWindowTitle('RFS Flightdeck')
         self.setWindowIcon(make_icon())
         self.resize(1290, 880)
@@ -109,9 +111,9 @@ class RFSWindow(QMainWindow):
         self.theme_button.clicked.connect(self.toggle_theme)
         header.addWidget(self.theme_button)
         self.visual_theme_combo = QComboBox()
-        self.visual_theme_combo.setAccessibleName('Palette de couleurs / Colour palette')
+        self.visual_theme_combo.setAccessibleName(tr('Palette de couleurs'))
         for ident, name, *_ in THEMES:
-            self.visual_theme_combo.addItem(name, ident)
+            self.visual_theme_combo.addItem(tr(name), ident)
         self.visual_theme_combo.setCurrentIndex(max(0,self.visual_theme_combo.findData(self.store.state.get('visual_theme','avionique'))))
         self.visual_theme_combo.currentIndexChanged.connect(self.change_visual_theme)
         header.addWidget(self.visual_theme_combo)
@@ -285,10 +287,19 @@ class RFSWindow(QMainWindow):
         right.addWidget(self.preview, 1)
         self.issues = QLabel('', objectName='danger')
         self.issues.setWordWrap(True)
+        self.issues.setTextFormat(Qt.TextFormat.RichText)
+        self.issues.setTextInteractionFlags(Qt.TextInteractionFlag.TextBrowserInteraction)
+        self.issues.setOpenExternalLinks(False)
+        self.issues.setToolTip(tr('Cliquez sur un avertissement pour ouvrir le champ à corriger.'))
+        self.issues.linkActivated.connect(self.focus_validation_issue)
         right.addWidget(self.issues)
         self.status = QLabel(tr("Aperçu en direct. Le message n'est jamais envoyé automatiquement."), objectName='muted')
         self.status.setWordWrap(True)
         right.addWidget(self.status)
+        self.strict_validation = QCheckBox(tr('Vérifier avant copie'))
+        self.strict_validation.setToolTip(tr('Activé : les champs requis et les limites sont obligatoires. Désactivé : copiez votre texte tel quel, même incomplet ; les avertissements restent visibles.'))
+        self.strict_validation.toggled.connect(self._copy_policy_changed)
+        right.addWidget(self.strict_validation)
         copy_row = QHBoxLayout()
         self.copy_button = QPushButton(tr('Copier le message'), objectName='copy')
         self.copy_button.setToolTip(tr('Copier le message — Ctrl+Maj+C'))
@@ -308,6 +319,7 @@ class RFSWindow(QMainWindow):
         self._building = True
         self.message_type.setCurrentText(self.store.state.get('message_type', 'ATC REQUEST'))
         self.pilot_name.setCurrentText(self.store.state.get('pilot_name', 'n1chita'))
+        self.strict_validation.setChecked(self.store.state.get('strict_validation', True) is not False)
         self._load_presentation()
         self._refresh_pilot_names()
         self._refresh_saved_flights()
@@ -525,6 +537,40 @@ class RFSWindow(QMainWindow):
         self.save_timer.start()
         self._refresh_validation()
 
+    def _copy_policy_changed(self, checked):
+        if self._building:
+            return
+        self.store.state['strict_validation'] = checked
+        self.save_state()
+        self._refresh_validation()
+
+    def focus_validation_issue(self, link='issue-0'):
+        """Use the same navigation for warning links and a blocked copy."""
+        from flightdeck import show_page
+        show_page(self, 1)
+        try:
+            issue = self.validation_problems[int(str(link).removeprefix('issue-'))]
+        except (ValueError, IndexError):
+            self.preview.setFocus()
+            return
+        widget = self.flight_widgets.get(issue.field) or self.type_widgets.get(issue.field)
+        if issue.field == 'pilot_name':
+            widget = self.pilot_name
+        elif issue.field == 'pilots':
+            widget = self.pilots_button
+        elif issue.field in ('design', 'length', 'emoji'):
+            if issue.field == 'design':
+                self.presentation_toggle.setChecked(True)
+                self._toggle_presentation(True)
+                widget = self.design_combo
+            else:
+                widget = self.preview
+        if widget:
+            widget.setFocus(Qt.FocusReason.OtherFocusReason)
+            if self.form_scroll.widget().isAncestorOf(widget):
+                self.form_scroll.ensureWidgetVisible(widget, 20, 45)
+            QToolTip.showText(widget.mapToGlobal(widget.rect().center()), tr(issue.text), widget)
+
     def _refresh_validation(self) -> None:
         message_type = self.message_type.currentText()
         flight = self.store.state['flight']
@@ -550,9 +596,9 @@ class RFSWindow(QMainWindow):
                 problems.append(Issue('emoji', tr('Plus de 6 emojis : réduisez-les avant Copy.')))
         if problems:
             self.issues.setObjectName('danger')
-            shown = [tr(issue.text) for issue in problems[:5]]
-            more = tr(' (+{count} autres)', count=len(problems) - 5) if len(problems) > 5 else ''
-            self.issues.setText(tr('À compléter : ') + ' • '.join(shown) + more)
+            shown = [f'<a href="issue-{i}" style="color: inherit">{escape(tr(issue.text))}</a>' for i, issue in enumerate(problems)]
+            hint = tr('Copie libre : avertissements facultatifs.') if not self.strict_validation.isChecked() else tr('À compléter : ')
+            self.issues.setText(escape(hint) + '<br>' + '<br>'.join(shown))
         else:
             self.issues.setText(tr('Prêt à copier.'))
             self.issues.setObjectName('muted')
@@ -561,7 +607,7 @@ class RFSWindow(QMainWindow):
         self.validation_problems = problems
         from flightdeck import refresh
         refresh(self)
-        self.can_copy = not problems and bool(self.preview.toPlainText().strip())
+        self.can_copy = bool(self.preview.toPlainText().strip()) and (not self.strict_validation.isChecked() or not problems)
         self.copy_button.setEnabled(True)
         for form, widgets in ((self.flight_form, self.flight_widgets), (self.message_form, self.type_widgets)):
             for key, widget in widgets.items():
@@ -598,16 +644,7 @@ class RFSWindow(QMainWindow):
             show_page(self, 1)
             self.issues.setStyleSheet('color: #ef4444; font-weight: 700;')
             QTimer.singleShot(650, self.issues, lambda: self.issues.setStyleSheet(''))
-            for issue in self.validation_problems:
-                widget = self.flight_widgets.get(issue.field) or self.type_widgets.get(issue.field)
-                if issue.field == 'pilot_name':
-                    widget = self.pilot_name
-                elif issue.field == 'pilots':
-                    widget = self.pilots_button
-                if widget:
-                    widget.setFocus(Qt.FocusReason.OtherFocusReason)
-                    self.form_scroll.ensureWidgetVisible(widget, 20, 45)
-                    break
+            self.focus_validation_issue()
             self.status.setText(tr('Copie impossible : corrigez les champs signalés à gauche.'))
             return
         text = self._clipboard_message()
@@ -709,6 +746,7 @@ class RFSWindow(QMainWindow):
             self.store.state['finder_database'] = str(dialog.path)
             self.route_map.set_database_path(dialog.path)
             self.save_state()
+
         except Exception as error:
             LOGGER.exception('Flight Finder indisponible')
             QMessageBox.warning(self, tr('Flight Finder'), str(error))
@@ -961,6 +999,9 @@ class RFSWindow(QMainWindow):
         self.copy_button.setText(tr('Copier le message'))
 
     def change_language(self, *_):
+        help_topic = self.help_dialog.topics.currentData() if self.help_dialog else None
+        if self.help_dialog:
+            self.help_dialog.close()
         selected = self.language_combo.currentData()
         if selected == language():
             return
@@ -981,6 +1022,8 @@ class RFSWindow(QMainWindow):
         self.render_preview()
         self.save_state()
         old.deleteLater()
+        if help_topic:
+            self.open_help(help_topic)
 
     def show_welcome(self):
         if not self.store.state.get('intro_seen'):
@@ -996,6 +1039,18 @@ class RFSWindow(QMainWindow):
             dialog.exec()
             self.store.state['intro_seen'] = dialog.remember.isChecked()
             self.save_state()
+
+        if not self.store.state.get('tutorial_seen'):
+            self.open_help('flight', offer=True)
+
+    def open_help(self, topic='flight', offer=False):
+        from help_dialog import FlightdeckHelpDialog
+        if self.help_dialog:
+            self.help_dialog.close()
+        dialog = FlightdeckHelpDialog(self, topic, offer)
+        self.help_dialog = dialog
+        dialog.finished.connect(lambda _: setattr(self, 'help_dialog', None) if self.help_dialog is dialog else None)
+        dialog.show()
 
     def replay_joke(self):
         dialog = JokeDialog(self)

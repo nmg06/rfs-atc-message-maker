@@ -61,7 +61,7 @@ def defaults():
         'message_type': 'ATC REQUEST', 'current_flight_id': '', 'flight': empty_flight(),
         'per_type': per_type, 'saved_flights': [], 'preview_edits': {},
         'presentation': deepcopy(DEFAULT_PRESENTATION), 'compact_history': True,
-        'intro_seen': False, 'joke_seen': False, 'language': 'fr', 'finder_filters': {},
+        'intro_seen': False, 'joke_seen': False, 'tutorial_seen': False, 'strict_validation': True, 'language': 'fr', 'finder_filters': {},
         'fuel_inputs': {}, 'map_settings': {}, 'visual_theme': 'avionique', 'active_session': {}, 'flight_log': [],
         'design_draft': {}, 'report_draft': {},
         'recent': {k: [] for k in ('airline', 'aircraft', 'airports', 'controllers', 'servers')}}
@@ -281,11 +281,12 @@ class Engine:
             'designs': BUILTIN_DESIGNS, 'emoji_styles': EMOJI_STYLES,
             'operation_modes': list(OPERATION_LABELS), 'countries': COUNTRIES,
             'aircraft': load_json('aircraft_fuel_data.json')['aircraft'],
+            'fuel_catalogue_note': tr(load_json('aircraft_fuel_data.json').get('note', '')),
             'arrivals': sorted(load_json('airport_alternates.json')['destinations']),
             'finder_fields': {f.name: {'default': deepcopy(getattr(Criteria(), f.name)),
                 'label': finder_tr(f.name, language)} for f in fields(Criteria)},
             'timezones': sorted(available_timezones()), 'rfs_types': TYPE_BY_ID,
-            'visual_themes': [{**theme_colors(r[0]), 'light': theme_colors(r[0], False)} for r in THEMES],
+            'visual_themes': [{**theme_colors(r[0], language=language), 'light': theme_colors(r[0], False, language)} for r in THEMES],
             'warning': self.warning}
 
     def extension(self, kind, flight, data):
@@ -380,7 +381,7 @@ class Engine:
         if kind != 'DISPATCH FORM' and count > 6:
             problems.append(Issue('emoji', tr('Plus de 6 emojis : réduisez-les avant Copy.')))
         return {'preview': preview, 'clipboard': clipboard, 'issues': [asdict(p) for p in problems],
-                'characters': len(clipboard), 'emojis': count, 'can_copy': not problems and bool(preview.strip())}
+                'characters': len(clipboard), 'emojis': count, 'can_copy': bool(preview.strip()) and (not self.state['strict_validation'] or not problems)}
 
     def sync(self, state):
         candidate = deepcopy(self.value)
@@ -736,4 +737,4 @@ def request(method, payload):
         result = _engine.handle(method, json.loads(payload))
         return json.dumps({'ok': True, 'result': result}, ensure_ascii=False, allow_nan=False)
     except Exception as error:
-        return json.dumps({'ok': False, 'error': str(error)}, ensure_ascii=False)
+        return json.dumps({'ok': False, 'error': tr(str(error))}, ensure_ascii=False)

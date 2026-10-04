@@ -73,6 +73,8 @@ def install_shell(w, old):
     w.help_menu.addAction(tx('Formulaire en ligne — problème ou suggestion', 'Online form — issue or suggestion'), w.open_feedback_form)
     w.help_menu.addAction(tx('Rapport local et pièces jointes…', 'Local report and attachments…'), w.open_report)
     w.help_menu.addAction(tx('Revoir la blague', 'Replay the joke'), w.replay_joke)
+    w.help_menu.addSeparator()
+    w.help_menu.addAction(tx('Tutoriel et questions fréquentes', 'Tutorial and frequently asked questions'), w.open_help)
     help_button.setMenu(w.help_menu)
     nav.addWidget(help_button)
     local = QLabel(tx('LOCAL  /  SANS COMPTE', 'LOCAL  /  NO ACCOUNT'), objectName='navCaption')
@@ -100,6 +102,9 @@ def install_shell(w, old):
     w.message_type.setMinimumWidth(190)
     commands.addWidget(w.message_type)
     commands.addStretch()
+    w.context_help = QPushButton(tx('Comprendre cet écran', 'Understand this screen'))
+    w.context_help.clicked.connect(lambda: w.open_help('messages' if w.deck_pages.currentIndex() == 1 else 'flight'))
+    commands.addWidget(w.context_help)
     commands.addWidget(w.pilots_button)
     outer.addLayout(commands)
 
@@ -125,6 +130,9 @@ def install_shell(w, old):
     w.route_map.setMinimumHeight(235)
     map_layout.addWidget(w.route_map, 1)
     map_layout.addWidget(w.route_map.create_country_controls(map_frame))
+    map_help = QPushButton(tx('Comprendre la carte', 'Understand the map'))
+    map_help.clicked.connect(lambda: w.open_help('map'))
+    map_layout.addWidget(map_help)
     w.route_map.countries_selected.connect(lambda origin, destination: w.open_finder({'origin_country': origin, 'destination_country': destination}))
     home_layout.addWidget(map_frame, 1)
     stats = QHBoxLayout()
@@ -221,7 +229,9 @@ def refresh(w):
     for kind, button in w.phase_buttons:
         button.setChecked(kind == w.message_type.currentText())
     problems = getattr(w, 'validation_problems', [])
-    if problems:
+    if problems and not w.store.state.get('strict_validation', True):
+        w.deck_readiness.setText(tx('Copie libre : les avertissements restent consultables.', 'Free copying: warnings remain available.'))
+    elif problems:
         w.deck_readiness.setText(tx(f'{len(problems)} point(s) à compléter avant la copie.', f'{len(problems)} item(s) to complete before copying.'))
     else:
         w.deck_readiness.setText(tx('Message prêt. Relisez-le, puis copiez-le vers Discord.', 'Message ready. Review it, then copy it to Discord.'))

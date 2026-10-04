@@ -61,6 +61,24 @@ def main() -> int:
             (DATA_DIR / 'smoke-result.json').write_text(json.dumps({'window': window.windowTitle(), 'finder': dialog.windowTitle(), 'dst_utc': instant.isoformat(), 'warnings': warnings, 'real_database_matches': found['matches'] if found else None, 'fuel_example_kg': calculate_fuel('airbus_a220_300', 5, 'EGLL')['total_block_fuel_kg_exact'], 'map_airports':list(window.route_map._codes), 'map_route_samples':len(window.route_map._route), 'map_land_loaded':not land_path().isEmpty()}), encoding='utf-8')
             window.language_combo.setCurrentIndex(window.language_combo.findData('en'))
             app.processEvents()
+            window.open_help('preview')
+            app.processEvents()
+            help_window = window.help_dialog
+            if len(help_window.faq_rows) != 30 or help_window.topics.currentText() != 'Preview and copying':
+                raise RuntimeError('Packaged bilingual guide is incomplete')
+            help_window.grab().save(str(DATA_DIR / 'smoke-help-en.png'))
+            help_window.close()
+            window.aligned.setChecked(False)
+            window.preview_timer.stop()
+            window.preview.setPlainText('PACKAGED FREE COPY incomplete Z')
+            window.strict_validation.setChecked(False)
+            window.copy_message()
+            if app.clipboard().text() != 'PACKAGED FREE COPY incomplete Z' or not window.validation_problems:
+                raise RuntimeError('Packaged free copy or warning retention failed')
+            result_path = DATA_DIR / 'smoke-result.json'
+            result = json.loads(result_path.read_text(encoding='utf-8'))
+            result.update(help_questions=30, english_themes=[window.visual_theme_combo.itemText(i) for i in range(10)], free_copy=True)
+            result_path.write_text(json.dumps(result), encoding='utf-8')
             window.grab().save(str(DATA_DIR / 'smoke-main-en.png'))
             from report_dialog import ReportDialog
             from dialogs import UnifiedDesignDialog

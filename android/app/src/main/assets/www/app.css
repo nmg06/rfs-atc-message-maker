@@ -20,3 +20,5 @@ nav{padding:10px 8px 14px;min-height:78px}nav button{touch-action:manipulation}m
 .grid .field:has(input[id$="aircraft"]){grid-column:1/-1}dialog{max-height:85dvh;overflow:auto;overscroll-behavior:contain}
 @media(prefers-reduced-motion:reduce){#settings-open i{transition:none}}
 .map-shell{border:1px solid var(--border);border-radius:14px;overflow:hidden;margin:14px 0;background:var(--field)}#route-map{display:block;width:100%;height:clamp(260px,45vh,520px);touch-action:none;cursor:grab}#route-map:active{cursor:grabbing}#map-status{padding:9px 12px;margin:0}.map-actions{margin-bottom:14px}.map-actions button:first-child,.map-actions button:nth-child(2){flex:0 0 52px}.map-countries{margin-top:14px}.library-actions{margin-top:12px}.pilot-editor{max-height:85vh;overflow:auto}nav button{overflow-wrap:anywhere;font-size:10px;min-height:48px}nav button span{font-size:18px}
+
+.issue-link{display:block;text-align:left;width:100%;margin:8px 0;padding:12px;line-height:1.5}.issue-target{outline:3px solid var(--accent,#70e4cd);outline-offset:3px}.context-help{margin:0 0 18px;min-height:44px}.copy-policy{margin:16px 0}

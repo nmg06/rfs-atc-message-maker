@@ -7,8 +7,8 @@ const assert=require('node:assert/strict');
  await page.exposeFunction('testRequest',async(id,method,payload)=>{requests.push(method);if(method==='native.finish'){await page.evaluate(id=>window.androidReply(id,{ok:true,result:{}}),id);return;}const response=await fetch(`http://127.0.0.1:${port}/rpc`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({method,args:JSON.parse(payload)})});await page.evaluate(({id,envelope})=>window.androidReply(id,envelope),{id,envelope:await response.json()});});
  await page.addInitScript(()=>window.Android={request:(...args)=>window.testRequest(...args)});
  await page.goto(`http://127.0.0.1:${port}/index.html`);try{await page.locator('[data-action="welcome-joke"], [data-action="welcome-done"], #flight-callsign').first().waitFor({state:'attached'});}catch(e){console.error(await page.evaluate(()=>({loading:$('loading').textContent,screen,model:!!model,toast:$('toast').textContent})));await browser.close();throw e;}
- if(await page.locator('[data-action="welcome-joke"]').count())await page.locator('[data-action="welcome-joke"]').click();
- if(await page.locator('[data-action="welcome-done"]').count()){await page.locator('[data-action="welcome-done"]').click();await page.locator('#flight-callsign').waitFor({state:'attached'});}
+ if(await page.locator('[data-action="welcome-joke"]').count()){await page.locator('[data-action="welcome-joke"]').click();await page.locator('[data-action="welcome-done"]').waitFor();}
+ if(await page.locator('[data-action="welcome-done"]').count()){await page.locator('[data-action="welcome-done"]').click();await page.locator('.fd-help [data-help="close"]').first().click();await page.locator('#flight-callsign').waitFor({state:'attached'});}
  await page.evaluate(async()=>{model.state.language='fr';model.state.finder_filters={};model.state.flight.departure_icao='LFPG';model.state.flight.arrival_icao='KJFK';model.state.flight_log=[];model.state.active_session={};setResult(await rpc('bootstrap',stateArgs()));paint();});
  // Real menu returns to the exact tool and scroll position; reduced-motion CSS.
  await page.locator('[data-screen="finder"]').click();await page.locator('#finder-origin').fill('LFPG');await page.locator('#finder-max_minutes').fill('2h');
@@ -38,7 +38,7 @@ const assert=require('node:assert/strict');
  await page.locator('[data-screen="flight"]').click();await page.locator('summary').filter({hasText:'Préparation au sol'}).click();await page.locator('[data-action="planning"]').click();
  await page.locator('#planning-output table').first().waitFor();assert((await page.locator('#planning-output').textContent()).includes('Portes : indisponibles'));
  await page.locator('[data-action="session"][data-operation="start"]').click();await page.waitForFunction(()=>Boolean(model.state.active_session.started_at));
- await page.reload();await page.waitForFunction(()=>Boolean(model.state.active_session.started_at));assert.equal(await page.locator('#flight-callsign').inputValue(),'LAST-BYTE-Z');
+ await page.reload();await page.waitForFunction(()=>Boolean(model.state.active_session.started_at));if(!await page.locator('#flight-callsign').count())console.error(await page.evaluate(()=>({screen,intro:model.state.intro_seen,tutorial:model.state.tutorial_seen,errors:$('toast').textContent})));assert.equal(await page.locator('#flight-callsign').inputValue(),'LAST-BYTE-Z');
  assert.equal(await page.evaluate(()=>model.state.visual_theme),'sunset');
  page.on('dialog',d=>d.accept());await page.locator('[data-action="session"][data-operation="finish"]').click();await page.waitForFunction(()=>model.state.flight_log.length===1);
  await page.locator('[data-experience="lookup-open"][data-target="flight-departure_icao"]').click();await page.locator('#lookup-query').fill('CDG');await page.locator('[data-experience="lookup-select"][data-code="LFPG"]').click();

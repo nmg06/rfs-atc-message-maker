@@ -87,4 +87,19 @@ EN.update({
 })
 
 # Desktop UX refresh
+EN.update({
+    'Comprendre cet écran': 'Understand this screen',
+    'Tutoriel et questions fréquentes': 'Tutorial and frequently asked questions',
+    'Avionique': 'Avionics', 'Aurore': 'Aurora', 'Crépuscule': 'Sunset',
+    'Forêt': 'Forest', 'Ambre': 'Amber', 'Lavande': 'Lavender',
+    'Palette de couleurs': 'Colour palette', 'Autre avion': 'Custom aircraft',
+    'Avion': 'Aircraft', 'Nom :': 'Name:', 'MM / AA': 'MM / YY',
+    'Vérifier avant copie': 'Check before copying',
+    'Activé : les champs requis et les limites sont obligatoires. Désactivé : copiez votre texte tel quel, même incomplet ; les avertissements restent visibles.':
+        'On: required fields and limits are enforced. Off: copy your text as it is, even if incomplete; warnings remain visible.',
+    'Copie libre : avertissements facultatifs.': 'Free copy: warnings are optional.',
+    'Cliquez sur un avertissement pour ouvrir le champ à corriger.': 'Click a warning to open the field to correct.',
+    'Tous les avertissements': 'All warnings',
+    'Champ suivant à compléter': 'Next field to complete',
+})
 EN.update({'Présentation du message': 'Message appearance', '01  Préparer le vol': '01  Prepare your flight', '02  Aperçu Discord': '02  Discord preview', 'Favoris et historique': 'Favourites and history', 'Un favori conserve un modèle de vol ; l’historique retrouve les messages copiés.': 'A favourite saves a flight preset; history keeps copied messages.', 'Recrée le message depuis le formulaire et remplace les modifications manuelles. Ctrl+Entrée': 'Rebuild the message from the form, replacing manual edits. Ctrl+Enter', 'Copier le message — Ctrl+Maj+C': 'Copy message — Ctrl+Shift+C'})

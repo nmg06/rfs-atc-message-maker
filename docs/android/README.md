@@ -1,7 +1,7 @@
 # RFS Flightdeck — Android
 
 Première application Android hors ligne, développée à côté de Windows dans
-`android/`. Le prototype `mobile/index.html` reste intact. État vérifié et
+`android/`. Le prototype `mobile/index.html` reste séparé et incomplet. État vérifié et
 limites : [PARITY.md](PARITY.md). Audit et choix :
 [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md).
 
@@ -59,6 +59,15 @@ ICAO, lettre d'information, piste et QNH. Ces trois modèles sont des extensions
 Android, sans équivalent Windows servant de référence.
 
 ## Construire
+
+Depuis 0.4.1, un tutoriel de huit rubriques et 30 questions fréquentes suit la
+langue choisie. On peut passer l’aide puis la retrouver dans les paramètres.
+Les alertes de validation ouvrent les champs concernés ; Vérifier avant copie
+permet de choisir une copie libre, avec alertes conservées. Voir [utilisation](../HELP.md).
+
+Les contenus bilingues viennent de `help_content.py`. `scripts/export_help.py`
+produit les mêmes fichiers locaux pour Android et le prototype web, avec les
+constantes et références du calcul Fuel web dérivées automatiquement du PC.
 
 Prérequis de développement uniquement : Git, Python **3.11**, JDK **17**,
 Android SDK avec platform 35/build-tools 35.0.0 et licences acceptées. JDK 21
