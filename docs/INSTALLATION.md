@@ -13,7 +13,7 @@ Python n'est pas nécessaire pour installer les fichiers proposés ici.
 | Android 7 ou plus, ARM64 | APK Android | Version de test installable |
 | iPhone / iPad | Aucun pour l'instant | Version iOS non disponible |
 
-**Téléchargements 0.4 vérifiés : [Android](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37163877211/artifacts/11288786472) · [Windows](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37163877231/artifacts/11288646852).**
+**Téléchargements 0.4 vérifiés : [Android](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37202466420/artifacts/11303686722) · [Windows](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37202466582/artifacts/11302894282).**
 Connectez-vous à GitHub, cliquez sur votre lien puis décompressez le ZIP reçu.
 Ces fichiers de test expirent le 3 novembre 2026 ; les instructions ci-dessous
 permettent de retrouver un build plus récent.
@@ -101,7 +101,7 @@ terminés ; une recherche n'ajoute aucune heure.
 Le rappel demande l'autorisation de notification quand vous le programmez.
 Son horaire est approximatif selon Android et l'économie d'énergie.
 Il n'effectue aucune recherche ou météo en arrière-plan.
-Un arrêt forcé peut désactiver les alarmes jusqu'à la réouverture.
+Après un arrêt forcé Android, reprogrammez le rappel dans les Paramètres.
 
 Pour revoir la blague manquée : Android **Paramètres > Revoir la blague de bienvenue** ;
 Windows **Aide et suggestions > Revoir la blague**. Aucun paiement ni saisie bancaire.

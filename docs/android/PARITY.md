@@ -95,5 +95,5 @@ instrumentation, arrêt complet/reprise avec JSON identique et formulaire rendu.
 Un test supplémentaire active explicitement Internet sur l'émulateur dédié et
 vérifie les vrais fournisseurs. Le cinquième test natif, notification/icône,
 est exécuté séparément en dernier et passe également.
-[Exécution 0.4 réussie](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37163877211).
+[Exécution 0.4 réussie](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37202466420).
 Ces preuves ne remplacent pas les essais sur le téléphone de l'utilisateur.

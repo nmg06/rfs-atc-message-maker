@@ -83,11 +83,11 @@ messages Windows restent la référence ; les couches météo ne les modifient p
 | Services réels Android, activation explicite | Un test passe : JPEG EOX et vent 250 hPa, UTC/hauteur AMSL |
 | Analyse locale Bandit | Aucun résultat de gravité moyenne/haute ; résultats faibles conservés dans le journal |
 
-Preuve installée sur le code `84dbe522f43dbdce196c64b4035c7ac178c3d99d` :
-[Android 0.4](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37163877211),
-[Windows 0.4](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37163877231),
-[tests et dépendances](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37163877236)
-et [CodeQL](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37163877225) réussissent.
+Preuve installée sur le code `e217bb3b2dd5aa288bf3a2d48a6d34bbba5f5846` :
+[Android 0.4](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37202466420),
+[Windows 0.4](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37202466582),
+[tests et dépendances](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37202466338)
+et [CodeQL](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37202466373) réussissent.
 Les quatre tests principaux sont rejoués après réinstallation, puis le processus
 est arrêté et relancé. Le test en ligne attend la connexion Wi-Fi réelle après
 le mode avion ; le test des icônes/notifications est exécuté en dernier, car un
@@ -98,8 +98,8 @@ pas encore la fluidité sur tous les téléphones.
 
 ## Téléchargements vérifiés
 
-- [APK Android 0.4](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37163877211/artifacts/11288786472).
-- [ZIP Windows 0.4](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37163877231/artifacts/11288646852).
+- [APK Android 0.4](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37202466420/artifacts/11303686722).
+- [ZIP Windows 0.4](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37202466582/artifacts/11302894282).
 - [Installation simple et dépannage](../INSTALLATION.md).
 
 Ces artefacts demandent une connexion GitHub et expirent après 30 jours.

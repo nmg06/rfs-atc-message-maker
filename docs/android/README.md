@@ -115,8 +115,8 @@ commit `6bdc5a8`, trois tests natifs ; [bilan de livraison](PROGRESS_0.3.md).
 La version 0.4 est également installée et testée le 4 octobre 2026 : quatre
 tests principaux en mode avion, arrêt complet/reprise, puis services réels
 facultatifs et notification/icône séparément. Toutes ces vérifications passent.
-[Exécution 0.4 et artefacts](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37163877211),
-code testé `84dbe52` ; [preuves et limites physiques](PROGRESS_0.4.md).
+[Exécution 0.4 et artefacts](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37202466420),
+code testé `e217bb3` ; [preuves et limites physiques](PROGRESS_0.4.md).
 La base gzip est embarquée sous `assets/aviation.database` pour éviter que AAPT
 décompresse/renomme automatiquement les fichiers portant l'extension `.gz`.
 `scripts/verify_android_apk.py` vérifie le contenu réel et les seules permissions
@@ -263,7 +263,7 @@ actuel. Android 13+ demande l'autorisation uniquement lors de sa programmation.
 Un seul rappel remplaçable ; annulation dans Paramètres. Horaire approximatif,
 potentiellement retardé par économie de batterie ; pas d'alarme exacte ni recherche
 de vol/météo en arrière-plan. Reprogrammé après redémarrage si encore futur ;
-une fermeture forcée peut le suspendre jusqu'à la réouverture. Les réglages du
+après un arrêt forcé Android, reprogrammez-le dans les Paramètres. Les réglages du
 canal Android permettent aussi de couper le son/les notifications.
 
 Permissions 0.4 : `INTERNET`, `POST_NOTIFICATIONS`, `RECEIVE_BOOT_COMPLETED` et
