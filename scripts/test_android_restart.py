@@ -14,11 +14,15 @@ PACKAGE = 'com.nmg06.rfsatc'
 def run(adb, serial):
     if not serial.startswith('emulator-'):
         raise ValueError('This automated test requires a dedicated emulator')
-    def command(*args):
+    def command(*args, timeout=90):
         return subprocess.check_output([str(adb), '-s', serial, *args], text=True,
-            encoding='utf-8', errors='replace', timeout=90).strip()
+            encoding='utf-8', errors='replace', timeout=timeout).strip()
     if command('shell', 'settings', 'get', 'global', 'airplane_mode_on') != '1':
         raise ValueError('Enable airplane mode before this test')
+    # The previous runner has just finished. Stop its target and test process
+    # before replacing their packages; retain all private saved data.
+    command('shell', 'am', 'force-stop', PACKAGE)
+    command('shell', 'am', 'force-stop', PACKAGE+'.test')
     command('install', '-r', str(ROOT/'android/app/build/outputs/apk/debug/app-debug.apk'))
     command('install', '-r', str(ROOT/'android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk'))
     core_tests = ','.join('com.nmg06.rfsatc.OfflineAppTest#'+name for name in (
@@ -27,7 +31,8 @@ def run(adb, serial):
         'offlineMapRendersLocalBordersRouteAndCountrySelection',
         'viewportIsOutsideSystemBarsAndCutout'))
     report = command('shell', 'am', 'instrument', '-w', '-e', 'class', core_tests,
-                     PACKAGE+'.test/androidx.test.runner.AndroidJUnitRunner')
+                     PACKAGE+'.test/androidx.test.runner.AndroidJUnitRunner', timeout=360)
+    print(report)
     if 'OK (4 tests)' not in report or 'FAILURES' in report:
         raise ValueError('Instrumentation did not pass: ' + report)
     def saved():
@@ -66,4 +71,21 @@ if __name__ == '__main__':
     parser.add_argument('--adb', type=Path, required=True)
     parser.add_argument('--serial', default='emulator-5554')
     args = parser.parse_args()
-    run(args.adb, args.serial)
+    try:
+        run(args.adb, args.serial)
+    except Exception as error:
+        if not args.serial.startswith('emulator-'):
+            raise
+        if isinstance(error, subprocess.TimeoutExpired):
+            output=error.stdout or ''
+            print(output.decode('utf-8',errors='replace') if isinstance(output,bytes) else output)
+        # Collect diagnostics here, while the emulator is still running: the
+        # workflow runner tears it down before the next Actions step.
+        logs=subprocess.run([str(args.adb),'-s',args.serial,'logcat','-d','-t','3000'],
+            text=True,encoding='utf-8',errors='replace',capture_output=True,timeout=30)
+        target=ROOT/'build/android-test-logcat.txt'
+        target.parent.mkdir(exist_ok=True)
+        target.write_text(logs.stdout,encoding='utf-8')
+        print('\n'.join(line for line in logs.stdout.splitlines()
+            if any(key in line for key in ('rfsatc','TestRunner','AndroidRuntime','ANR')))[-16000:])
+        raise

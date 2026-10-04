@@ -37,7 +37,10 @@ public class OfflineAppTest {
         // overlay before each ActivityScenario, rather than relying on boot focus.
         shell("input keyevent KEYCODE_WAKEUP");
         shell("wm dismiss-keyguard");
-        shell("input keyevent KEYCODE_HOME");
+        // HOME key injection returns while the previous task is still moving.
+        // Wait for the real launcher Activity before starting the next scenario.
+        String home=shell("am start -W -a android.intent.action.MAIN -c android.intent.category.HOME");
+        assertTrue("Launcher not ready: "+home,home.contains("Status: ok"));
         // ActivityScenario waits for the launched Activity's lifecycle itself.
         // A global waitForIdleSync can wait forever after launcher icon changes.
     }
