@@ -26,10 +26,24 @@ const assert=require('node:assert/strict');
  await page.locator('#settings-open').click();await page.locator('#state-visual_theme').selectOption('sunset');
  await page.waitForFunction(()=>getComputedStyle(document.documentElement).getPropertyValue('--accent')==='#ffb393');
  await page.locator('#settings-open').click();await page.locator('[data-screen="flight"]').click();
- // Consecutive keystrokes are saved once; immediate navigation flushes last byte.
+ // Schedule the input burst on the browser thread so host/CI command delays
+ // cannot space keyboard messages beyond the debounce interval. All events
+ // still exercise the real input handler, debounce and persisted backend.
+ await page.evaluate(()=>flushEdits());
  const before=requests.filter(v=>v==='update').length;
- await page.locator('#flight-callsign').pressSequentially('XYZ',{delay:10});
+ const burst=await page.evaluate(()=>{const el=$('flight-callsign'),start=performance.now();for(const letter of 'XYZ'){el.value+=letter;el.dispatchEvent(new Event('input',{bubbles:true}));}return{elapsed:performance.now()-start,value:el.value};});
  await page.waitForTimeout(350);assert(requests.filter(v=>v==='update').length-before<=2);
+ await page.evaluate(()=>flushEdits());assert.equal(await page.evaluate(()=>model.state.flight.callsign),burst.value);
+ // Two simultaneous callers share exactly one save of the same revision.
+ const concurrentBefore=requests.filter(v=>v==='update').length;
+ await page.evaluate(async()=>{const el=$('flight-callsign');el.value='CONCURRENT-SAVE';el.dispatchEvent(new Event('input',{bubbles:true}));await Promise.all([flushEdits(),flushEdits()]);});
+ assert.equal(requests.filter(v=>v==='update').length-concurrentBefore,1);
+ // A new byte during the first save is awaited by every caller before exit.
+ const latestBefore=requests.filter(v=>v==='update').length;
+ await page.evaluate(async()=>{const el=$('flight-callsign');el.value='EARLIER-BYTE';el.dispatchEvent(new Event('input',{bubbles:true}));const first=flushEdits(),second=flushEdits();el.value='LATEST-BYTE';el.dispatchEvent(new Event('input',{bubbles:true}));await Promise.all([first,second]);});
+ assert.equal(requests.filter(v=>v==='update').length-latestBefore,2);
+ assert.equal(await page.evaluate(()=>model.state.flight.callsign),'LATEST-BYTE');
+ // Immediate navigation flushes the last byte before leaving this screen.
  await page.locator('#flight-callsign').fill('LAST-BYTE-Z');await page.locator('[data-screen="map"]').click();
  await page.waitForFunction(()=>mobileMap?.data.route.length===97&&countryGeometry?.length===242);
  assert.equal(await page.evaluate(()=>mobileMap.canvas.width/mobileMap.canvas.clientWidth),1.75);
@@ -59,5 +73,5 @@ const assert=require('node:assert/strict');
  await page.reload();await page.waitForFunction(()=>Boolean(model));assert.equal(await page.locator('#flight-callsign').inputValue(),'EXIT-LAST-BYTE');
  await page.setViewportSize({width:320,height:640});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth),320);
  await page.locator('[data-screen="flight"]').click();await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:process.argv[3]||'build/phone-0.4.png'});
- assert.deepEqual(errors,[]);console.log(JSON.stringify({pass:true,menu_return:true,readable_details:true,autosave_restart:true,planning:true,log:true,searchable_lists:true,zero_online_requests:true,canvas_draw_ms:timing}));await browser.close();
+ assert.deepEqual(errors,[]);console.log(JSON.stringify({pass:true,menu_return:true,readable_details:true,autosave_restart:true,planning:true,log:true,searchable_lists:true,zero_online_requests:true,debounce_burst_ms:burst.elapsed,shared_flush:true,latest_revision_awaited:true,canvas_draw_ms:timing}));await browser.close();
 })().catch(e=>{console.error(e);process.exit(1);});

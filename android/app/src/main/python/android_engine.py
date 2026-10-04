@@ -36,36 +36,7 @@ from rfs_schema import (Field, MESSAGE_TYPES, FLIGHT_TYPES, FLIGHT_FIELDS,
     MESSAGE_FIELDS, FLIGHT_FIELDS_BY_TYPE, empty_flight, empty_per_type)
 from validation import Issue, REQUIRED_FLIGHT, REQUIRED_MESSAGE, emoji_count
 
-EXTENSIONS = {
-    'PUSHBACK': {'pushback': Field('Pushback (minutes)', required=True),
-                 'direction': Field('Direction', choices=('Left', 'Right', 'Straight'), kind='choice'),
-                 'server': Field('Serveur'), 'note': Field('Note', kind='multiline')},
-    'TAXI': {'taxi_route': Field('Taxi route', required=True),
-             'hold_short': Field('Hold short'), 'server': Field('Serveur'), 'note': Field('Note', kind='multiline')},
-    'ATIS': {'airport_icao': Field('ICAO aéroport', required=True),
-             'information': Field('Information letter', required=True),
-             'wind': Field('Wind'), 'visibility': Field('Visibility'), 'weather': Field('Weather'),
-             'cloud': Field('Cloud'), 'temperature': Field('Temperature / dew point'),
-             'qnh': Field('QNH'), 'runway': Field('Runway'), 'remarks': Field('Remarks', kind='multiline')},
-}
-ALL_TYPES = (*MESSAGE_TYPES, *EXTENSIONS)
-ANDROID_FLIGHT_TYPES = (*FLIGHT_TYPES, 'PUSHBACK', 'TAXI')
-STATE_LIMIT = 2 * 1024 * 1024
-
-
-def defaults():
-    per_type = empty_per_type()
-    per_type.update({kind: {key: False if field.kind == 'bool' else '' for key, field in spec.items()}
-                     for kind, spec in EXTENSIONS.items()})
-    return {'pilot_name': 'n1chita', 'pilot_library': [], 'server': '', 'theme': 'Sombre',
-        'message_type': 'ATC REQUEST', 'current_flight_id': '', 'flight': empty_flight(),
-        'per_type': per_type, 'saved_flights': [], 'preview_edits': {},
-        'presentation': deepcopy(DEFAULT_PRESENTATION), 'compact_history': True,
-        'intro_seen': False, 'joke_seen': False, 'tutorial_seen': False, 'strict_validation': True, 'language': 'fr', 'finder_filters': {},
-        'fuel_inputs': {}, 'map_settings': {}, 'visual_theme': 'avionique', 'active_session': {}, 'flight_log': [],
-        'design_draft': {}, 'report_draft': {},
-        'recent': {k: [] for k in ('airline', 'aircraft', 'airports', 'controllers', 'servers')}}
-
+from backup_bundle import (EXTENSIONS, ALL_TYPES, ANDROID_FLIGHT_TYPES, STATE_LIMIT, defaults, check_json, normalise_state, pc_state, validate_design, validate_payload, parse_backup, export_backup, merge_payloads, summary, localise_error, preserve_device_preferences)
 
 def atomic_json(path, value):
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -80,121 +51,6 @@ def atomic_json(path, value):
     finally:
         if temporary:
             temporary.unlink(missing_ok=True)
-
-
-def check_json(value, depth=0):
-    if depth > 24:
-        raise ValueError('Backup nesting exceeds limit')
-    if isinstance(value, str) and len(value) > 20000:
-        raise ValueError('Text exceeds limit')
-    if isinstance(value, float) and not math.isfinite(value):
-        raise ValueError('Invalid number')
-    if isinstance(value, dict):
-        for key, item in value.items():
-            if not isinstance(key, str):
-                raise ValueError('Invalid key')
-            check_json(item, depth + 1)
-    elif isinstance(value, list):
-        if len(value) > 1000:
-            raise ValueError('Collection exceeds limit')
-        for item in value:
-            check_json(item, depth + 1)
-
-
-def normalise_state(value):
-    if not isinstance(value, dict):
-        raise ValueError('Invalid state')
-    check_json(value)
-    state = defaults()
-    for key, item in value.items():
-        if key in state and type(item) is not type(state[key]):
-            raise ValueError('Invalid state field: ' + key)
-        state[key] = deepcopy(item)
-    if state['message_type'] not in ALL_TYPES or state['language'] not in ('fr', 'en'):
-        raise ValueError('Unknown message type or language')
-    state['flight'] = {**empty_flight(), **state['flight']}
-    if state['visual_theme'] not in {r[0] for r in THEMES}:
-        raise ValueError('Unknown visual theme')
-    validate_log(state['active_session'], state['flight_log'])
-    view = state['map_settings']
-    for key in ('satellite', 'winds'):
-        if key in view and type(view[key]) is not bool:
-            raise ValueError('Invalid online map option')
-    if 'center' in view and (not isinstance(view['center'], list) or len(view['center']) != 2
-            or any(type(v) not in (int, float) or not math.isfinite(v) for v in view['center'])
-            or not -180 <= view['center'][1] <= 180 or not -540 <= view['center'][0] <= 540):
-        raise ValueError('Invalid map center')
-    if 'zoom' in view and (type(view['zoom']) not in (int, float) or not 1 <= view['zoom'] <= 32768):
-        raise ValueError('Invalid map zoom')
-    for key in ('origin_country', 'destination_country'):
-        if view.get(key) and view[key] not in {c for c, _ in COUNTRIES}:
-            raise ValueError('Invalid map country')
-    for key in FLIGHT_FIELDS:
-        if not isinstance(state['flight'][key], str):
-            raise ValueError('Invalid flight field: ' + key)
-    for people in (state['flight'].get('pilots'), state['pilot_library']):
-        if not isinstance(people, list) or any(not isinstance(p, dict) for p in people):
-            raise ValueError('Invalid pilot library')
-        for person in people:
-            if any(not isinstance(person.get(k, ''), str) for k in PILOT_FIELDS):
-                raise ValueError('Invalid pilot field')
-            if not isinstance(person.get('message_types', []), list) or any(k not in ANDROID_FLIGHT_TYPES for k in person.get('message_types', [])):
-                raise ValueError('Invalid pilot message selection')
-    per = defaults()['per_type']
-    for kind, spec in {**MESSAGE_FIELDS, **EXTENSIONS}.items():
-        entry = state['per_type'].get(kind, {})
-        if not isinstance(entry, dict):
-            raise ValueError('Invalid per-message fields')
-        for key, field in spec.items():
-            if key in entry and type(entry[key]) is not (bool if field.kind == 'bool' else str):
-                raise ValueError('Invalid message field: ' + key)
-        per[kind].update(entry)
-    state['per_type'] = per
-    state['presentation'] = {**DEFAULT_PRESENTATION, **state['presentation']}
-    for key, choices in [('design', BUILTIN_DESIGNS), ('length', ('Court', 'Moyen', 'Détaillé')),
-                         ('emoji_style', EMOJI_STYLES)]:
-        if state['presentation'][key] not in choices:
-            raise ValueError('Unknown presentation: ' + key)
-    if not isinstance(state['presentation']['discord_aligned'], bool):
-        raise ValueError('Invalid Discord alignment')
-    for key, text in state['preview_edits'].items():
-        if key not in ALL_TYPES or not isinstance(text, str):
-            raise ValueError('Invalid preview')
-    for item in state['saved_flights']:
-        if not isinstance(item, dict) or not isinstance(item.get('flight'), dict) or not isinstance(item.get('id'), str) or not isinstance(item.get('label'), str):
-            raise ValueError('Invalid saved flight')
-        nested = {'flight': item['flight'], 'per_type': item.get('per_type', {})}
-        normalise_state(nested)
-    return state
-
-
-def pc_state(value):
-    if not isinstance(value, dict):
-        raise ValueError('Invalid PC state')
-    result = deepcopy(value)
-    selected = result.get('language', result.get('finder_language', 'fr'))
-    result['language'] = selected if selected in ('fr', 'en') else 'fr'
-    result.setdefault('joke_seen', True)
-    return result
-
-
-def validate_design(value):
-    if not isinstance(value, dict) or not isinstance(value.get('name'), str) or not value['name'].strip():
-        raise ValueError('Invalid design name')
-    for key in ('template', 'heading', 'footer', 'base_design'):
-        if key in value and not isinstance(value[key], str):
-            raise ValueError('Invalid design field: ' + key)
-    if 'guided' in value and not isinstance(value['guided'], bool):
-        raise ValueError('Invalid guided design')
-    if value.get('base_design', 'Classique') not in BUILTIN_DESIGNS:
-        raise ValueError('Unknown base design')
-    if not value.get('guided') and not value.get('template'):
-        raise ValueError('Template required')
-    if not value.get('guided'):
-        context = custom_context('ATC REQUEST', empty_flight(), {}, '', '')
-        context.update({key: '' for spec in EXTENSIONS.values() for key in spec})
-        apply_custom(value['template'], context)
-    return deepcopy(value)
 
 
 def fuel_hours(text):
@@ -231,28 +87,7 @@ class Engine:
         return self.value['state']
 
     def validate_backup(self, value):
-        if not isinstance(value, dict):
-            raise ValueError('Invalid backup')
-        # An explicitly selected Windows state JSON is also accepted, never automatic.
-        if 'schema_version' not in value and 'flight' in value:
-            value = {'schema_version': 1, 'state': pc_state(value), 'history': [], 'presets': {}, 'designs': {}}
-        if value.get('schema_version') != 1:
-            raise ValueError('Unsupported backup version')
-        check_json(value)
-        result = deepcopy(value)
-        result['state'] = normalise_state(value.get('state'))
-        if not isinstance(value.get('history'), list) or not isinstance(value.get('presets'), dict) or not isinstance(value.get('designs'), dict):
-            raise ValueError('Invalid backup collections')
-        for item in result['history']:
-            if not isinstance(item, dict) or not isinstance(item.get('message'), str) or item.get('message_type') not in ALL_TYPES:
-                raise ValueError('Invalid history entry')
-            self.validate_record(item)
-        result['designs'] = {key: validate_design(design) for key, design in value['designs'].items()}
-        for item in result['presets'].values():
-            if not isinstance(item, dict) or item.get('message_type') not in ALL_TYPES:
-                raise ValueError('Invalid favourite')
-            self.validate_record(item)
-        return result
+        return {'schema_version': 1, **parse_backup(value)['payload']}
 
     def validate_record(self, item):
         if not isinstance(item.get('flight'), dict) or not isinstance(item.get('data'), dict):
@@ -268,6 +103,25 @@ class Engine:
         atomic_json(self.path, value)
         self.value = value
         set_language(self.state['language'])
+
+    def apply_import(self, value, mode='replace'):
+        parsed = parse_backup(value, self.state['language'])
+        if mode not in ('merge', 'replace'):
+            raise localise_error(ValueError('Invalid import mode'), self.state['language'])
+        try:
+            candidate = (merge_payloads(self.value, parsed['payload'], self.state['language'])
+                         if mode == 'merge' else parsed['payload'])
+        except (ValueError, TypeError, KeyError) as error:
+            raise localise_error(error, self.state['language']) from error
+        preserve_device_preferences(candidate, self.value)
+        candidate = {'schema_version': 1, **candidate}
+        stamp = datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S') + '-' + uuid.uuid4().hex[:8]
+        backup = self.path.parent / 'backups' / ('before-import-' + stamp + '.json')
+        atomic_json(backup, self.value)
+        # Keep the established recovery location for older users/documentation.
+        atomic_json(self.path.with_suffix('.before-import.json'), self.value)
+        self.commit(candidate)
+        return {'backup_path': str(backup), 'summary': summary(candidate)}
 
     def metadata(self):
         language = self.state['language']
@@ -580,29 +434,20 @@ class Engine:
             candidate['state']['preview_edits'] = {}
             self.commit(candidate)
         elif method == 'export':
-            return {'text': json.dumps(self.value, ensure_ascii=False, indent=2)}
+            from app_version import VERSION
+            try:
+                return {'text': export_backup(self.value, platform='android', version=VERSION)}
+            except (ValueError, TypeError, KeyError) as error:
+                raise localise_error(error, self.state['language']) from error
+        elif method == 'import_preview':
+            parsed = parse_backup(args.get('files', args.get('text')), self.state['language'])
+            return {key: parsed[key] for key in ('summary', 'source')}
         elif method == 'import':
-            text = args['text']
-            if len(text.encode('utf-8')) > STATE_LIMIT:
-                raise ValueError('Import exceeds 2 MB')
-            candidate = self.validate_backup(json.loads(text))
-            atomic_json(self.path.with_suffix('.before-import.json'), self.value)
-            self.commit(candidate)
+            self.apply_import(args['text'], args.get('mode', 'replace'))
             self.query, self.rows = None, []
             return {'value': deepcopy(self.value), 'metadata': self.metadata(), 'render': self.render()}
         elif method == 'import_pc':
-            files = args.get('files', {})
-            expected = {'rfs_state.json', 'rfs_history.json', 'rfs_presets.json', 'rfs_designs.json'}
-            if not isinstance(files, dict) or set(files) != expected:
-                raise ValueError('Select all four PC JSON files: state, history, presets and designs')
-            if any(not isinstance(text, str) for text in files.values()) or sum(len(v.encode('utf-8')) for v in files.values()) > STATE_LIMIT:
-                raise ValueError('PC import exceeds 2 MB')
-            values = {name: json.loads(text.lstrip('\ufeff')) for name, text in files.items()}
-            candidate = self.validate_backup({'schema_version': 1, 'state': pc_state(values['rfs_state.json']),
-                'history': values['rfs_history.json'], 'presets': values['rfs_presets.json'],
-                'designs': values['rfs_designs.json']})
-            atomic_json(self.path.with_suffix('.before-import.json'), self.value)
-            self.commit(candidate)
+            self.apply_import(args.get('files', {}), args.get('mode', 'replace'))
             self.query, self.rows = None, []
             return {'value': deepcopy(self.value), 'metadata': self.metadata(), 'render': self.render()}
         elif method == 'save_flight':
@@ -614,6 +459,12 @@ class Engine:
             item = {'id': ident, 'label': label, 'flight': deepcopy(self.state['flight']),
                     'per_type': deepcopy(self.state['per_type'])}
             saved = candidate['state']['saved_flights']
+            previous = next((v for v in saved if v.get('id') == ident), None)
+            if previous:
+                item = {**deepcopy(previous), **item}
+                for key in ('pilot_name', 'message_type', 'preview_edits', 'presentation'):
+                    if key in previous:
+                        item[key] = deepcopy(self.state[key])
             saved[:] = [v for v in saved if v.get('id') != ident]
             saved.append(item)
             candidate['state']['current_flight_id'] = ident
@@ -632,6 +483,12 @@ class Engine:
                 candidate['state']['per_type'][kind] = {**defaults()['per_type'][kind], **deepcopy(item.get('data', {}))}
             candidate['state']['flight'] = {**empty_flight(), **deepcopy(item['flight'])}
             candidate['state']['preview_edits'] = {}
+            if method == 'load_flight':
+                for key in ('pilot_name', 'message_type', 'preview_edits'):
+                    if key in item:
+                        candidate['state'][key] = deepcopy(item[key])
+                if 'presentation' in item:
+                    candidate['state']['presentation'] = {**DEFAULT_PRESENTATION, **deepcopy(item['presentation'])}
             if method == 'load_history':
                 candidate['state']['preview_edits'][item['message_type']] = item['message']
             self.commit(self.validate_backup(candidate))

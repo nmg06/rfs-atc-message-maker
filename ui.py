@@ -7,7 +7,7 @@ import uuid
 import json
 from html import escape
 from pathlib import Path
-from PySide6.QtCore import Qt, QTimer
+from PySide6.QtCore import Qt, QTimer, Slot
 from PySide6.QtGui import QFont, QKeySequence, QShortcut
 from PySide6.QtWidgets import QAbstractItemView, QApplication, QCheckBox, QComboBox, QDialog, QDialogButtonBox, QFormLayout, QFrame, QGroupBox, QHBoxLayout, QHeaderView, QInputDialog, QLabel, QLineEdit, QMainWindow, QMessageBox, QMenu, QFileDialog, QPlainTextEdit, QPushButton, QScrollArea, QSplitter, QTableWidget, QTableWidgetItem, QTextEdit, QToolButton, QGridLayout, QVBoxLayout, QWidget, QToolTip
 from rfs_schema import Field, FLAGS, FLIGHT_FIELDS, FLIGHT_FIELDS_BY_TYPE, FLIGHT_TYPES, MESSAGE_FIELDS, MESSAGE_TYPES, empty_flight, empty_per_type
@@ -44,6 +44,11 @@ class RFSWindow(QMainWindow):
         self.type_widgets: dict[str, QWidget] = {}
         self.render_error = ''
         self.help_dialog = None
+        from update_dialog import read_preferences
+        self.update_preferences = read_preferences()
+        self.update_dialog = None
+        self._update_running = False
+        self._update_preferences_running = False
         self.setWindowTitle('RFS Flightdeck')
         self.setWindowIcon(make_icon())
         self.resize(1290, 880)
@@ -70,6 +75,7 @@ class RFSWindow(QMainWindow):
         QShortcut(QKeySequence('Ctrl+Shift+C'), self, activated=self.copy_message)
         QShortcut(QKeySequence('Ctrl+S'), self, activated=self.save_current_flight)
         LOGGER.info('RFS ATC Message Maker démarré')
+        QTimer.singleShot(2000, self.check_updates)
 
     def _card(self) -> tuple[QFrame, QVBoxLayout]:
         frame = QFrame(objectName='card')
@@ -309,6 +315,12 @@ class RFSWindow(QMainWindow):
         right.addLayout(copy_row)
         from flightdeck import install_shell
         install_shell(self, root)
+        self.help_menu.addSeparator()
+        from update_dialog import tx
+        self._update_action = self.help_menu.addAction(tx('Mises à jour…', 'Updates…'), self.open_updates)
+        self.help_menu.addAction(tx('Exporter mes données PC / Android…', 'Export my PC / Android data…'), self.export_shared_backup)
+        self.help_menu.addAction(tx('Importer une sauvegarde PC / Android…', 'Import a PC / Android backup…'), self.import_shared_backup)
+        self._refresh_update_action()
 
     def _toggle_presentation(self, expanded):
         self._presentation_expanded = expanded
@@ -492,6 +504,7 @@ class RFSWindow(QMainWindow):
         if self._building or not value:
             return
         self.store.state['message_type'] = value
+        self.store.state.pop('android_message_type', None)
         self._rebuild_forms()
         self.save_timer.start()
 
@@ -692,9 +705,26 @@ class RFSWindow(QMainWindow):
         self.store.state['current_flight_id'] = flight_id
         self.store.state['flight'] = {**empty_flight(), **deepcopy(item.get('flight', {}))}
         defaults = empty_per_type()
-        for kind in FLIGHT_TYPES:
-            self.store.state['per_type'][kind] = {**defaults[kind], **deepcopy(item.get('per_type', {}).get(kind, {}))}
+        for kind in set(FLIGHT_TYPES) | set(item.get('per_type', {})):
+            self.store.state['per_type'][kind] = {**defaults.get(kind, {}), **deepcopy(item.get('per_type', {}).get(kind, {}))}
         self.store.state['preview_edits'] = {}
+        if 'preview_edits' in item:
+            self.store.state['preview_edits'] = deepcopy(item['preview_edits'])
+        if isinstance(item.get('presentation'), dict):
+            self.store.state['presentation'] = deepcopy(item['presentation'])
+        if item.get('pilot_name'):
+            self.store.state['pilot_name'] = item['pilot_name']
+        if item.get('message_type'):
+            chosen_type = item['message_type']
+            supported = chosen_type in MESSAGE_TYPES
+            self.store.state['message_type'] = chosen_type if supported else 'ATC REQUEST'
+            if not supported:
+                self.store.state['android_message_type'] = chosen_type
+            else:
+                self.store.state.pop('android_message_type', None)
+            self._load_top_state()
+        elif 'presentation' in item or 'pilot_name' in item:
+            self._load_top_state()
         self._rebuild_forms()
         saved = self.save_state()
         if saved:
@@ -798,15 +828,21 @@ class RFSWindow(QMainWindow):
             self.status.setText(tr('Carburant RFS appliqué : ') + result['display']['total_block_fuel'] + tr(' — estimation pour simulation uniquement, jamais pour un vol réel.'))
 
     def save_current_flight(self) -> None:
+        from update_dialog import tx
         flight = deepcopy(self.store.state['flight'])
-        proposed = flight.get('callsign') or f"{flight.get('departure_icao') or 'Départ'} → {flight.get('arrival_icao') or 'Arrivée'}"
+        proposed = flight.get('callsign') or f"{flight.get('departure_icao') or tx('Départ', 'Departure')} → {flight.get('arrival_icao') or tx('Arrivée', 'Arrival')}"
         name, ok = QInputDialog.getText(self, tr('Enregistrer le vol'), tr('Nom du vol :'), text=proposed)
         if not ok or not name.strip():
             return
         flight_id = self.store.state.get('current_flight_id') or uuid.uuid4().hex
         previous_saved = deepcopy(self.store.state['saved_flights'])
         previous_id = self.store.state.get('current_flight_id', '')
-        item = {'id': flight_id, 'label': name.strip(), 'flight': flight, 'per_type': {kind: deepcopy(self.store.state['per_type'][kind]) for kind in FLIGHT_TYPES}}
+        item = {'id': flight_id, 'label': name.strip(), 'flight': flight,
+                'per_type': deepcopy(self.store.state['per_type']),
+                'message_type': self.store.state.get('android_message_type') or self.store.state['message_type'],
+                'pilot_name': self.store.state['pilot_name'],
+                'presentation': deepcopy(self.store.state['presentation']),
+                'preview_edits': deepcopy(self.store.state.get('preview_edits', {}))}
         saved = self.store.state['saved_flights']
         for index, previous in enumerate(saved):
             if previous.get('id') == flight_id:
@@ -999,6 +1035,9 @@ class RFSWindow(QMainWindow):
         self.copy_button.setText(tr('Copier le message'))
 
     def change_language(self, *_):
+        update_was_open = self.update_dialog is not None
+        if self.update_dialog:
+            self.update_dialog.close()
         help_topic = self.help_dialog.topics.currentData() if self.help_dialog else None
         if self.help_dialog:
             self.help_dialog.close()
@@ -1024,6 +1063,146 @@ class RFSWindow(QMainWindow):
         old.deleteLater()
         if help_topic:
             self.open_help(help_topic)
+        if update_was_open:
+            self.open_updates()
+
+    def _refresh_update_action(self):
+        from update_dialog import tx
+        from updates import is_newer_release
+        available = is_newer_release(self.update_preferences['last_result'])
+        self._update_action.setText(tx('Nouvelle version disponible…', 'New version available…') if available else tx('Mises à jour…', 'Updates…'))
+
+    def open_updates(self):
+        from update_dialog import UpdateDialog
+        if self.update_dialog:
+            self.update_dialog.close()
+        dialog = UpdateDialog(self)
+        self.update_dialog = dialog
+        dialog.finished.connect(lambda _: setattr(self, 'update_dialog', None) if self.update_dialog is dialog else None)
+        dialog.show()
+
+    @Slot()
+    def check_updates(self, manual=False):
+        from update_dialog import start_worker
+        from updates import should_auto_check
+        import time
+        if self._update_running or (not manual and (not self.isVisible() or not should_auto_check(self.update_preferences))):
+            return
+        self.update_preferences['last_attempt'] = time.time()
+        self._update_running = True
+        self._update_worker = start_worker(self._updates_finished, self.update_preferences)
+        if self.update_dialog:
+            self.update_dialog.refresh()
+
+    def set_update_auto(self, enabled):
+        from update_dialog import start_preferences_worker
+        if self._update_preferences_running:
+            return
+        previous = self.update_preferences['enabled']
+        self.update_preferences['enabled'] = bool(enabled)
+        self._update_preferences_running = True
+        self._update_preferences_worker = start_preferences_worker(self._update_preferences_finished, self.update_preferences, previous)
+
+    @Slot(object)
+    def _update_preferences_finished(self, result):
+        from update_dialog import tx
+        self._update_preferences_running = False
+        if not result['ok']:
+            self.update_preferences['enabled'] = result['previous_enabled']
+        if self.update_dialog:
+            self.update_dialog.automatic.blockSignals(True)
+            self.update_dialog.automatic.setChecked(self.update_preferences['enabled'])
+            self.update_dialog.automatic.blockSignals(False)
+            self.update_dialog.refresh()
+            if not result['ok']:
+                self.update_dialog.status.setText(tx('Le réglage n’a pas pu être sauvegardé.', 'The preference could not be saved.'))
+
+    @Slot(object)
+    def _updates_finished(self, result):
+        from update_dialog import result_text, tx
+        self._update_running = False
+        self.update_preferences['last_result'] = result
+        self._refresh_update_action()
+        if result.get('status') == 'available':
+            self.status.setText(result_text(result) + tx(' Ouvrez Aide → Mises à jour.', ' Open Help → Updates.'))
+        if self.update_dialog:
+            self.update_dialog.refresh()
+
+    def export_shared_backup(self):
+        from update_dialog import tx
+        filename, _ = QFileDialog.getSaveFileName(self, tx('Exporter mes données', 'Export my data'), 'RFSFlightdeck-backup.json', 'JSON (*.json)')
+        if not filename:
+            return
+        try:
+            from storage import save_json
+            payload = self.store.export_backup()
+            save_json(Path(filename), json.loads(payload))
+            self.status.setText(tx('Sauvegarde exportée. Vous pouvez l’importer sur PC ou Android.', 'Backup exported. You can import it on PC or Android.'))
+        except (OSError, ValueError, TypeError):
+            LOGGER.exception('Shared backup export failed')
+            QMessageBox.warning(self, tx('Sauvegarde', 'Backup'), tx('La sauvegarde n’a pas pu être écrite. Choisissez un autre emplacement.', 'The backup could not be written. Choose another location.'))
+
+    def import_shared_backup(self):
+        from update_dialog import tx
+        filenames, _ = QFileDialog.getOpenFileNames(self, tx('Importer une sauvegarde ou les quatre fichiers PC', 'Import a backup or the four PC files'), '', 'JSON (*.json)')
+        if not filenames:
+            return
+        try:
+            from backup_bundle import MAX_BYTES
+            paths = [Path(filename) for filename in filenames]
+            if sum(path.stat().st_size for path in paths) > MAX_BYTES:
+                raise ValueError('Backup too large')
+            legacy_names = {'rfs_state.json', 'rfs_history.json', 'rfs_presets.json', 'rfs_designs.json'}
+            legacy = len(paths) > 1 or paths[0].name in legacy_names
+            if legacy:
+                if any(path.name not in legacy_names for path in paths) or len({path.name for path in paths}) != len(paths):
+                    raise ValueError('Unexpected legacy file selection')
+                content = {path.name: path.read_text(encoding='utf-8-sig') for path in paths}
+            else:
+                content = paths[0].read_text(encoding='utf-8-sig')
+            preview = self.store.preview_import(content)
+            summary = preview['summary']
+            description = tx('Cette sauvegarde contient :', 'This backup contains:') + '\n\n' + '\n'.join((
+                tx('Vols sauvegardés : ', 'Saved flights: ') + str(summary['saved_flights']),
+                tx('Pilotes : ', 'Pilots: ') + str(summary['pilots']),
+                tx('Historique : ', 'History: ') + str(summary['history']),
+                tx('Favoris : ', 'Favourites: ') + str(summary['presets']),
+                tx('Designs : ', 'Designs: ') + str(summary['designs']),
+            )) + '\n\n' + tx('Fusionner conserve vos réglages et votre vol actuel, puis ajoute les données manquantes. Remplacer reprend les réglages et le vol de la sauvegarde. Une copie de sécurité locale est créée avant l’import.', 'Merge keeps your settings and current flight, then adds missing data. Replace loads the settings and flight from the backup. A local safety copy is created before importing.')
+            if legacy and set(content) != legacy_names:
+                description += '\n\n' + tx('Vous n’avez pas sélectionné les quatre anciens fichiers PC. Seules les données présentes seront importées ; choisissez Fusionner pour conserver les autres.', 'You have not selected all four legacy PC files. Only included data will be imported; choose Merge to keep the rest.')
+            question = QMessageBox(self)
+            question.setWindowTitle(tx('Importer mes données', 'Import my data'))
+            question.setText(description)
+            question.setTextFormat(Qt.TextFormat.PlainText)
+            merge = question.addButton(tx('Fusionner', 'Merge'), QMessageBox.ButtonRole.AcceptRole)
+            replace = question.addButton(tx('Remplacer', 'Replace'), QMessageBox.ButtonRole.DestructiveRole)
+            question.addButton(tx('Annuler', 'Cancel'), QMessageBox.ButtonRole.RejectRole)
+            question.setDefaultButton(merge)
+            question.exec()
+            selected = question.clickedButton()
+            if selected not in (merge, replace):
+                return
+            self.preview_timer.stop()
+            self.save_timer.stop()
+            if not self.save_state():
+                return
+            result = self.store.import_backup(content, mode='merge' if selected is merge else 'replace')
+            # Rebuild language/theme/form consistently, preserving device-local update consent.
+            selected_language = self.store.state.get('language', 'fr')
+            set_language(selected_language)
+            self._building = True
+            old = self.takeCentralWidget()
+            self._build_ui()
+            self._load_top_state()
+            self._rebuild_forms()
+            self._apply_theme()
+            self.render_preview()
+            old.deleteLater()
+            self.status.setText(tx('Données importées. Copie de sécurité : ', 'Data imported. Safety copy: ') + result['backup_path'])
+        except (OSError, ValueError, TypeError, KeyError):
+            LOGGER.exception('Shared backup import failed')
+            QMessageBox.warning(self, tx('Sauvegarde', 'Backup'), tx('Impossible d’importer cette sauvegarde. Vérifiez le fichier ; les données existantes sont conservées ou restaurées en cas d’erreur.', 'This backup could not be imported. Check the file; existing data is kept or restored if an error occurs.'))
 
     def show_welcome(self):
         if not self.store.state.get('intro_seen'):

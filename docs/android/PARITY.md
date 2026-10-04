@@ -112,3 +112,16 @@ Ces preuves ne remplacent pas les essais sur le téléphone de l'utilisateur.
 La traduction des commandes ne traduit pas les textes de l’utilisateur. Le
 prototype ne contient pas le Finder SQLite et ne remplace pas l’APK. Les preuves
 de build/installations de cette étape sont suivies dans [PROGRESS_0.4.1](PROGRESS_0.4.1.md).
+
+## Étape 0.4.2 — mises à jour et transfert
+
+| Fonction | Windows | Android | Prototype web | Vérification |
+|---|---|---|---|---|
+| Sauvegarde commune PC ↔ Android | OK | partiel | non porté | Moteurs réels et redémarrages ; sélecteur natif à vérifier sur téléphone |
+| Fusion sans perte du brouillon, conflits et import répété | OK | OK | non porté | Stockages réels, aperçus/designs/pilotes, import idempotent |
+| Récupération d’un import interrompu | OK | OK | non porté | Journal Windows et snapshots validés ; fichier Android atomique |
+| Vérification manuelle et quotidienne facultative | OK | partiel | non porté | Tests Qt/navigateur ; contrôle natif en cours |
+| Synchronisation automatique entre appareils | non porté | non porté | non porté | Format commun prêt ; appairage et protocole LAN restent nécessaires |
+
+L’import ne transfère pas le consentement aux vérifications, satellite ou vents.
+Une copie de sauvegarde constitue un transfert manuel, pas une synchronisation.

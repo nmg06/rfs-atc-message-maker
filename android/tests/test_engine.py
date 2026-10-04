@@ -29,6 +29,65 @@ def flight():
 
 
 class EngineTests(unittest.TestCase):
+    def test_portable_export_preview_import_merge_and_legacy_reload(self):
+        from backup_bundle import FORMAT, export_backup, parse_backup
+        self.engine.handle('save_flight', {'label': 'Local flight'})
+        self.engine.handle('save_preset', {'label': 'Local preset'})
+        self.engine.state['preview_edits']['ATC REQUEST'] = 'Keep my local manual preview'
+        self.engine.handle('persist', {})
+        original = deepcopy(self.engine.value)
+        exported = self.engine.handle('export', {})['text']
+        self.assertEqual(FORMAT, json.loads(exported)['format'])
+        preview = self.engine.handle('import_preview', {'text': exported})
+        self.assertEqual({'summary', 'source'}, set(preview))
+        self.assertEqual(1, preview['summary']['saved_flights'])
+        self.assertEqual(original, self.engine.value)
+        incoming = deepcopy(original)
+        incoming['state']['flight']['callsign'] = 'OTHER DRAFT'
+        incoming['state']['preview_edits']['ATC REQUEST'] = 'Other manually edited text'
+        incoming['state']['saved_flights'] = []
+        self.engine.handle('import', {'text': export_backup(incoming, 'windows', '0.4.2'), 'mode': 'merge'})
+        self.assertEqual(original['state']['flight'], self.engine.state['flight'])
+        self.assertEqual(original['state']['preview_edits'], self.engine.state['preview_edits'])
+        self.assertEqual(2, len(self.engine.state['saved_flights']))
+        draft = self.engine.state['saved_flights'][-1]
+        self.assertEqual('OTHER DRAFT', draft['flight']['callsign'])
+        self.assertEqual('Other manually edited text', draft['preview_edits']['ATC REQUEST'])
+        merged = deepcopy(self.engine.value)
+        self.engine.handle('import', {'text': export_backup(incoming), 'mode': 'merge'})
+        self.assertEqual(merged, self.engine.value)
+        self.assertEqual(merged, Engine(self.temp.name, self.database).value)
+        self.assertGreaterEqual(len(list((Path(self.temp.name) / 'backups').glob('before-import-*.json'))), 2)
+        self.engine.handle('load_flight', {'id': draft['id']})
+        self.assertEqual('OTHER DRAFT', self.engine.state['flight']['callsign'])
+        self.assertEqual('Other manually edited text', self.engine.render()['preview'])
+        self.assertEqual('Other manually edited text', Engine(self.temp.name, self.database).render()['preview'])
+        self.engine.handle('save_flight', {'label': 'Retained imported draft'})
+        self.engine.handle('clear', {})
+        self.engine.handle('load_flight', {'id': draft['id']})
+        self.assertEqual('Other manually edited text', self.engine.render()['preview'])
+        self.engine.handle('import', {'text': json.dumps(original)})
+        self.assertEqual(original, self.engine.value)
+
+    def test_portable_unknown_version_and_invalid_nested_preview_do_not_touch_disk(self):
+        exported = json.loads(self.engine.handle('export', {})['text'])
+        disk = self.engine.path.read_bytes()
+        original = deepcopy(self.engine.value)
+        invalid = deepcopy(exported)
+        invalid['schema_version'] = 999
+        bad_preview = deepcopy(exported)
+        bad_preview['payload']['state']['preview_edits']['ATC REQUEST'] = []
+        for value in (invalid, bad_preview):
+            with self.assertRaises(ValueError):
+                self.engine.handle('import', {'text': json.dumps(value)})
+            self.assertEqual(disk, self.engine.path.read_bytes())
+            self.assertEqual(original, self.engine.value)
+        source = deepcopy(original)
+        source['state']['map_settings'] = {'satellite': True, 'winds': True}
+        self.engine.handle('import', {'text': __import__('backup_bundle').export_backup(source)})
+        self.assertFalse(self.engine.state['map_settings']['satellite'])
+        self.assertFalse(self.engine.state['map_settings']['winds'])
+
     def test_free_copy_retains_warnings_exact_message_and_persisted_choice(self):
         self.engine.state['presentation']['discord_aligned']=False
         self.engine.state['flight']['departure_icao']=''

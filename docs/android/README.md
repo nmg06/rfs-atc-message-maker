@@ -145,7 +145,8 @@ Le premier lancement décompresse la base locale puis initialise Python.
 Onglets : Vol, Carte, Messages, Aperçu, Finder, Fuel, Bibliothèque ; paramètres en haut.
 Les champs et préférences sont enregistrés après chaque modification.
 La copie utilise le vrai presse-papiers Android ; collez ensuite dans Discord.
-Les erreurs du formulaire et les limites du message empêchent la copie.
+Avec **Vérifier avant copie** activé, les erreurs et limites empêchent la copie.
+Désactivez cette option pour copier un texte incomplet avec alertes conservées.
 
 ## Stockage et sauvegarde
 
@@ -165,11 +166,20 @@ Ne pas sélectionner un journal, la base Finder ou le dossier entier.
 L'écriture JSON est atomique ; un fichier corrompu est conservé pour récupération.
 L'historique garde les 200 dernières entrées.
 
-Paramètres > Exporter une sauvegarde utilise le sélecteur Android. Importer
-demande explicitement le remplacement et valide le JSON (limite 2 Mo). Une
+Paramètres > Exporter une sauvegarde utilise le sélecteur Android. La 0.4.2
+exporte le format commun `rfs-flightdeck-backup`, importable également sur PC.
+Importer montre un résumé puis propose **Fusionner** ou **Remplacer** et valide
+le JSON (limite 2 Mo). Une
 sauvegarde privée antérieure à l'import est également conservée. Une
 désinstallation/effacement des données supprime tout : exportez avant.
 Les sauvegardes cloud Android sont désactivées.
+
+Les préférences de vérification des mises à jour sont natives et propres à
+l’appareil. Elles sont désactivées au départ, indépendantes du mode avion et
+absentes de la sauvegarde transférée. Le réseau HTTPS GitHub est utilisé
+uniquement après action manuelle ou activation de la vérification quotidienne.
+Les drapeaux Internet satellite/vents restent également ceux de l’appareil cible
+après import. [Guide mises à jour et transfert](../UPDATES_AND_TRANSFER.md).
 
 L'ancien import d'un seul état Windows reste disponible : sélectionnez `data/rfs_state.json`.
 Les vols/pilotes/préférences de ce fichier sont adaptés, mais l'historique,

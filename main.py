@@ -9,10 +9,12 @@ from PySide6.QtCore import QTimer
 from storage import LOGGER
 from ui import RFSWindow
 from app_icon import make_icon
+from app_version import VERSION
 
 def main() -> int:
     app = QApplication(sys.argv)
     app.setApplicationName('RFS Flightdeck')
+    app.setApplicationVersion(VERSION)
     app.setWindowIcon(make_icon())
 
     def report_exception(exc_type, exc_value, exc_tb) -> None:

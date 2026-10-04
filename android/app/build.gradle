@@ -9,8 +9,8 @@ android {
         applicationId 'com.nmg06.rfsatc'
         minSdk 24
         targetSdk 35
-        versionCode 5
-        versionName '0.4.1-flightdeck'
+        versionCode 6
+        versionName '0.4.2-flightdeck'
         ndk { abiFilters 'arm64-v8a', 'x86_64' }
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         // Launcher component changes are tested in a separate final invocation.

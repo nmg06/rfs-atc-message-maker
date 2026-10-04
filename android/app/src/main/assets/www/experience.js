@@ -1,6 +1,6 @@
 'use strict';
 // Small progressive improvements around the existing UI and Python engines.
-let settingsReturn='flight',saveTimer=null,scrollPositions={},lookupSerial=0,savedRevision=0;
+let settingsReturn='flight',saveTimer=null,scrollPositions={},lookupSerial=0,savedRevision=0,editFlush=null;
 const displayNames=new Intl.DisplayNames(['en'],{type:'region'});
 countryName=(code,french)=>lang()?displayNames.of(code):french;
 function applyVisualTheme(){
@@ -13,8 +13,16 @@ function applyVisualTheme(){
  if(window.Android)rpc('native.appearance',{color:colors.bg,light:model.state.theme==='Clair',language:model.state.language}).catch(()=>{});
 }
 function saveStatus(dirty){if($('save-status'))$('save-status').textContent=dirty?t('Enregistrement…','Saving…'):t('✓ Enregistré sur ce téléphone','✓ Saved on this phone');}
-async function flushEdits(){clearTimeout(saveTimer);saveTimer=null;if(!model||savedRevision===revision)return;const current=revision;
- const result=await rpc('update',stateArgs());if(current===revision){savedRevision=current;setResult(result);updatePreviewUI();saveStatus(false);}return result;
+async function flushEdits(){clearTimeout(saveTimer);saveTimer=null;let result;
+ // Timer, navigation and lifecycle callbacks share one save. If typing
+ // continues while it runs, await the latest revision before navigation/exit.
+ while(model&&savedRevision!==revision){
+  if(!editFlush){const current=revision;
+   editFlush=rpc('update',stateArgs()).then(value=>{if(current===revision){savedRevision=current;setResult(value);updatePreviewUI();saveStatus(false);}return value;}).finally(()=>{editFlush=null;});
+  }
+  result=await editFlush;
+ }
+ return result;
 }
 changed=(clear=true)=>{revision++;if(clear)model.state.preview_edits={};saveStatus(true);clearTimeout(saveTimer);
  for(const id of ['copy','share'])if($(id))$(id).disabled=true;

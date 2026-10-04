@@ -113,8 +113,16 @@ public class OfflineAppTest {
         try (ActivityScenario<MainActivity> scenario=ActivityScenario.launch(MainActivity.class)) {
             MainActivity a=activity(scenario);
             assertEquals("Offline launch must make zero provider requests",0,a.networkRequestsForTest());
+            assertFalse("Update checks require this device's opt-in",a.updatePolicyForTest().getBoolean("enabled"));
+            assertEquals("skipped",a.checkUpdatesForTest(true).getString("status"));
+            assertEquals("Offline launch must make zero update requests",0,a.updateRequestsForTest());
             JSONObject bootstrap=call(a,"bootstrap",new JSONObject());
             assertEquals(11,bootstrap.getJSONObject("metadata").getJSONArray("types").length());
+            JSONObject portable=new JSONObject(call(a,"export",new JSONObject()).getString("text"));
+            assertEquals("rfs-flightdeck-backup",portable.getString("format"));
+            assertEquals(1,portable.getInt("schema_version"));
+            assertEquals("android",portable.getJSONObject("source").getString("platform"));
+            assertTrue(portable.getJSONObject("payload").has("designs"));
             JSONObject state=bootstrap.getJSONObject("value").getJSONObject("state");
             state.put("intro_seen",true).put("joke_seen",true).put("tutorial_seen",true).put("pilot_name","ANDROID-RESTART-TEST");
             state.put("finder_filters",new JSONObject().put("origin","LFPG").put("max_minutes","2h"));
@@ -204,6 +212,22 @@ public class OfflineAppTest {
     @Test public void viewportIsOutsideSystemBarsAndCutout() throws Exception {
         try(ActivityScenario<MainActivity> scenario=ActivityScenario.launch(MainActivity.class)) {
             MainActivity a=activity(scenario);call(a,"bootstrap",new JSONObject());
+            android.content.SharedPreferences updatePrefs=a.getSharedPreferences("updates",Context.MODE_PRIVATE);
+            String previousResult=updatePrefs.getString("last_result",null);
+            String oldDownload="https://github.com/nmg06/rfs-atc-message-maker/releases/download/v0.4.2/RFSFlightdeck-Android-0.4.2.apk";
+            try {
+                updatePrefs.edit().putString("last_result",new JSONObject().put("status","available")
+                    .put("version","0.4.2").put("download_url",oldDownload).toString()).commit();
+                UpdateChecker checker=new UpdateChecker(a);
+                assertEquals("up_to_date",checker.get().getJSONObject("last_result").getString("status"));
+                try { checker.approvedDownload(oldDownload);fail("Already installed version offered again"); }
+                catch(IllegalArgumentException expected) { }
+                assertEquals(0,checker.requestCount());
+            } finally {
+                android.content.SharedPreferences.Editor restore=updatePrefs.edit();
+                if(previousResult==null)restore.remove("last_result");else restore.putString("last_result",previousResult);
+                restore.commit();
+            }
             InstrumentationRegistry.getInstrumentation().runOnMainSync(()->{
                 android.view.WindowInsets insets=a.getWindow().getDecorView().getRootWindowInsets();
                 android.graphics.Insets bars=insets.getInsets(android.view.WindowInsets.Type.systemBars()|android.view.WindowInsets.Type.displayCutout());
@@ -225,6 +249,12 @@ public class OfflineAppTest {
                 assertTrue(wind.getJSONArray("samples").getJSONObject(0).getDouble("height_m")>0);
                 assertEquals(2,service.requestCount());
                 System.out.println("LIVE ANDROID: EOX JPEG and Open-Meteo 250 hPa/UTC/AMSL verified");
+                JSONObject release=a.checkUpdatesForTest(false);
+                String releaseStatus=release.getString("status");
+                assertTrue("Public releases HTTPS check failed: "+release,
+                    "no_release".equals(releaseStatus)||"up_to_date".equals(releaseStatus)||"available".equals(releaseStatus));
+                assertEquals(1,a.updateRequestsForTest());
+                System.out.println("LIVE ANDROID: GitHub public releases HTTPS verified: "+releaseStatus);
             }
         }
     }

@@ -15,6 +15,7 @@ def verify(apk, aapt):
         for name in ('assets/www/index.html', 'assets/www/app.js', 'assets/www/app.css',
                      'assets/www/map.js', 'assets/www/experience.js', 'assets/www/online-map.js', 'assets/www/world-countries.js',
                      'assets/www/help-content.js', 'assets/www/help-ui.js', 'assets/www/help-ui.css', 'assets/www/help-adapter.js',
+                     'assets/www/updates-ui.js', 'assets/www/backup-ui.js',
                      'assets/notices/WORLD_MAP_LICENSE.md', 'assets/engine-manifest.json', 'assets/aviation.database'):
             if name not in package.namelist():
                 raise ValueError('Missing APK asset: ' + name)
