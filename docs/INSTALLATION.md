@@ -15,13 +15,13 @@ Python n'est pas nécessaire pour installer les fichiers proposés ici.
 | Android 7 ou plus, ARM64 | APK Android | Version de test installable |
 | iPhone / iPad | Aucun pour l'instant | Version iOS non disponible |
 
-**Téléchargements 0.4.1 vérifiés : [Android](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37211011918/artifacts/11306218305) · [Windows](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37211011938/artifacts/11305999753).**
+**Téléchargements 0.4.2 vérifiés : [Android](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37234427403/artifacts/11314783690) · [Windows](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37234427393/artifacts/11315221754).**
 Connectez-vous à GitHub, cliquez sur votre lien puis décompressez le ZIP reçu.
 Ces fichiers de test expirent le 3 novembre 2026 ; les instructions ci-dessous
 permettent de retrouver un build plus récent.
 
 Les fichiers de test sont dans **GitHub Actions**, sur la branche
-**feat/flightdeck-map-performance**. Le [bilan 0.4.1](android/PROGRESS_0.4.1.md)
+**feat/flightdeck-map-performance**. Le [bilan 0.4.2](android/PROGRESS_0.4.2.md)
 donne les liens des builds vérifiés et les limites connues.
 
 1. Ouvrez [les téléchargements Windows](https://github.com/nmg06/rfs-atc-message-maker/actions/workflows/flightdeck.yml) ou [Android](https://github.com/nmg06/rfs-atc-message-maker/actions/workflows/android.yml).
@@ -37,6 +37,8 @@ récent vérifié, ou demandez au propriétaire de relancer le build.
 Une future release GitHub pourra proposer des liens permanents, sans compte.
 Aucune nouvelle release publique n'est publiée automatiquement.
 Voir [préparer une distribution](DISTRIBUTION.md).
+Pour les mises à jour facultatives et le transfert des données PC ↔ Android,
+consultez [ce guide](UPDATES_AND_TRANSFER.md).
 
 ## Installer sur Windows
 
@@ -65,7 +67,7 @@ Vous pouvez télécharger le ZIP GitHub sur le téléphone, le décompresser dan
 4. Autorisez **Installer depuis cette source** si demandé, puis **Installer** et **Ouvrir**.
 5. Ensuite, retrouvez **RFS Flightdeck** dans la liste des applications. Vous pouvez placer l'icône sur l'écran d'accueil.
 
-La copie locale 0.4.1 s'appelle **RFSFlightdeck-Android-0.4.1-debug.apk**.
+La copie locale 0.4.2 s'appelle **RFSFlightdeck-Android-0.4.2-debug.apk**.
 Prévoir environ 250 Mo libres. Le premier lancement prépare la base embarquée :
 laissez cette étape se terminer. Aucun téléchargement de base n'est nécessaire.
 Essayez en mode avion : Finder, carburant, messages, copie et carte locale restent disponibles.

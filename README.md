@@ -60,6 +60,8 @@ La 0.4.1 ajoute tutoriel et 30 questions bilingues, copie libre facultative,
 avertissements cliquables et défilement des avions corrigé.
 [État et tests 0.4.1](docs/android/PROGRESS_0.4.1.md) · [English installation guide](docs/INSTALLATION_EN.md).
 
+[État et tests 0.4.2](docs/android/PROGRESS_0.4.2.md).
+
 La 0.4.2 ajoute une vérification facultative des mises à jour et une sauvegarde
 commune PC–Android, avec fusion, aperçu avant import et récupération après
 interruption. [Mises à jour et transfert des données](docs/UPDATES_AND_TRANSFER.md).

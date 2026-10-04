@@ -120,7 +120,7 @@ de build/installations de cette étape sont suivies dans [PROGRESS_0.4.1](PROGRE
 | Sauvegarde commune PC ↔ Android | OK | partiel | non porté | Moteurs réels et redémarrages ; sélecteur natif à vérifier sur téléphone |
 | Fusion sans perte du brouillon, conflits et import répété | OK | OK | non porté | Stockages réels, aperçus/designs/pilotes, import idempotent |
 | Récupération d’un import interrompu | OK | OK | non porté | Journal Windows et snapshots validés ; fichier Android atomique |
-| Vérification manuelle et quotidienne facultative | OK | partiel | non porté | Tests Qt/navigateur ; contrôle natif en cours |
+| Vérification manuelle et quotidienne facultative | OK | OK | non porté | Tests Qt/navigateur et HTTPS GitHub natif sur Android 15 (API 35) ; zéro requête automatique sans consentement |
 | Synchronisation automatique entre appareils | non porté | non porté | non porté | Format commun prêt ; appairage et protocole LAN restent nécessaires |
 
 L’import ne transfère pas le consentement aux vérifications, satellite ou vents.
