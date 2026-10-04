@@ -15,7 +15,7 @@ Python n'est pas nécessaire pour installer les fichiers proposés ici.
 | Android 7 ou plus, ARM64 | APK Android | Version de test installable |
 | iPhone / iPad | Aucun pour l'instant | Version iOS non disponible |
 
-**Téléchargements 0.4.1 vérifiés : [Android](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37208845779/artifacts/11305352951) · [Windows](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37208845771/artifacts/11305298080).**
+**Téléchargements 0.4.1 vérifiés : [Android](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37211011918/artifacts/11306218305) · [Windows](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37211011938/artifacts/11305999753).**
 Connectez-vous à GitHub, cliquez sur votre lien puis décompressez le ZIP reçu.
 Ces fichiers de test expirent le 3 novembre 2026 ; les instructions ci-dessous
 permettent de retrouver un build plus récent.
@@ -65,7 +65,7 @@ Vous pouvez télécharger le ZIP GitHub sur le téléphone, le décompresser dan
 4. Autorisez **Installer depuis cette source** si demandé, puis **Installer** et **Ouvrir**.
 5. Ensuite, retrouvez **RFS Flightdeck** dans la liste des applications. Vous pouvez placer l'icône sur l'écran d'accueil.
 
-La copie locale 0.4 s'appelle **RFSFlightdeck-Android-0.4.0-debug.apk**.
+La copie locale 0.4.1 s'appelle **RFSFlightdeck-Android-0.4.1-debug.apk**.
 Prévoir environ 250 Mo libres. Le premier lancement prépare la base embarquée :
 laissez cette étape se terminer. Aucun téléchargement de base n'est nécessaire.
 Essayez en mode avion : Finder, carburant, messages, copie et carte locale restent disponibles.

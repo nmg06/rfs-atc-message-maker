@@ -10,7 +10,7 @@ You do not need Python to install the packaged apps.
 | Android 7+, ARM64 | Android APK | Installable test version |
 | iPhone / iPad | No native package | iOS app not currently available |
 
-Verified 0.4.1 test downloads: [Android APK](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37208845779/artifacts/11305352951) · [Windows ZIP](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37208845771/artifacts/11305298080). GitHub sign-in required; these artifacts expire on 3 November 2026.
+Verified 0.4.1 test downloads: [Android APK](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37211011918/artifacts/11306218305) · [Windows ZIP](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37211011938/artifacts/11305999753). GitHub sign-in required; these artifacts expire on 3 November 2026.
 
 ## Download from GitHub
 

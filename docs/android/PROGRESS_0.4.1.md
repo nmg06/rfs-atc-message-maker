@@ -33,9 +33,9 @@ Fuel A220/5h/EGLL = 12 285 kg, carte (97 points), 30 questions, dix noms anglais
 et copie libre avec avertissements.
 
 Le code fonctionnel et les tests natifs sont vérifiés sur
-`dde24bb0617f3317eaff5317e7a04562d1e4e57d` :
+`918dce9ef8c66b86bd3888c4bdbf87a953d7edfa` :
 
-- [Android installé](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37208845779) :
+- [Android installé](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37211011918) :
   quatre tests en mode avion, réinstallation avec quatre nouveaux tests,
   arrêt complet/reprise avec JSON identique et formulaire rendu (EJU149U,
   fuel 12285). FAQ anglaise dans la vraie WebView, presse-papiers réel et copie
@@ -43,12 +43,13 @@ Le code fonctionnel et les tests natifs sont vérifiés sur
 - Un test supplémentaire vérifie les vrais fournisseurs EOX/Open-Meteo après
   activation volontaire du réseau ; un dernier vérifie notification anglaise
   et changement d’icône réversible.
-- [Windows construit et lancé](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37208845771),
-  [tests/dépendances](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37208845769)
-  et [CodeQL](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37208845816) réussis.
+- [Windows construit et lancé](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37211011938),
+  [tests/dépendances](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37211011994)
+  et [CodeQL](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37211011985) réussis.
 
-Les dernières retouches concernent les explications, le guide d’installation
-anglais et l’orientation du prototype vers les fonctions effectivement disponibles.
+Les dernières explications, le guide d’installation anglais et l’orientation du
+prototype sont inclus dans ce code vérifié. Les paquets locaux ont été reconstruits
+et contrôlés après ces retouches.
 
 Un premier échec du presse-papiers était causé par une fenêtre ANR du lanceur
 `com.android.launcher3` au-dessus de Flightdeck. Le test ferme uniquement ce
@@ -58,8 +59,8 @@ explicitement que l’introduction et le tutoriel ont été passés.
 
 ## Télécharger et construire
 
-[APK Android 0.4.1](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37208845779/artifacts/11305352951) ·
-[Windows 0.4.1](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37208845771/artifacts/11305298080).
+[APK Android 0.4.1](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37211011918/artifacts/11306218305) ·
+[Windows 0.4.1](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37211011938/artifacts/11305999753).
 Connexion GitHub requise ; artefacts de test disponibles jusqu’au 3 novembre 2026.
 [Installation en français](../INSTALLATION.md) · [English](../INSTALLATION_EN.md).
 
