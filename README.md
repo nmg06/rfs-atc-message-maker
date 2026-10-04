@@ -4,6 +4,11 @@ Ancien nom : RFS ATC Message Maker. Messages Discord, Flight Finder local,
 RFS Fuel Helper et aperçu cartographique pour Real Flight Simulator.
 Les fonctions principales Windows et Android fonctionnent sans compte ni Internet.
 
+**Vous voulez installer l'application ?** Il suffit de télécharger le ZIP Windows
+ou l'APK Android : Python n'est pas nécessaire. Le [guide pas à pas](docs/INSTALLATION.md)
+explique les boutons de téléchargement, l'installation, le premier vol et les
+solutions aux problèmes fréquents. Aucune version iPhone installable actuellement.
+
 **[Téléchargement et installation Windows / Android / état iPhone](docs/INSTALLATION.md)**
 
 Les améliorations Flightdeck sont sur `feat/flightdeck-map-performance`, la première
@@ -12,12 +17,14 @@ sans publier automatiquement une nouvelle release.
 
 ## Utiliser
 
-Ouvrez `lancer.bat`, ou directement
-`dist\RFSATCMessageMaker-v5\RFSATCMessageMaker.exe` après mise à jour, ou
-`RFSATCMessageMaker.exe` dans le paquet téléchargé. Gardez le dossier
-`RFSATCMessageMaker` entier : l'exécutable utilise les fichiers de `_internal`.
+Ouvrez `RFSATCMessageMaker.exe` dans le paquet téléchargé. Gardez le dossier
+`RFSFlightdeck` entier : l'exécutable utilise les fichiers de `_internal`.
 Le paquet est autonome : Python n'est pas nécessaire pour l'utiliser.
 Il cible Windows 10/11 64 bits.
+
+Pour préparer un vol sans ATC, commencez par Flight Finder, utilisez le vol choisi,
+puis ouvrez Fuel Helper. Les messages restent facultatifs. Le guide d'installation
+explique aussi le carnet Android, les palettes et les rappels.
 
 1. Sélectionnez `ATC REQUEST` et renseignez le panneau `Vol actuel`.
 2. Complétez la porte, la piste, le pushback et les autres champs signalés par `*`.
@@ -38,7 +45,10 @@ exécutable. Les fichiers JSON de l'ancienne application restent intacts.
 Une première application **Android installable et hors ligne** existe désormais
 dans `android/`, à côté de Windows : moteurs Python partagés, Flight Finder avec
 base embarquée, Fuel Helper, carte locale/frontières, bibliothèque, import des
-quatre fichiers PC, stockage privé et copie native. Version Android 0.3.0. L'APK debug est
+quatre fichiers PC, stockage privé et copie native. Version Android 0.4.0 : marges
+Android corrigées, retour des paramètres, détails Finder lisibles, carnet chronométré,
+dix palettes PC/Android, icônes et rappel local facultatif. Satellite/vents en
+option Internet, désactivés au départ. L'APK debug est
 construite et testée sur émulateur API 35, y compris en mode avion et après arrêt
 complet du processus. [Installation, build et limites](docs/android/README.md) ;
 [parité détaillée](docs/android/PARITY.md). Le workflow **Android offline APK**

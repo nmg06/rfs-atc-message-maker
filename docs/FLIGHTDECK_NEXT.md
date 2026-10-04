@@ -33,9 +33,9 @@ Le profil et l'EXE quotidiens ne sont pas modifiés. Branche séparée de l'Andr
 8. Nom affiché **RFS Flightdeck**, identifiants et dossiers de données conservés
    pour éviter une migration involontaire. Build Windows d'essai séparé et tests.
 
-L'Android livré continue à fonctionner entièrement hors ligne, sans ajout de
-permission Internet. Les couches en ligne concernent cette étape desktop et
-restent désactivées tant que l'utilisateur ne les choisit pas.
+Ce bilan décrit l'étape 0.3. Depuis 0.4, Android propose aussi satellite et vents
+facultatifs avec permission Internet ; ils restent désactivés tant que l'utilisateur
+ne les choisit pas. Les fonctions principales restent hors ligne.
 
 ## Vérifications et mesures
 
@@ -83,4 +83,5 @@ de release existants sont conservés, aucune nouvelle release n'est déclenchée
   licence non commerciale et disponibilité dépendant du fournisseur ; aucun téléchargement massif.
 - Vent : prévision horaire réelle, grille visible et trajet, huit recherches en cache,
   rafraîchissement toutes les 15 min seulement si activé. Les formules Fuel et durées historiques restent inchangées.
-- Android : carte vectorielle locale portée ; satellite/vents non portés et iOS natif non construit.
+- Android 0.4 : satellite/vents facultatifs ajoutés ; [preuves et limites](android/PROGRESS_0.4.md).
+  iOS natif non construit. Les nombres de tests ci-dessus correspondent à l'étape 0.3.

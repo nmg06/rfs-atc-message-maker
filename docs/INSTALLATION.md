@@ -1,100 +1,165 @@
-# Installer RFS Flightdeck
+# Installer et utiliser RFS Flightdeck
 
-Ancien nom : RFS ATC Message Maker. Le nom change, les fichiers de données et
-l'identifiant Android restent compatibles. Versions de test, sans compte dans
-l'application, sans télémétrie. Aucune publication Google Play/App Store.
+Flightdeck aide à **trouver un vol, préparer le carburant et créer des messages RFS**.
+Vous pouvez l'utiliser sans ATC. Ancien nom : RFS ATC Message Maker.
+Les fonctions principales fonctionnent hors ligne, sans compte ni télémétrie.
+Python n'est pas nécessaire pour installer les fichiers proposés ici.
 
-## Télécharger depuis GitHub
+## Choisir son téléchargement
 
-Paquets vérifiés le **3 octobre 2026**, version `0.3.0-flightdeck` :
+| Votre appareil | Fichier à choisir | État |
+|---|---|---|
+| PC Windows 10/11, 64 bits | ZIP Windows | Version de test portable |
+| Android 7 ou plus, ARM64 | APK Android | Version de test installable |
+| iPhone / iPad | Aucun pour l'instant | Version iOS non disponible |
 
-- [Télécharger Windows x64](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37151621344/artifacts/11284226950).
-- [Télécharger Android APK](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37151621335/artifacts/11283749270).
-- [Preuves 0.3, commandes et limites](android/PROGRESS_0.3.md).
+**Téléchargements 0.4 vérifiés : [Android](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37163877211/artifacts/11288786472) · [Windows](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37163877231/artifacts/11288646852).**
+Connectez-vous à GitHub, cliquez sur votre lien puis décompressez le ZIP reçu.
+Ces fichiers de test expirent le 3 novembre 2026 ; les instructions ci-dessous
+permettent de retrouver un build plus récent.
 
-Ces liens correspondent au commit `6bdc5a8` et expirent le **2 novembre 2026**.
-Leur téléchargement demande une connexion GitHub. Pour retrouver les builds suivants :
+Les fichiers de test sont dans **GitHub Actions**, sur la branche
+**feat/flightdeck-map-performance**. Le [bilan 0.4](android/PROGRESS_0.4.md)
+donne les liens des builds vérifiés et les limites connues.
 
-Sur https://github.com/nmg06/rfs-atc-message-maker/actions :
+1. Ouvrez [les téléchargements Windows](https://github.com/nmg06/rfs-atc-message-maker/actions/workflows/flightdeck.yml) ou [Android](https://github.com/nmg06/rfs-atc-message-maker/actions/workflows/android.yml).
+2. Choisissez une exécution **verte**, sur la branche **feat/flightdeck-map-performance**.
+3. Descendez jusqu'à **Artifacts**. Touchez **RFSFlightdeck-Windows-x64-test** pour Windows, ou **RFS-ATC-Android-debug** pour Android.
+4. Décompressez le ZIP téléchargé : il contient le paquet Windows ou **app-debug.apk**.
 
-1. Choisissez **Flightdeck Windows test package** pour le PC, ou **Android offline APK** pour Android.
-2. Ouvrez une exécution verte de la branche `feat/flightdeck-map-performance`.
-3. En bas, dans **Artifacts**, téléchargez `RFSFlightdeck-Windows-x64-test` ou `RFS-ATC-Android-debug`.
-4. Décompressez l'artefact. Les fichiers utiles sont le ZIP portable Windows et `app-debug.apk`.
+**GitHub demande un compte pour télécharger ces artefacts. L'application n'en
+demande aucun.** Les fichiers expirent après 30 jours. Utilisez un build plus
+récent vérifié, ou demandez au propriétaire de relancer le build.
+Évitez les exécutions rouges : leurs tests ont échoué.
 
-GitHub demande une connexion pour télécharger ses artefacts ; l'application
-elle-même n'en demande aucune. Les artefacts expirent après 30 jours. Le workflow
-peut être relancé depuis **Run workflow**. Une future release permettra des liens
-de téléchargement durables ; aucune release publique n'est créée automatiquement
-par ces nouveaux workflows. La première branche Android `feat/android-offline`
-fournit également une APK testée, avant les améliorations Flightdeck.
+Une future release GitHub pourra proposer des liens permanents, sans compte.
+Aucune nouvelle release publique n'est publiée automatiquement.
+Voir [préparer une distribution](DISTRIBUTION.md).
 
-## Windows 10/11, 64 bits
+## Installer sur Windows
 
-1. Décompressez `RFSFlightdeck-Windows-x64-test.zip` dans un **nouveau dossier** local.
-2. Ouvrez `RFSFlightdeck/RFSATCMessageMaker.exe`.
-3. Gardez `_internal`, `finder-data` et `docs` à côté de l'exécutable. Le seul EXE ne suffit pas.
-4. Python n'est pas nécessaire. Finder et Fuel Helper utilisent les données incluses.
+1. Décompressez le ZIP GitHub, puis le ZIP Windows qu'il contient, dans **un nouveau dossier**.
+2. Ouvrez **RFSFlightdeck**, puis **RFSATCMessageMaker.exe**. L'ancien nom du fichier est conservé.
+3. Gardez **_internal**, **finder-data** et les autres fichiers à côté de l'EXE.
+4. Pour un accès rapide, créez un raccourci de cet EXE sur le Bureau.
 
-Pour tester une nouvelle version, gardez votre ancien dossier intact. Ses quatre
-fichiers `data/rfs_state.json`, `rfs_history.json`, `rfs_presets.json`,
-`rfs_designs.json` peuvent être copiés dans le nouveau dossier `data` **après avoir
-fermé normalement l'ancienne application et fait une copie de sauvegarde**.
-N'écrasez pas un dossier déjà ouvert dans une autre version.
-
-Les données restent dans `data` à côté de l'EXE, sauf si
-`RFS_MESSAGE_MAKER_DATA_DIR` désigne un autre dossier. Un dossier local hors
+Les données restent dans **data**, à côté de l'EXE, sauf si la variable
+RFS_MESSAGE_MAKER_DATA_DIR désigne un autre dossier. Un dossier local hors
 OneDrive évite les ralentissements de synchronisation.
 
-## Android 7 ou plus, ARM64 / x86_64
+Pour reprendre une ancienne version, fermez normalement les deux applications,
+sauvegardez l'ancien dossier **data**, puis copiez ses quatre fichiers
+**rfs_state.json**, **rfs_history.json**, **rfs_presets.json**, **rfs_designs.json**
+dans le nouveau dossier **data**. Gardez l'ancien paquet pour revenir en arrière.
 
-1. Téléchargez et décompressez l'artefact pour obtenir `app-debug.apk` (la copie locale peut s'appeler `RFSFlightdeck-Android-0.3.0-debug.apk`).
-2. Branchez le téléphone au PC avec un câble USB, déverrouillez-le et choisissez **Transfert de fichiers** dans sa notification USB.
-3. Sur le PC, ouvrez le téléphone dans l'Explorateur et copiez l'APK dans **Stockage interne > Download / Téléchargements**.
-4. Sur le téléphone, ouvrez **Fichiers > Téléchargements**, puis touchez l'APK. Autorisez **Installer depuis cette source** si Android le demande et appuyez sur **Installer**.
-5. Touchez **Ouvrir**, ou retrouvez **RFS Flightdeck** dans la liste des applications du téléphone. Vous pourrez ajouter son icône à l'écran d'accueil.
-6. Testez en mode avion : messages, copie, carte/frontières, Finder et Fuel Helper restent disponibles. Le premier lancement initialise la base embarquée et peut être plus long.
+## Installer sur Android
 
-APK debug destinée aux essais. La signature debug d'un build local et celle d'un
-autre environnement de build peuvent différer. Si Android refuse une mise à jour
-pour incompatibilité de signature, exportez les données **avant** de désinstaller.
-Une désinstallation efface le stockage privé. Une future APK de distribution
-nécessitera une clé stable détenue par le propriétaire du projet.
+Vous pouvez télécharger le ZIP GitHub sur le téléphone, le décompresser dans
+**Fichiers** et ouvrir **app-debug.apk**. Depuis le PC :
 
-Dans **Paramètres**, export/import permet de sauvegarder les données privées.
-Le bouton **Importer les 4 fichiers PC** accepte `rfs_state.json`, `rfs_history.json`,
-`rfs_presets.json` et `rfs_designs.json`, préalablement copiés depuis le dossier
-`data` d'une application PC fermée. Le lot est validé avant remplacement ; le
-sélecteur multiple reste à vérifier sur téléphone physique. Aucune permission
-Internet ou accès général au stockage n'est demandée par l'APK.
+1. Branchez le téléphone en USB et choisissez **Transfert de fichiers** dans sa notification USB.
+2. Dans l'Explorateur, copiez l'APK dans **Stockage interne > Download / Téléchargements** du téléphone.
+3. Sur le téléphone, ouvrez **Fichiers > Téléchargements**, puis touchez l'APK.
+4. Autorisez **Installer depuis cette source** si demandé, puis **Installer** et **Ouvrir**.
+5. Ensuite, retrouvez **RFS Flightdeck** dans la liste des applications. Vous pouvez placer l'icône sur l'écran d'accueil.
 
-## iPhone / iPad
+La copie locale 0.4 s'appelle **RFSFlightdeck-Android-0.4.0-debug.apk**.
+Prévoir environ 250 Mo libres. Le premier lancement prépare la base embarquée :
+laissez cette étape se terminer. Aucun téléchargement de base n'est nécessaire.
+Essayez en mode avion : Finder, carburant, messages, copie et carte locale restent disponibles.
 
-**Aucune application iOS installable n'est livrée pour l'instant.** Une APK est
-réservée à Android. Le vieux prototype `mobile/index.html` n'a pas la parité avec
-Flightdeck et ne remplace pas l'application native hors ligne.
+**Pour mettre à jour, installez la nouvelle APK par-dessus l'ancienne.**
+Exportez une sauvegarde dans les Paramètres avant toute désinstallation :
+désinstaller efface les données privées. Deux environnements de build peuvent
+avoir des signatures debug différentes. Si Android refuse la mise à jour pour
+cette raison, sauvegardez avant de désinstaller. Les APK locales 0.3 et 0.4
+de cette livraison utilisent la même clé.
 
-Le moteur Android utilise Chaquopy, qui ne fournit pas le même hôte Python pour
-iOS. Une vraie version iPhone demandera un hôte Python compatible iOS ou un port
-du moteur, puis un Mac avec Xcode et la signature Apple. TestFlight et App Store
-requièrent aussi la configuration Apple correspondante. Ne promettez pas un
-fichier iPhone utilisable depuis le build Windows/Android actuel.
+## Préparer son premier vol
 
-## Carte et Internet
+1. Ouvrez **Finder**, choisissez compagnie, aéroports ou pays, puis recherchez. Dans la durée minimum, **10 signifie 10 heures**.
+2. Touchez **Détails**, puis **Utiliser ce vol**. Les informations inconnues ne remplacent pas inutilement vos champs manuels.
+3. Ouvrez **Fuel**, vérifiez avion, durée et arrivée. Une variante unique est reprise automatiquement ; un type ambigu demande un choix. Calculez, puis **Appliquer avion + carburant**.
+4. Dans **Vol**, vérifiez vos informations. **Préparation au sol** montre les pistes présentes dans la base. Choisissez les pistes et portes disponibles dans RFS : aucune affectation n'est inventée.
+5. Pour l'ATC, ouvrez **Texte**, choisissez le message, puis **Aperçu > Copier**. Collez ensuite dans Discord ou RFS.
 
-Windows : carte vectorielle, frontières, zoom et sélection des pays fonctionnent
-hors ligne. Choisissez les deux pays puis **Trouver ces vols** : Finder reçoit les
-critères et recherche uniquement dans la base réelle, sans inventer de vol.
+Dans **ARRIVAL BOARD**, **ETE restante = 5 min** signifie une arrivée prévue
+dans environ cinq minutes. Ce champ est distinct de la **durée estimée du vol**,
+qui représente le trajet complet et sert à préremplir le calcul carburant.
 
-**Satellite 2025** et les **vents par niveau de pression** sont des options
-Internet désactivées au départ. Les téléchargements se font en arrière-plan.
-Les images EOX sont sous CC BY-NC-SA 4.0, pour l'usage non commercial ; les vents
-Open-Meteo sont des prévisions du monde réel, qui peuvent différer de RFS. Les
-altitudes sont en mètres AMSL ; le niveau de pression n'est pas une altitude fixe.
-Les vents ne changent pas les durées historiques ni les formules Fuel Helper.
-Android possède aussi la carte vectorielle, les frontières, le zoom/pincement,
-le trajet et la sélection des pays hors ligne. Les options satellite et vents
-restent uniquement sur Windows.
+Le vol actuel est sauvegardé après la saisie et avant de changer d'écran ou de
+quitter avec Retour. **Sauver le vol** crée une entrée nommée dans la Bibliothèque.
+Attendez **Enregistré** avant d'arrêter brutalement l'application.
+Les brouillons de design et de signalement sont aussi conservés.
 
-Voir [Android](android/README.md), [parité](android/PARITY.md) et
-[changements Flightdeck](FLIGHTDECK_NEXT.md) pour les détails et limites.
+Le bouton en haut à droite ouvre les **Paramètres**, devient une croix et revient
+à l'écran précédent. Dix palettes claires/sombres existent sur Android et PC.
+Android propose trois icônes et un rappel local facultatif du vol actuel.
+Le carnet Android chronomètre uniquement les vols que vous démarrez et confirmez
+terminés ; une recherche n'ajoute aucune heure.
+
+Le rappel demande l'autorisation de notification quand vous le programmez.
+Son horaire est approximatif selon Android et l'économie d'énergie.
+Il n'effectue aucune recherche ou météo en arrière-plan.
+Un arrêt forcé peut désactiver les alarmes jusqu'à la réouverture.
+
+Pour revoir la blague manquée : Android **Paramètres > Revoir la blague de bienvenue** ;
+Windows **Aide et suggestions > Revoir la blague**. Aucun paiement ni saisie bancaire.
+
+## Carte, satellite et vents
+
+La carte locale affiche frontières et trajet. Glissez, pincez pour zoomer ou
+utilisez +/−. Choisissez deux pays puis **Trouver ces vols** pour remplir Finder.
+Certains trajets ne figurent pas dans la base et donnent zéro résultat.
+
+Sur Windows et Android 0.4, **Satellite EOX 2025** et **Vents Open-Meteo** sont des
+options Internet désactivées au départ. Activez-les dans les options de carte.
+Les téléchargements se font en arrière-plan, les caches sont limités.
+Sans Internet ou en panne, la carte locale reste disponible.
+
+Le satellite est une mosaïque annuelle de 2025, pas une image en direct.
+EOX : CC BY-NC-SA 4.0, usage non commercial.
+Les vents sont des prévisions du monde réel pouvant différer de RFS :
+niveau de pression, date UTC et hauteurs géopotentielles en mètres AMSL sont affichés.
+Une pression n'est pas une altitude fixe. Ils ne changent pas les durées Finder
+ni les formules Fuel Helper. Les outils sont destinés à la simulation.
+
+## Sauvegarder ou transférer ses réglages
+
+Android **Paramètres > Exporter une sauvegarde** crée un JSON à conserver ailleurs.
+**Importer** restaure une sauvegarde. **Importer les 4 fichiers PC** accepte les
+quatre JSON cités plus haut, copiés depuis une application PC fermée.
+Le lot est validé avant remplacement ; une copie avant import est conservée.
+Le sélecteur multiple reste à vérifier sur téléphone physique.
+
+Les photos d'un signalement sont choisies avec le sélecteur Android.
+Aucune permission générale de stockage ni envoi automatique.
+Internet sert aux couches cartographiques facultatives, sans compte ni suivi.
+
+## Si quelque chose ne fonctionne pas
+
+| Problème | Que faire |
+|---|---|
+| Je ne trouve pas le téléchargement | Connectez-vous à GitHub, ouvrez une exécution verte, descendez jusqu'à Artifacts |
+| Windows ne trouve pas ses fichiers | Décompressez le paquet entier ; gardez _internal et finder-data à côté de l'EXE |
+| Le raccourci ouvre une vieille version | Créez un raccourci vers l'EXE du nouveau dossier |
+| Android refuse l'installation | Vérifiez Android 7, téléphone ARM64, espace libre et autorisation depuis Fichiers |
+| Android refuse la mise à jour | Vérifiez la signature ; exportez avant toute désinstallation |
+| Premier lancement long | Laissez finir la copie de la base locale ; elle ne demande pas Internet |
+| Finder ne trouve aucun vol | Réduisez les filtres. La base est historique ; certains trajets n'y figurent pas |
+| Fuel ne sélectionne pas l'avion | Choisissez la variante RFS dans la liste recherchable si le type est ambigu |
+| Satellite ou vent indisponible | Vérifiez Internet et les options ; la carte locale reste utilisable |
+| Le rappel arrive en retard | Vérifiez notifications et économie d'énergie ; les alarmes sont approximatives |
+| L'icône tarde à changer | Certains lanceurs mettent quelques secondes à actualiser leur liste |
+| Un problème persiste | Paramètres > Signaler un problème : étapes, téléphone/version Android, rapport local à partager volontairement |
+
+## Et iPhone ?
+
+**Aucune version iPhone installable n'est livrée.** Une APK est réservée à Android.
+Le prototype mobile/index.html ne possède pas la parité avec Flightdeck.
+Le port iOS demande un hôte Python compatible ou un port du moteur, un Mac avec
+Xcode, la signature Apple et des tests iOS. Ces outils ne sont pas disponibles
+sur ce poste Windows.
+
+Voir [parité](android/PARITY.md), [architecture/build Android](android/README.md)
+et [preuves 0.4](android/PROGRESS_0.4.md) pour les limites précises.

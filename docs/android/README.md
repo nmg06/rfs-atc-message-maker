@@ -16,14 +16,15 @@ en production, PySide6, serveur ou EXE Windows exécuté sur Android.
 Le presse-papiers, le partage texte, les sélecteurs de documents/images et les
 exports utilisent Android. L'APK contient tous les scripts, styles, icônes,
 données SQLite/JSON et fuseaux IANA. Aucune police/CDN externe, télémétrie,
-permission Internet ni permission générale de stockage. Le formulaire externe
+permission générale de stockage. Depuis 0.4, Internet sert uniquement aux couches
+satellite/vents facultatives ; aucune requête fournisseur sans activation. Le formulaire externe
 facultatif s'ouvre uniquement à la demande dans le navigateur du téléphone.
 
 Android 7.0 minimum (API 24), appareils **ARM64** et émulateurs **x86_64**.
 L'APK debug universelle contient les deux architectures, environ
 60 à 66 Mo selon le build. Prévoir environ 250 Mo libres pour l'installation et la base privée.
 
-Version Flightdeck `0.3.0-flightdeck`, identifiant `com.nmg06.rfsatc` conservé.
+Version Flightdeck `0.4.0-flightdeck`, identifiant `com.nmg06.rfsatc` conservé.
 Catalogue d'avions recherchable dans le vol, variante unique Finder préremplie
 dans Fuel, recherches mises en cache et boutons Voir plus/Voir moins.
 Dans le Finder, `10` signifie 10 heures ; les formats explicites restent acceptés.
@@ -33,7 +34,18 @@ Cette version ajoute la carte vectorielle hors ligne avec les mêmes 242 fronti�
 Natural Earth que Windows, trajet orthodromique partagé, glissement/zoom au doigt,
 pincement et cadrage conservé. Choisir les pays puis **Trouver ces vols** transmet
 les critères au Finder local ; les autres filtres restent actifs. Les couches
-satellite/vents demeurent propres au PC.
+satellite/vents sont disponibles en option sur Android depuis 0.4, désactivés au
+départ. EOX 2025, vents Open-Meteo par pression/hauteur AMSL, date UTC, cache et
+rafraîchissement limité ; requêtes sur une file distincte du moteur. Les fonctions
+principales restent hors ligne. Voir [bilan 0.4](PROGRESS_0.4.md).
+
+Le conteneur natif réserve l'espace des barres système, de l'encoche et du clavier.
+Le bouton paramètres devient une croix et revient à l'écran/position précédents.
+Les détails Finder sont lisibles ; résultats conservés à l'ajout des pages,
+géométrie allégée pendant les gestes et densité Canvas limitée à 1,75.
+Les saisies sont sauvegardées après 180 ms et lors de la navigation/mise en veille,
+sans renvoyer toute la bibliothèque à chaque caractère. Le vol reste conservé
+sans utiliser le bouton Sauver ; ce bouton nomme un vol pour le rappeler ensuite.
 
 Dans **Bibliothèque** : renommage/suppression des vols et favoris, ajout/modification/
 suppression des pilotes connus avec préférences, gestion des designs et nettoyage
@@ -52,8 +64,9 @@ Prérequis de développement uniquement : Git, Python **3.11**, JDK **17**,
 Android SDK avec platform 35/build-tools 35.0.0 et licences acceptées. JDK 21
 fonctionne également pour le build local. Certaines versions récentes du
 gestionnaire SDK demandent JDK 21 pour installer les composants.
-Internet sert au téléchargement initial des outils/dépendances de build,
-jamais à l'utilisation de l'application.
+Internet sert au téléchargement initial des outils/dépendances de build.
+À l'utilisation, seules les couches satellite/vents activées et le formulaire
+externe facultatif demandent une connexion.
 
 Depuis la racine du dépôt, PowerShell :
 
@@ -99,9 +112,15 @@ avion : moteurs, Finder/Fuel, carte locale/frontières, presse-papiers, arrêt c
 et affichage du vol restauré passent.
 [Exécution Flightdeck 0.3 et artefacts](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37151621335),
 commit `6bdc5a8`, trois tests natifs ; [bilan de livraison](PROGRESS_0.3.md).
+La version 0.4 est également installée et testée le 4 octobre 2026 : quatre
+tests principaux en mode avion, arrêt complet/reprise, puis services réels
+facultatifs et notification/icône séparément. Toutes ces vérifications passent.
+[Exécution 0.4 et artefacts](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37163877211),
+code testé `84dbe52` ; [preuves et limites physiques](PROGRESS_0.4.md).
 La base gzip est embarquée sous `assets/aviation.database` pour éviter que AAPT
 décompresse/renomme automatiquement les fichiers portant l'extension `.gz`.
-`scripts/verify_android_apk.py` vérifie le contenu réel et l'absence de permissions.
+`scripts/verify_android_apk.py` vérifie le contenu réel et les seules permissions
+attendues pour la version actuelle, détaillées plus bas.
 
 ## Installer et utiliser
 
@@ -212,16 +231,46 @@ sur un émulateur dédié (il réinstalle l'application de test).
 Pour le parcours UI sur ordinateur,
 `python android/tests/ui_server.py` affiche un port local temporaire ; dans un
 autre terminal : `node android/tests/ui_browser.cjs PORT screenshot.png`
+(profil de test neuf pour l'accueil), puis `node android/tests/experience_browser.cjs PORT`.
 (Playwright avec Chromium installé, ou `RFS_TEST_BROWSER=chrome`). Ce serveur
 de test ne fait pas partie de l'APK.
 
 ## Limites
 
 PUSHBACK/TAXI/ATIS sont des extensions Android sans équivalent dans le schéma PC :
-leurs champs et validation fonctionnent, mais tous les réglages longueur/emojis,
-designs personnels et opérations multi-pilotes ne leur sont pas appliqués.
+leurs champs, validation, longueur/emojis, designs personnels et opérations
+multi-pilotes de départ sont portés et testés, sans prétendre une parité PC inexistante.
 Les composants carburant et certains avertissements techniques ne sont pas tous
-traduits. Suppression/renommage de chaque élément de bibliothèque et raccourcis
-desktop restent à compléter. La carte Flightdeck de la livraison locale séparée
-est absente de GitHub main et n'est pas portée ici. Voir le tableau de parité
-pour les contrôles Android encore à confirmer sur un téléphone physique.
+traduits. Les extensions utilisent désormais les présentations et groupes décrits
+plus haut ; les anciennes limitations 0.2/0.3 ne s'appliquent plus.
+Les sélecteurs/photos/partage et le confort sur les divers téléphones physiques
+restent à confirmer. Les portes ne sont pas présentes dans la base aviation ;
+la longueur/surface des pistes n'autorise pas une affectation automatique pour un
+avion/une compagnie. iOS demande une chaîne Apple distincte, absente de cet hôte.
+
+## Personnalisation et préparation sans ATC
+
+Dix palettes partagées PC/Android, chacune avec un mode clair/sombre ; trois
+icônes de lanceur Android. La vitesse d'actualisation de l'icône dépend du lanceur.
+Le bouton retour ferme le dialogue actif avant de changer d'écran.
+Le carnet conserve les sessions démarrées/pausées/terminées par l'utilisateur,
+avec durée chronométrée et trajet. Aucune heure de vol n'est déduite des recherches.
+Les idées Court/Nuit définissent seulement la durée du Finder et gardent ses autres
+critères ; résultats exclusivement issus de la base historique.
+
+Le rappel de préparation est local, facultatif, à une date choisie, pour le vol
+actuel. Android 13+ demande l'autorisation uniquement lors de sa programmation.
+Un seul rappel remplaçable ; annulation dans Paramètres. Horaire approximatif,
+potentiellement retardé par économie de batterie ; pas d'alarme exacte ni recherche
+de vol/météo en arrière-plan. Reprogrammé après redémarrage si encore futur ;
+une fermeture forcée peut le suspendre jusqu'à la réouverture. Les réglages du
+canal Android permettent aussi de couper le son/les notifications.
+
+Permissions 0.4 : `INTERNET`, `POST_NOTIFICATIONS`, `RECEIVE_BOOT_COMPLETED` et
+permission de signature propre au paquet, ajoutée par AndroidX pour protéger les
+receivers internes. Pas de localisation, contacts, compte, photos globales ou stockage.
+
+Accueil : billet fictif affiché avant sa conclusion ; aucune saisie ni paiement.
+Après cette première présentation, la blague ne se rejoue pas toute seule.
+Paramètres > Revoir la blague de bienvenue permet de la revoir volontairement.
+Sur Windows : Aide et suggestions > Revoir la blague.
