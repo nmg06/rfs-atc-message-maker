@@ -2,6 +2,7 @@
 import argparse
 from pathlib import Path
 import subprocess
+import time
 
 def check(adb, serial):
     if not serial.startswith('emulator-'):
@@ -11,12 +12,25 @@ def check(adb, serial):
     try:
         run('shell','cmd','connectivity','airplane-mode','disable')
         run('shell','svc','wifi','enable')
-        report=run('shell','am','instrument','-w','-e','class',
-            'com.nmg06.rfsatc.OfflineAppTest#viewportIsOutsideSystemBarsAndCutout',
-            '-e','online-services','true','com.nmg06.rfsatc.test/androidx.test.runner.AndroidJUnitRunner')
-        print(report)
-        if 'OK (1 test)' not in report or 'FAILURES' in report:
-            raise ValueError('Live Android services did not pass')
+        # Enabling Wi-Fi returns before connection/DNS are ready after airplane
+        # mode. Inspect the actual emulator state instead of guessing a delay.
+        deadline=time.monotonic()+30
+        while 'Wifi is connected to' not in run('shell','cmd','wifi','status'):
+            if time.monotonic()>=deadline:
+                raise ValueError('Emulator Wi-Fi did not reconnect')
+            time.sleep(1)
+        for attempt in range(3):
+            report=run('shell','am','instrument','-w','-e','class',
+                'com.nmg06.rfsatc.OfflineAppTest#viewportIsOutsideSystemBarsAndCutout',
+                '-e','online-services','true','com.nmg06.rfsatc.test/androidx.test.runner.AndroidJUnitRunner')
+            print(report)
+            if 'OK (1 test)' in report and 'FAILURES' not in report:
+                break
+            if attempt==2 or not any(e in report for e in ('UnknownHostException','SocketTimeoutException','ConnectException')):
+                raise ValueError('Live Android services did not pass')
+            print('Retrying real provider requests after network transition')
+            run('shell','am','force-stop','com.nmg06.rfsatc')
+            time.sleep(10)
     finally:
         run('shell','cmd','connectivity','airplane-mode','enable')
         run('shell','svc','wifi','disable')

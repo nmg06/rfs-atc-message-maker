@@ -3,9 +3,9 @@ on:
   workflow_dispatch:
   push:
     branches: [main, 'feat/android-*', 'feat/flightdeck-*']
-    paths: ['android/**', 'scripts/prepare_android.py', 'scripts/verify_android_apk.py', '*.py', 'finder/**', 'fuel/**', 'assets/world_countries.json', 'assets/WORLD_MAP_LICENSE.md', 'docs/fuel/reference/**', '.github/workflows/android.yml']
+    paths: ['android/**', 'scripts/prepare_android.py', 'scripts/verify_android_apk.py', 'scripts/test_android*.py', '*.py', 'finder/**', 'fuel/**', 'assets/world_countries.json', 'assets/WORLD_MAP_LICENSE.md', 'docs/fuel/reference/**', '.github/workflows/android.yml']
   pull_request:
-    paths: ['android/**', 'scripts/prepare_android.py', 'scripts/verify_android_apk.py', '*.py', 'finder/**', 'fuel/**', 'assets/world_countries.json', 'assets/WORLD_MAP_LICENSE.md', 'docs/fuel/reference/**', '.github/workflows/android.yml']
+    paths: ['android/**', 'scripts/prepare_android.py', 'scripts/verify_android_apk.py', 'scripts/test_android*.py', '*.py', 'finder/**', 'fuel/**', 'assets/world_countries.json', 'assets/WORLD_MAP_LICENSE.md', 'docs/fuel/reference/**', '.github/workflows/android.yml']
 permissions:
   contents: read
 jobs:
