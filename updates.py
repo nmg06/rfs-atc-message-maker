@@ -18,7 +18,7 @@ ENDPOINT = f'https://api.github.com/repos/{REPOSITORY}/releases?per_page=100'
 MAX_BYTES = 2 * 1024 * 1024
 TIMEOUT_SECONDS = 8
 INTERVAL_SECONDS = 24 * 60 * 60
-_VERSION = re.compile(r'(?:v)?(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-flightdeck)?', re.I)
+_VERSION = re.compile(r'(?:flightdeck-|v)?(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-flightdeck)?', re.I)
 
 
 def version_tuple(value):

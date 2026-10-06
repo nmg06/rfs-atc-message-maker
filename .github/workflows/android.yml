@@ -63,6 +63,7 @@ jobs:
             adb shell settings put system screen_off_timeout 1800000
             python ../scripts/test_android_connected.py --adb "$ANDROID_HOME/platform-tools/adb"
             python ../scripts/test_android_restart.py --adb "$ANDROID_HOME/platform-tools/adb"
+            python ../scripts/test_android_lifecycle.py --adb "$ANDROID_HOME/platform-tools/adb"
             python ../scripts/test_android_online.py --adb "$ANDROID_HOME/platform-tools/adb"
             python ../scripts/test_android_optional.py --adb "$ANDROID_HOME/platform-tools/adb"
       - uses: actions/upload-artifact@v4

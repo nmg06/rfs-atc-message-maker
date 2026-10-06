@@ -17,7 +17,8 @@ with gzip.open(ROOT/'android/bundled/aviation.sqlite.gz','rb') as src, database.
     shutil.copyfileobj(src,dst)
 engine = Engine(temp.name,database)
 lock = threading.Lock()
-update_policy = {'version':'0.4.2-flightdeck','enabled':False,'last_attempt':0,'last_result':{}}
+from app_version import VERSION
+update_policy = {'version':VERSION+'-flightdeck','enabled':False,'last_attempt':0,'last_result':{}}
 update_requests = 0
 pending_import = None
 

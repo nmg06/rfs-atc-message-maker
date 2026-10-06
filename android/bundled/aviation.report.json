@@ -19,6 +19,26 @@
       "Track_Destination_DateTime_UTC": "VARCHAR",
       "Track_Destination_ApplicableAirports": "VARCHAR",
       "Route_Validation_Based_on_Callsign": "VARCHAR"
+    },
+    "2026_Q1_detailed_github.parquet": {
+      "ICAO_Hex": "VARCHAR",
+      "Reg": "VARCHAR",
+      "AC_Type": "VARCHAR",
+      "AC_Type_Description": "VARCHAR",
+      "AC_Type_Detailed": "VARCHAR",
+      "Airline": "VARCHAR",
+      "Callsign": "VARCHAR",
+      "Track_Origin_Lat": "VARCHAR",
+      "Track_Origin_Lon": "VARCHAR",
+      "Track_Origin_FL_Ft": "VARCHAR",
+      "Track_Origin_DateTime_UTC": "VARCHAR",
+      "Track_Origin_ApplicableAirports": "VARCHAR",
+      "Track_Destination_Lat": "VARCHAR",
+      "Track_Destination_Lon": "VARCHAR",
+      "Track_Destination_FL_Ft": "VARCHAR",
+      "Track_Destination_DateTime_UTC": "VARCHAR",
+      "Track_Destination_ApplicableAirports": "VARCHAR",
+      "Route_Validation_Based_on_Callsign": "VARCHAR"
     }
   },
   "versions": {
@@ -258,17 +278,31 @@
       "bytes": 25241,
       "sha256": "d93f996262c15e7cf9d6b54f9f48e3f9d8b9c3a47fa2308dc8ef1f0f5cb88611",
       "retrieved_at": "2026-09-30T23:45:12.259224+00:00"
+    },
+    {
+      "url": "https://github.com/MrAirspace/aircraft-flight-schedules/releases/download/aircraft_flight_schedules_2026_quarter1/2026_Q1_detailed_github.parquet",
+      "file": "2026_Q1_detailed_github.parquet",
+      "bytes": 840340093,
+      "sha256": "12ec161c7f1739934053d743625bb48e86b3785c3fcb0549b0e08ae93b1199ce",
+      "retrieved_at": "2026-10-06T19:05:39.562142+00:00"
     }
   ],
-  "raw_rows": 14040611,
-  "accepted_before_dedup_window": 4120896,
-  "retained_observations": 4078484,
-  "rejected_before_dedup": 9919715,
-  "patterns": 135554,
+  "raw_rows": 27064297,
+  "accepted_before_dedup_window": 7891468,
+  "retained_observations": 7891468,
+  "window_days": 181,
+  "input_quarters": [
+    "2026_Q2_detailed_github.parquet",
+    "2026_Q1_detailed_github.parquet"
+  ],
+  "etl_memory_mb": 512,
+  "etl_threads": 1,
+  "rejected_before_dedup": 19172829,
+  "patterns": 203627,
   "airports": 19786,
-  "searchable_patterns": 59552,
+  "searchable_patterns": 92952,
   "last_observation": "2026-06-30T23:59:59+00:00",
-  "built_at": "2026-10-01T00:24:37.988696+00:00",
+  "built_at": "2026-10-06T19:35:21.703837+00:00",
   "integrity_check": "ok",
   "foreign_key_check": []
 }

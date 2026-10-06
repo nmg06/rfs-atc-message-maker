@@ -10,9 +10,9 @@ import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 
-def verify(apk, aapt):
+def verify(apk, aapt, *, require_release=False, apksigner=None, expected_cert_sha256=None):
     with zipfile.ZipFile(apk) as package:
-        for name in ('assets/www/index.html', 'assets/www/app.js', 'assets/www/app.css',
+        for name in ('assets/www/index.html', 'assets/www/app.js', 'assets/www/app.css', 'assets/www/compat.js', 'assets/www/compat-check.html',
                      'assets/www/map.js', 'assets/www/experience.js', 'assets/www/online-map.js', 'assets/www/world-countries.js',
                      'assets/www/help-content.js', 'assets/www/help-ui.js', 'assets/www/help-ui.css', 'assets/www/help-adapter.js',
                      'assets/www/updates-ui.js', 'assets/www/backup-ui.js',
@@ -48,13 +48,30 @@ def verify(apk, aapt):
                'com.nmg06.rfsatc.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION'}
     if actual != allowed:
         raise ValueError('Unexpected permission in actual APK: ' + permissions)
+    certificate = None
+    if require_release:
+        if not apksigner or not expected_cert_sha256 or not re.fullmatch(r'[0-9a-fA-F]{64}', expected_cert_sha256):
+            raise ValueError('Release verification requires apksigner and the expected SHA-256 certificate')
+        badging = subprocess.check_output([str(aapt), 'dump', 'badging', str(apk)], text=True)
+        if 'application-debuggable' in badging:
+            raise ValueError('Refusing a debuggable APK as a release candidate')
+        signatures = subprocess.check_output([str(apksigner), 'verify', '--verbose', '--print-certs', str(apk)], text=True)
+        certificates = re.findall(r'Signer #\d+ certificate SHA-256 digest: ([0-9a-fA-F]{64})', signatures)
+        if [value.lower() for value in certificates] != [expected_cert_sha256.lower()]:
+            raise ValueError('APK signing certificate differs from the expected public release key')
+        certificate = certificates[0]
     print(json.dumps({'apk': str(Path(apk).resolve()), 'bytes': Path(apk).stat().st_size,
-        'database_bytes': size, 'database_sha256': digest.hexdigest(), 'permissions': sorted(actual)}))
+        'database_bytes': size, 'database_sha256': digest.hexdigest(), 'permissions': sorted(actual),
+        'release_verified': require_release, 'certificate_sha256': certificate}))
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('apk', type=Path)
     parser.add_argument('--aapt', type=Path, required=True)
+    parser.add_argument('--require-release', action='store_true')
+    parser.add_argument('--apksigner', type=Path)
+    parser.add_argument('--expected-cert-sha256')
     args = parser.parse_args()
-    verify(args.apk, args.aapt)
+    verify(args.apk, args.aapt, require_release=args.require_release,
+           apksigner=args.apksigner, expected_cert_sha256=args.expected_cert_sha256)

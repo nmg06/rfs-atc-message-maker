@@ -28,6 +28,19 @@ La **durée totale** du vol sert à préparer le carburant. L’**ETE dans
 ARRIVAL BOARD** décrit le temps restant : **5 min signifie une arrivée prévue
 dans environ cinq minutes**.
 
+À côté du champ carburant, **Calculer le fuel** ouvre le Fuel Helper avec
+l’avion, la durée totale et l’arrivée du vol actuel. Une variante ambiguë doit
+être choisie. Cliquez sur **Calculer**, vérifiez le résultat, puis **Appliquer
+avion + carburant** pour remplir le vol. Ouvrir l’outil ne remplace aucune quantité.
+
+## Éviter des aéroports
+
+Dans Finder, remplissez **Éviter ces aéroports** avec les codes ICAO ou IATA,
+séparés par des espaces, des virgules ou des points-virgules. Par exemple :
+départ `VIDP`, aéroports à éviter `VABB; BOM`. Ces codes sont exclus du départ
+et de l’arrivée. Un code absent de la base ou mal écrit est signalé ; corrigez-le
+pour lancer la recherche. Le filtre reste conservé à la prochaine ouverture.
+
 ## Si quelque chose semble bloqué
 
 Dans une liste d’avions, utilisez la recherche, la molette ou le défilement

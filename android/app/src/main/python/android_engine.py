@@ -19,8 +19,8 @@ from finder.database import connect_readonly
 from finder.duration import parse_minutes, parse_finder_hours
 from finder.mapping import use_this_flight
 from finder.provenance import duration_provenance
-from finder.search import Criteria, SearchSession
-from finder.i18n import tr as finder_tr
+from finder.search import Criteria, SearchSession, parse_airport_codes
+from finder.i18n import tr as finder_tr, error_text as finder_error_text
 from finder.rfs_catalogue import TYPE_BY_ID
 from fuel.calculator import calculate_fuel, load_json
 from fuel.selection import resolve_aircraft
@@ -139,6 +139,8 @@ class Engine:
             'arrivals': sorted(load_json('airport_alternates.json')['destinations']),
             'finder_fields': {f.name: {'default': deepcopy(getattr(Criteria(), f.name)),
                 'label': finder_tr(f.name, language)} for f in fields(Criteria)},
+            'finder_error_labels': {code: finder_tr(code, language) for code in ('EXCLUDED_AIRPORT_FORMAT', 'EXCLUDED_AIRPORT_UNKNOWN')},
+            'finder_excluded_hint': finder_tr('excluded_hint', language),
             'timezones': sorted(available_timezones()), 'rfs_types': TYPE_BY_ID,
             'visual_themes': [{**theme_colors(r[0], language=language), 'light': theme_colors(r[0], False, language)} for r in THEMES],
             'warning': self.warning}
@@ -252,7 +254,12 @@ class Engine:
             if key not in known or key == 'offset':
                 continue
             default = known[key]
-            if isinstance(default, list):
+            if key in ('origin', 'destination', 'excluded_airports'):
+                try:
+                    converted[key] = parse_airport_codes(item, exclusion=key == 'excluded_airports')
+                except ValueError as error:
+                    raise ValueError(finder_error_text(error, self.state['language'])) from error
+            elif isinstance(default, list):
                 converted[key] = [x.strip().upper() for x in item.split(',') if x.strip()] if isinstance(item, str) else item
             elif key in ('min_minutes', 'max_minutes', 'target_minutes', 'tolerance_minutes', 'time_tolerance'):
                 parser = parse_finder_hours if key in ('min_minutes', 'max_minutes', 'target_minutes') else parse_minutes
@@ -370,14 +377,18 @@ class Engine:
         if method == 'finder':
             more = bool(args.get('more'))
             if not more:
+                self.query = None
+                self.rows = []
                 self.query = self.criteria(self.state['finder_filters'])
                 self.query_time = datetime.now(timezone.utc)
-                self.rows = []
             if self.query is None:
                 raise ValueError('Search filters changed: run a new search')
             query = deepcopy(self.query)
             query.offset = len(self.rows)
-            result = self.finder_session.page(self.database, query, self.query_time)
+            try:
+                result = self.finder_session.page(self.database, query, self.query_time)
+            except ValueError as error:
+                raise ValueError(finder_error_text(error, self.state['language'])) from error
             self.rows.extend(result['results'])
             result['warnings_text'] = [finder_tr(w, self.state['language']) for w in result['warnings']]
             for row in result['results']:
@@ -409,8 +420,7 @@ class Engine:
                 inputs.update(aircraft=resolved['record']['id'] if resolved['record'] else '',
                               _flight_signature=signature)
                 for target, source in (('duration','estimated_flight_time'), ('arrival','arrival_icao')):
-                    if flight.get(source):
-                        inputs[target] = flight[source]
+                    inputs[target] = flight.get(source, '')
                 self.commit(candidate)
             return {'value': deepcopy(self.value), 'selection': resolved}
         elif method == 'fuel':

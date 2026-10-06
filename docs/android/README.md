@@ -20,11 +20,15 @@ permission générale de stockage. Depuis 0.4, Internet sert uniquement aux couc
 satellite/vents facultatives ; aucune requête fournisseur sans activation. Le formulaire externe
 facultatif s'ouvre uniquement à la demande dans le navigateur du téléphone.
 
-Android 7.0 minimum (API 24), appareils **ARM64** et émulateurs **x86_64**.
+Android 7.0 minimum (API 24), appareils **ARM64** et émulateurs **x86_64**,
+avec **Android System WebView / Chrome 80 minimum** et les API locales vérifiées
+au démarrage. Un moteur trop ancien affiche une aide locale et conserve les
+données ; mettez à jour WebView avant de relancer. Les essais natifs documentés
+utilisent API 35, pas tous les modèles de téléphone.
 L'APK debug universelle contient les deux architectures, environ
 60 à 66 Mo selon le build. Prévoir environ 250 Mo libres pour l'installation et la base privée.
 
-Version Flightdeck `0.4.0-flightdeck`, identifiant `com.nmg06.rfsatc` conservé.
+Candidate Flightdeck `0.4.3-flightdeck`, identifiant `com.nmg06.rfsatc` conservé.
 Catalogue d'avions recherchable dans le vol, variante unique Finder préremplie
 dans Fuel, recherches mises en cache et boutons Voir plus/Voir moins.
 Dans le Finder, `10` signifie 10 heures ; les formats explicites restent acceptés.
@@ -102,6 +106,8 @@ cd android
 ```
 
 APK : **`android/app/build/outputs/apk/debug/app-debug.apk`**.
+Pour la future APK de distribution signée, consultez [SIGNING.md](SIGNING.md).
+Le workflow manuel de candidate ne publie rien automatiquement.
 Gradle 8.9 est fourni par le wrapper avec contrôle SHA-256. Les versions AGP,
 Chaquopy, WebKit et tzdata sont épinglées. Les sources partagées et leurs hashes
 sont préparés automatiquement dans `app/build/generated` ; ne les modifiez pas.

@@ -25,12 +25,19 @@ class UpdateTests(unittest.TestCase):
 
     def test_stable_version_and_numeric_newest_not_github_order(self):
         self.assertEqual((0, 4, 2), updates.version_tuple('v0.4.2-flightdeck'))
+        self.assertEqual((0, 4, 3), updates.version_tuple('flightdeck-0.4.3'))
         for bad in ['0.4.2-debug', 'v0.4.2-rc1', '0.04.2', '0.4', '9.0.0-beta', None]:
             self.assertIsNone(updates.version_tuple(bad))
         result = self.select([release('0.4.9'), release('0.4.10'), release('0.4.3')])
         self.assertEqual('available', result['status'])
         self.assertEqual('0.4.10', result['version'])
         self.assertTrue(result['download_url'].endswith(result['asset_name']))
+        candidate = release('0.4.3')
+        old_tag = candidate['tag_name']
+        candidate['tag_name'] = 'flightdeck-0.4.3'
+        candidate['html_url'] = candidate['html_url'].replace(old_tag, candidate['tag_name'])
+        candidate['assets'][0]['browser_download_url'] = candidate['assets'][0]['browser_download_url'].replace(old_tag, candidate['tag_name'])
+        self.assertEqual('available', self.select([candidate])['status'])
 
     def test_no_release_is_distinct_from_up_to_date_or_downgrade(self):
         self.assertEqual('no_release', self.select([])['status'])
@@ -78,7 +85,7 @@ class UpdateTests(unittest.TestCase):
         stream = BytesIO(json.dumps([release()]).encode())
         stream.geturl = lambda: updates.ENDPOINT
         client = Mock(); client.open.return_value = stream
-        self.assertEqual('available', updates.check_for_update('android', opener=client)['status'])
+        self.assertEqual('available', updates.check_for_update('android', current_version='0.4.2', opener=client)['status'])
         request = client.open.call_args.args[0]
         self.assertEqual(updates.ENDPOINT, request.full_url)
         self.assertIsNone(request.data)
@@ -119,7 +126,9 @@ class UpdateTests(unittest.TestCase):
             self.assertFalse(updates.is_newer_release(result))
             self.assertFalse(updates.is_newer_release(preferences['last_result']))
             self.assertEqual('available', result['status'])  # input not mutated
-        result = {'status': 'available', 'version': '0.4.3'}
+        current = updates.version_tuple(updates.VERSION)
+        future = f'{current[0]}.{current[1]}.{current[2] + 1}'
+        result = {'status': 'available', 'version': future}
         self.assertEqual('available', updates.normalise_preferences({'last_result': result})['last_result']['status'])
         self.assertTrue(updates.is_newer_release(result))
         for result in ({'status': 'no_release', 'reason': 'no_compatible_public_release'},

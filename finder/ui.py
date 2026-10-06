@@ -4,14 +4,14 @@ from pathlib import Path
 import sqlite3
 from zoneinfo import ZoneInfo
 
-from PySide6.QtCore import QDate, QThread, Signal, Qt, QTimeZone
+from PySide6.QtCore import QDate, QThread, Signal, Qt, QTimeZone, QTimer
 from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QComboBox,
     QFormLayout, QLineEdit, QCheckBox, QDateEdit, QSplitter, QScrollArea, QWidget, QTableWidget,
     QTableWidgetItem, QAbstractItemView, QHeaderView, QPlainTextEdit, QFileDialog, QGroupBox, QCompleter)
 
 from .database import connect_readonly
-from .i18n import tr
-from .search import Criteria, search, SearchSession
+from .i18n import tr, error_text
+from .search import Criteria, search, SearchSession, parse_airport_codes
 from .duration import parse_minutes, parse_finder_hours
 from .rfs_catalogue import records, TYPE_BY_ID
 from .provenance import duration_provenance
@@ -79,6 +79,13 @@ class FinderDialog(QDialog):
         language = language if language in ('fr', 'en') else app_language()
         self.path, self.language = Path(database), language
         self.worker = None
+        self._profile_store = getattr(parent, 'store', None)
+        self._restoring = False
+        self._persist_timer = QTimer(self)
+        self._persist_timer.setSingleShot(True)
+        self._persist_timer.setInterval(250)
+        self._persist_timer.timeout.connect(self.persist_filters)
+        self.finished.connect(self.persist_filters)
         self.results = []
         self.session = SearchSession()
         self.visible_count = 0
@@ -178,8 +185,8 @@ class FinderDialog(QDialog):
         self.fields, self.labels = {}, {}
         self.list_keys = ("origin", "destination", "excluded_airports", "origin_country", "destination_country",
                           "origin_continent", "destination_continent", "origin_region", "destination_region")
-        keys = ("airline", "aircraft", "manufacturer", "family", "origin", "destination", "min_minutes",
-                "max_minutes", "target_minutes", "excluded_airports", "origin_country", "destination_country",
+        keys = ("airline", "aircraft", "manufacturer", "family", "origin", "destination", "excluded_airports", "min_minutes",
+                "max_minutes", "target_minutes", "origin_country", "destination_country",
                 "origin_continent", "destination_continent", "origin_region", "destination_region",
                 "departure_time", "departure_date", "departure_tz", "arrival_time", "arrival_date", "arrival_tz", "time_tolerance")
         for key in keys:
@@ -205,7 +212,7 @@ class FinderDialog(QDialog):
                     field.setText("60")
             self.labels[key], self.fields[key] = label, field
             target_form = times if key.startswith(('departure_', 'arrival_')) or key == 'time_tolerance' else (
-                self.form if key in ('airline', 'aircraft', 'origin', 'destination', 'min_minutes', 'max_minutes', 'target_minutes') else advanced)
+                self.form if key in ('airline', 'aircraft', 'origin', 'destination', 'excluded_airports', 'min_minutes', 'max_minutes', 'target_minutes') else advanced)
             target_form.addRow(label, field)
             if key.endswith('_minutes'):
                 field.setPlaceholderText('10 = 10h · 9h30 · 03:00 · 60 min')
@@ -217,6 +224,11 @@ class FinderDialog(QDialog):
                 self.add_completer(field, [f'{fr} / {en} ({code})' for code, fr, en in country_rows()])
             if key == 'airline':
                 field.setToolTip(self.t('airline_hint'))
+            if key == 'excluded_airports':
+                field.setPlaceholderText('VABB, EGLL LFPG')
+                self.excluded_hint = QLabel(self.t('excluded_hint'))
+                self.excluded_hint.setWordWrap(True)
+                self.form.addRow(self.excluded_hint)
         self.international, self.real = QCheckBox(), QCheckBox()
         self.real.setChecked(True)
         self.real.setEnabled(False)
@@ -288,6 +300,7 @@ class FinderDialog(QDialog):
         for check in (self.international, self.rfs_only, self.diversify):
             check.toggled.connect(self.invalidate)
         self.load_suggestions()
+        self.restore_filters()
         self.translate()
         self.status.setText(self.t("optional") if self.path.is_file() else self.t("missing"))
 
@@ -307,6 +320,54 @@ class FinderDialog(QDialog):
             label.setText(self.t(key))
         self.table.setHorizontalHeaderLabels(self.t("columns"))
         self.details.setPlaceholderText(self.t("details"))
+        self.excluded_hint.setText(self.t('excluded_hint'))
+
+    def restore_filters(self):
+        if self._profile_store is None:
+            return
+        saved = self._profile_store.state.get('finder_filters', {})
+        if not isinstance(saved, dict):
+            return
+        self._restoring = True
+        try:
+            for key, widget in self.fields.items():
+                if key not in saved:
+                    continue
+                value = saved[key]
+                if isinstance(widget, QDateEdit):
+                    date = QDate.currentDate().addDays(1 if value == 'tomorrow' else 0) if value in ('today', 'tomorrow') else QDate.fromString(str(value), 'yyyy-MM-dd')
+                    if date.isValid():
+                        widget.setDate(date)
+                elif isinstance(widget, QComboBox):
+                    index = widget.findData(value)
+                    widget.setCurrentIndex(index) if index >= 0 else widget.setCurrentText(str(value))
+                else:
+                    widget.setText(', '.join(value) if isinstance(value, list) else str(value))
+            for key, widget in (('international_only', self.international), ('rfs_only', self.rfs_only), ('diversify', self.diversify)):
+                if type(saved.get(key)) is bool:
+                    widget.setChecked(saved[key])
+        finally:
+            self._restoring = False
+
+    def persist_filters(self, *_):
+        if self._profile_store is None or self._restoring:
+            return
+        self._persist_timer.stop()
+        values = {}
+        for key, widget in self.fields.items():
+            if isinstance(widget, QDateEdit):
+                value = widget.date().toString('yyyy-MM-dd')
+            elif isinstance(widget, QComboBox):
+                value = self.timezones.get(widget.currentText(), widget.currentText())
+            else:
+                value = widget.text()
+            values[key] = value
+        values.update(international_only=self.international.isChecked(), rfs_only=self.rfs_only.isChecked(), diversify=self.diversify.isChecked())
+        self._profile_store.state['finder_filters'] = values
+        try:
+            self._profile_store.save_state()
+        except OSError:
+            self.status.setText('Impossible de sauvegarder les filtres.' if self.language == 'fr' else 'Could not save the filters.')
 
     def change_language(self):
         self.language = self.lang.currentData()
@@ -358,6 +419,8 @@ class FinderDialog(QDialog):
         self.add_completer(self.fields['airline'], list(self.airline_labels))
 
     def invalidate(self, *_):
+        if not self._restoring:
+            self._persist_timer.start()
         self.revision += 1
         self.results = []
         self.visible_count = 0
@@ -387,6 +450,13 @@ class FinderDialog(QDialog):
                 values[key] = zone
             elif key in ('origin_country', 'destination_country'):
                 values[key] = [resolve_country(v.strip()) for v in text.split(',') if v.strip()]
+            elif key in ('origin', 'destination', 'excluded_airports'):
+                resolved = self.airport_labels.get(text, text)
+                try:
+                    values[key] = parse_airport_codes(resolved, exclusion=key == 'excluded_airports')
+                except ValueError:
+                    widget.setFocus()
+                    raise
             elif key in self.list_keys:
                 values[key] = [self.airport_labels.get(text, text).upper()] if text in self.airport_labels else [v.strip().upper() for v in text.split(',') if v.strip()]
             elif key.endswith('_minutes') or key == 'time_tolerance':
@@ -405,6 +475,7 @@ class FinderDialog(QDialog):
         return Criteria(**values)
 
     def run_search(self, checked=False, more=False):
+        self.persist_filters()
         if self.worker and self.worker.isRunning():
             return
         if more and self.query is None:
@@ -453,9 +524,12 @@ class FinderDialog(QDialog):
             self.more_button.setEnabled(self.visible_count < len(self.results) or self.response.get('has_more', False))
 
     def fail(self, message):
-        self.empty_state.setText(self.t("error") + ": " + self.t(message))
+        text = error_text(message, self.language)
+        self.empty_state.setText(self.t("error") + ": " + text)
         self.empty_state.show()
-        self.status.setText(self.t("error") + ": " + self.t(message))
+        self.status.setText(self.t("error") + ": " + text)
+        if str(message).split(':', 1)[0] in ('EXCLUDED_AIRPORT_FORMAT', 'EXCLUDED_AIRPORT_UNKNOWN'):
+            self.fields['excluded_airports'].setFocus()
 
     def present(self, response):
         if self.revision != self.search_revision:

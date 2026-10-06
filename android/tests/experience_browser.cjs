@@ -3,8 +3,9 @@ const assert=require('node:assert/strict');
 (async()=>{
  const port=Number(process.argv[2]),browser=await chromium.launch({headless:true,...(process.env.RFS_TEST_BROWSER?{channel:process.env.RFS_TEST_BROWSER}:{})});
  const page=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:3});
+ let updateDelay=0;
  const errors=[],requests=[];page.on('pageerror',e=>{errors.push(e.message);console.error(e.message);});
- await page.exposeFunction('testRequest',async(id,method,payload)=>{requests.push(method);if(method==='native.finish'){await page.evaluate(id=>window.androidReply(id,{ok:true,result:{}}),id);return;}const response=await fetch(`http://127.0.0.1:${port}/rpc`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({method,args:JSON.parse(payload)})});await page.evaluate(({id,envelope})=>window.androidReply(id,envelope),{id,envelope:await response.json()});});
+ await page.exposeFunction('testRequest',async(id,method,payload)=>{requests.push(method);if(method==='native.finish'){await page.evaluate(id=>window.androidReply(id,{ok:true,result:{}}),id);return;}const response=await fetch(`http://127.0.0.1:${port}/rpc`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({method,args:JSON.parse(payload)})});const envelope=await response.json();if(method==='update'&&updateDelay)await new Promise(resolve=>setTimeout(resolve,updateDelay));await page.evaluate(({id,envelope})=>window.androidReply(id,envelope),{id,envelope});});
  await page.addInitScript(()=>window.Android={request:(...args)=>window.testRequest(...args)});
  await page.goto(`http://127.0.0.1:${port}/index.html`);try{await page.locator('[data-action="welcome-joke"], [data-action="welcome-done"], #flight-callsign').first().waitFor({state:'attached'});}catch(e){console.error(await page.evaluate(()=>({loading:$('loading').textContent,screen,model:!!model,toast:$('toast').textContent})));await browser.close();throw e;}
  if(await page.locator('[data-action="welcome-joke"]').count()){await page.locator('[data-action="welcome-joke"]').click();await page.locator('[data-action="welcome-done"]').waitFor();}
@@ -52,12 +53,21 @@ const assert=require('node:assert/strict');
  await page.locator('[data-screen="flight"]').click();await page.locator('summary').filter({hasText:'Préparation au sol'}).click();await page.locator('[data-action="planning"]').click();
  await page.locator('#planning-output table').first().waitFor();assert((await page.locator('#planning-output').textContent()).includes('Portes : indisponibles'));
  await page.locator('[data-action="session"][data-operation="start"]').click();await page.waitForFunction(()=>Boolean(model.state.active_session.started_at));
- await page.reload();await page.waitForFunction(()=>Boolean(model.state.active_session.started_at));if(!await page.locator('#flight-callsign').count())console.error(await page.evaluate(()=>({screen,intro:model.state.intro_seen,tutorial:model.state.tutorial_seen,errors:$('toast').textContent})));assert.equal(await page.locator('#flight-callsign').inputValue(),'LAST-BYTE-Z');
+ await page.reload();await page.waitForFunction(()=>Boolean(model?.state.active_session.started_at));if(!await page.locator('#flight-callsign').count())console.error(await page.evaluate(()=>({screen,intro:model.state.intro_seen,tutorial:model.state.tutorial_seen,errors:$('toast').textContent})));assert.equal(await page.locator('#flight-callsign').inputValue(),'LAST-BYTE-Z');
  assert.equal(await page.evaluate(()=>model.state.visual_theme),'sunset');
  page.on('dialog',d=>d.accept());await page.locator('[data-action="session"][data-operation="finish"]').click();await page.waitForFunction(()=>model.state.flight_log.length===1);
  await page.locator('[data-experience="lookup-open"][data-target="flight-departure_icao"]').click();await page.locator('#lookup-query').fill('CDG');await page.locator('[data-experience="lookup-select"][data-code="LFPG"]').click();
  await page.locator('[data-screen="messages"]').click();await page.locator('[data-experience="search-select"][data-target="state-message_type"]').click();await page.locator('#select-query').fill('ATIS');await page.locator('[data-experience="select-option"]').click();await page.waitForFunction(()=>model.state.message_type==='ATIS');
  await page.locator('#settings-open').click();await page.evaluate(()=>window.goBack());await page.waitForFunction(()=>screen==='messages');
+ // Back and a second settings tap must cancel a pending opening, even with
+ // a slow storage response. The last navigation intention wins.
+ await page.evaluate(()=>flushEdits());updateDelay=250;
+ await page.evaluate(()=>{model.state.pilot_name='NAVIGATION-SAVE';changed(false);toggleSettings();window.goBack();});
+ await page.waitForFunction(()=>screen==='messages'&&navigationTarget===null&&pending.size===0);
+ assert.equal(await page.locator('#settings-open').getAttribute('aria-expanded'),'false');
+ await page.evaluate(()=>{model.state.pilot_name='NAVIGATION-DOUBLE-TAP';changed(false);toggleSettings();toggleSettings();});
+ await page.waitForFunction(()=>screen==='messages'&&navigationTarget===null&&pending.size===0);updateDelay=0;
+ assert.equal(await page.evaluate(()=>model.state.pilot_name),'NAVIGATION-DOUBLE-TAP');
  // Drafts must survive settings navigation and a full UI restart without Save.
  await page.locator('#settings-open').click();
  await page.locator('[data-action="replay-joke"]').click();await page.locator('[data-action="welcome-joke"]').waitFor();assert((await page.locator('main').textContent()).includes('999 €'));assert(!(await page.locator('main').textContent()).includes('étaient une blague'));

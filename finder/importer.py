@@ -65,27 +65,37 @@ def distance_nm(lat1, lon1, lat2, lon2):
     return 3440.065 * 2 * math.asin(min(1, math.sqrt(a)))
 
 
-def build(input_dir: Path, output: Path):
+def build(input_dir: Path, output: Path, *, window_days: int = 90,
+          parquet_files: list[Path] | None = None, source_manifest: Path | None = None,
+          memory_mb: int = 1024, threads: int = 2):
+    if isinstance(window_days, bool) or not isinstance(window_days, int) or not 1 <= window_days <= 3660:
+        raise ValueError("window_days must be an integer between 1 and 3660")
+    if isinstance(memory_mb, bool) or not isinstance(memory_mb, int) or not 64 <= memory_mb <= 8192:
+        raise ValueError("memory_mb must be an integer between 64 and 8192")
+    if isinstance(threads, bool) or not isinstance(threads, int) or not 1 <= threads <= 16:
+        raise ValueError("threads must be an integer between 1 and 16")
     import duckdb
     from timezonefinder import TimezoneFinder
     import importlib.metadata
 
-    parquets = sorted(input_dir.glob("*.parquet"))
+    parquets = sorted(Path(p).resolve() for p in (parquet_files if parquet_files is not None else input_dir.glob("*.parquet")))
     if not parquets:
         raise ValueError("No real Parquet input found")
+    if len(parquets) != len(set(parquets)):
+        raise ValueError("Duplicate Parquet input")
     output.parent.mkdir(parents=True, exist_ok=True)
     temporary = output.with_name(output.name + ".building")
     if temporary.exists():
         raise ValueError(f"Previous incomplete build exists: {temporary}; preserve or move it before retrying")
     work = duckdb.connect()
-    work.execute("SET memory_limit='1GB'")
-    work.execute("SET threads=2")
+    work.execute(f"SET memory_limit='{memory_mb}MB'")
+    work.execute(f"SET threads={threads}")
     work.execute("SET preserve_insertion_order=false")
     work.execute("SET TimeZone='UTC'")
     schema = {p.name: inspect_schema(work, p) for p in parquets}
     report = {"schema": schema, "versions": {name: importlib.metadata.version(name) for name in
                ("duckdb", "timezonefinder", "timezonefinder-data", "tzdata")}, "sources": []}
-    manifest = input_dir / "manifest.json"
+    manifest = source_manifest if source_manifest is not None else input_dir / "manifest.json"
     if manifest.is_file():
         report["sources"] = json.loads(manifest.read_text(encoding="utf-8"))
     db = sqlite3.connect(temporary)
@@ -172,7 +182,7 @@ def build(input_dir: Path, output: Path):
     latest = work.execute("SELECT max(dep) FROM clean").fetchone()[0]
     if latest is None:
         raise ValueError("No usable observations; source schema or coverage needs investigation")
-    work.execute("CREATE TABLE observations AS SELECT * EXCLUDE(rn) FROM (SELECT *, row_number() OVER (PARTITION BY hex,round(epoch(dep)/60),origin,destination ORDER BY complete DESC,arr,aircraft,callsign) rn FROM clean WHERE dep >= ? - INTERVAL 90 DAY) WHERE rn=1", [latest])
+    work.execute("CREATE TABLE observations AS SELECT * EXCLUDE(rn) FROM (SELECT *, row_number() OVER (PARTITION BY hex,round(epoch(dep)/60),origin,destination ORDER BY complete DESC,arr,aircraft,callsign) rn FROM clean WHERE dep >= ? - (? * INTERVAL 1 DAY)) WHERE rn=1", [latest, window_days])
     work.execute("DROP TABLE clean")
     count = work.execute("SELECT count(*) FROM observations").fetchone()[0]
     print(f"{count:,} accepted observations. Resolving airport timezones…", flush=True)
@@ -213,8 +223,9 @@ def build(input_dir: Path, output: Path):
         FROM timed t LEFT JOIN clusters c ON t.airline=c.airline AND t.callsign=c.callsign AND t.origin=c.origin AND t.destination=c.destination AND hour(t.local_dep)*60+minute(t.local_dep)=c.m
         LEFT JOIN anchors a ON t.airline=a.airline AND t.callsign=a.callsign AND t.origin=a.origin AND t.destination=a.destination
         ORDER BY t.airline,t.callsign,t.dep""")
-    # Drop intermediate copies and aggregate one airline at a time: bounded RAM
-    # even for multi-million-observation releases with many distinct patterns.
+    # Drop intermediate copies and aggregate one airline at a time to limit
+    # DuckDB intermediates. Final profile/recent lists and timezone references
+    # remain in Python memory, outside DuckDB's configured memory limit.
     for table in ('timed','minutes','minute_gaps','anchors','rotated','clusters'):
         work.execute('DROP TABLE ' + table)
     airline_codes = [r[0] for r in work.execute('SELECT DISTINCT airline FROM grouped ORDER BY airline').fetchall()]
@@ -244,6 +255,8 @@ def build(input_dir: Path, output: Path):
         if index:
             db.execute("INSERT INTO recent_observations VALUES (?,?,?,?,?)", (index, row[5].replace(tzinfo=timezone.utc).isoformat(), row[6].replace(tzinfo=timezone.utc).isoformat(), row[7], int(row[8])))
     report.update(raw_rows=source_count, accepted_before_dedup_window=valid_count, retained_observations=count,
+                  window_days=window_days, input_quarters=[p.name for p in parquets],
+                  etl_memory_mb=memory_mb, etl_threads=threads,
                   rejected_before_dedup=source_count-valid_count, patterns=len(rows), airports=len(airports),
                   searchable_patterns=db.execute("SELECT count(*) FROM flight_patterns WHERE n_complete>=3").fetchone()[0],
                   last_observation=latest.replace(tzinfo=timezone.utc).isoformat(),
@@ -266,5 +279,17 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(__doc__)
     parser.add_argument("--input", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--window-days", type=int, default=90,
+                        help="Historical retention relative to the latest source departure (default: 90)")
+    parser.add_argument("--parquet", type=Path, action="append", dest="parquet_files",
+                        help="Explicit source quarter; repeat to combine verified historical quarters")
+    parser.add_argument("--manifest", type=Path, dest="source_manifest",
+                        help="Provenance manifest copied into the report; historical rebuild verifies hashes")
+    parser.add_argument("--memory-mb", type=int, default=1024,
+                        help="DuckDB memory limit for build only (default: 1024)")
+    parser.add_argument("--threads", type=int, default=2,
+                        help="DuckDB threads for build only (default: 2)")
     args = parser.parse_args()
-    build(args.input, args.output)
+    build(args.input, args.output, window_days=args.window_days,
+          parquet_files=args.parquet_files, source_manifest=args.source_manifest,
+          memory_mb=args.memory_mb, threads=args.threads)

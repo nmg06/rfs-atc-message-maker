@@ -8,7 +8,11 @@ EN = {
     "origin_country": "Departure countries (ISO, e.g. FR)", "destination_country": "Arrival countries (ISO)",
     "origin_continent": "Departure continents (EU, AS…)", "destination_continent": "Arrival continents (EU, AS…)",
     "origin_region": "Departure regions (e.g. FR-IDF)", "destination_region": "Arrival regions (ISO subdivision)",
-    "excluded_airports": "Excluded airports (ICAO / IATA)", "min_minutes": "Minimum duration (hours; 10 = 10 h)",
+    "excluded_airports": "Avoid these airports (ICAO / IATA)", "min_minutes": "Minimum duration (hours; 10 = 10 h)",
+    "excluded_hint": "Removed from both departure and arrival. Use commas, spaces or semicolons: VABB, EGLL LFPG. Leave blank to allow all airports.",
+    "EXCLUDED_AIRPORT_FORMAT": "Enter up to 50 airport codes to avoid: ICAO (4 letters) or IATA (3 letters), separated by commas, spaces or semicolons. No filter was ignored.",
+    "AIRPORT_CODE_FORMAT": "Enter airport ICAO (4 letters) or IATA (3 letters) codes, separated by commas, spaces or semicolons.",
+    "EXCLUDED_AIRPORT_UNKNOWN": "These airport codes to avoid were not found in the local database. Correct them or remove them before searching",
     "max_minutes": "Available / maximum duration (hours)", "target_minutes": "Desired duration (hours)",
     "departure_time": "Desired departure HH:mm (optional)", "arrival_time": "Desired arrival HH:mm (optional)",
     "departure_date": "Departure date", "arrival_date": "Arrival date",
@@ -49,7 +53,11 @@ FR = {
     "origin_country": "Pays de départ (ISO, ex. FR)", "destination_country": "Pays d’arrivée (ISO)",
     "origin_continent": "Continents de départ (EU, AS…)", "destination_continent": "Continents d’arrivée (EU, AS…)",
     "origin_region": "Régions de départ (ex. FR-IDF)", "destination_region": "Régions d’arrivée (code ISO)",
-    "excluded_airports": "Aéroports exclus (ICAO / IATA)", "min_minutes": "Durée minimale (minutes)",
+    "excluded_airports": "Éviter ces aéroports (ICAO / IATA)", "min_minutes": "Durée minimale (minutes)",
+    "excluded_hint": "Exclus au départ comme à l’arrivée. Virgules, espaces ou points-virgules : VABB, EGLL LFPG. Laissez vide pour autoriser tous les aéroports.",
+    "EXCLUDED_AIRPORT_FORMAT": "Indiquez jusqu’à 50 aéroports à éviter : ICAO (4 lettres) ou IATA (3 lettres), séparés par des virgules, espaces ou points-virgules. Aucun filtre n’a été ignoré.",
+    "AIRPORT_CODE_FORMAT": "Indiquez des codes ICAO (4 lettres) ou IATA (3 lettres), séparés par des virgules, espaces ou points-virgules.",
+    "EXCLUDED_AIRPORT_UNKNOWN": "Ces codes d’aéroports à éviter sont absents de la base locale. Corrigez-les ou retirez-les avant de rechercher",
     "max_minutes": "Temps disponible / durée maximale (minutes)", "target_minutes": "Durée souhaitée (minutes)",
     "departure_time": "Départ souhaité HH:mm (facultatif)", "arrival_time": "Arrivée souhaitée HH:mm (facultatif)",
     "departure_date": "Date de départ", "arrival_date": "Date d’arrivée", "departure_tz": "Fuseau IANA du départ souhaité",
@@ -169,6 +177,11 @@ FR.update({
 
 def tr(key, language='fr'):
     return (EN if language == 'en' else FR).get(key, EN.get(key, key))
+
+
+def error_text(message, language='fr'):
+    code, separator, details = str(message).partition(': ')
+    return tr(code, language) + (separator + details if separator else '')
 
 EN.update({
     'start_hint': 'Choose an airline, an airport or a duration, then search. You can also search without filters.',

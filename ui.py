@@ -413,7 +413,22 @@ class RFSWindow(QMainWindow):
             field = FLIGHT_FIELDS[key]
             widget = self._create_widget(key, field, flight.get(key, ''), 'flight')
             required = key in REQUIRED_FLIGHT.get(message_type, ())
-            self.flight_form.addRow(tr('{v0}{v1}', v0=tr(field.label), v1=' *' if required else ''), widget)
+            row_widget = widget
+            if key == 'fuel':
+                row_widget = QWidget()
+                fuel_row = QHBoxLayout(row_widget)
+                fuel_row.setContentsMargins(0, 0, 0, 0)
+                fuel_row.setSpacing(8)
+                fuel_row.addWidget(widget, 1)
+                calculate = QPushButton(tr('Calculer le fuel'))
+                calculate.setObjectName('calculateCurrentFlightFuel')
+                calculate.setToolTip(tr('Ouvrir le calculateur avec l’avion, la durée totale et l’arrivée de ce vol.'))
+                calculate.clicked.connect(self.open_fuel)
+                fuel_row.addWidget(calculate)
+                # Validation and keyboard focus still belong to the input.
+                widget._form_row = row_widget
+                row_widget._form_input = widget
+            self.flight_form.addRow(tr('{v0}{v1}', v0=tr(field.label), v1=' *' if required else ''), row_widget)
             self.flight_widgets[key] = widget
         data = self.store.state['per_type'].setdefault(message_type, {})
         for key, field in MESSAGE_FIELDS[message_type].items():
@@ -438,8 +453,9 @@ class RFSWindow(QMainWindow):
                     label.setMaximumWidth(175)
                     field_item = form.itemAt(row, QFormLayout.ItemRole.FieldRole)
                     if field_item and field_item.widget():
-                        label.setBuddy(field_item.widget())
-                        field_item.widget().setAccessibleName(label.text())
+                        field_widget = getattr(field_item.widget(), '_form_input', field_item.widget())
+                        label.setBuddy(field_widget)
+                        field_widget.setAccessibleName(label.text())
         self._building = False
         self._apply_conditional_visibility()
         self._update_flight_summary()
@@ -631,7 +647,7 @@ class RFSWindow(QMainWindow):
                     widget.setProperty('invalid', is_invalid)
                     widget.style().unpolish(widget)
                     widget.style().polish(widget)
-                label = form.labelForField(widget)
+                label = form.labelForField(getattr(widget, '_form_row', widget))
                 if label:
                     base = label.property('baseLabel') or label.text()
                     label.setText(base + ('\n⚠ ' + tr('À corriger') if errors else ''))

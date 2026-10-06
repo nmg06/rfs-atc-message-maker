@@ -88,6 +88,8 @@ EN.update({
 
 # Desktop UX refresh
 EN.update({
+    'Calculer le fuel': 'Calculate fuel',
+    'Ouvrir le calculateur avec l’avion, la durée totale et l’arrivée de ce vol.': 'Open the calculator with this flight’s aircraft, total duration and arrival.',
     'Comprendre cet écran': 'Understand this screen',
     'Tutoriel et questions fréquentes': 'Tutorial and frequently asked questions',
     'Avionique': 'Avionics', 'Aurore': 'Aurora', 'Crépuscule': 'Sunset',

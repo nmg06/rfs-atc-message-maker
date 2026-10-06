@@ -13,3 +13,7 @@ finder-data/
 *.parquet
 *.building
 *.part
+*.jks
+*.keystore
+*.p12
+.private-signing/

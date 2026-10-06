@@ -1,6 +1,7 @@
 'use strict';
 // Small progressive improvements around the existing UI and Python engines.
 let settingsReturn='flight',saveTimer=null,scrollPositions={},lookupSerial=0,savedRevision=0,editFlush=null;
+let navigationIntent=0,navigationTarget=null;
 const displayNames=new Intl.DisplayNames(['en'],{type:'region'});
 countryName=(code,french)=>lang()?displayNames.of(code):french;
 function applyVisualTheme(){
@@ -33,12 +34,15 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 const basePaint=paint;
 paint=()=>{basePaint();applyVisualTheme();const settings=screen==='settings';$('settings-open').classList.toggle('is-close',settings);
  $('settings-open').setAttribute('aria-expanded',String(settings));$('settings-open').setAttribute('aria-label',settings?t('Fermer les paramètres','Close settings'):t('Ouvrir les paramètres','Open settings'));saveStatus(false);};
-navigate=async next=>{try{scrollPositions[screen]=window.scrollY;if(next==='settings'&&screen!=='settings')settingsReturn=screen;
- await flushEdits();if(next==='fuel')setResult(await rpc('fuel_prepare',stateArgs()));screen=next;paint();window.scrollTo(0,scrollPositions[next]||0);
- }catch(error){fail(error);}};
-function toggleSettings(){navigate(screen==='settings'?settingsReturn:'settings');}
+navigate=async next=>{const intent=++navigationIntent;try{scrollPositions[screen]=window.scrollY;if(next==='settings'&&screen!=='settings'&&navigationTarget!=='settings')settingsReturn=screen;
+ navigationTarget=next;await flushEdits();if(intent!==navigationIntent)return;
+ if(next==='fuel'){while(intent===navigationIntent){const current=revision,result=await rpc('fuel_prepare',stateArgs());if(intent!==navigationIntent)return;if(current!==revision){await flushEdits();continue;}const prepared=result.value.state.fuel_inputs;if(['aircraft','duration','arrival'].some(key=>model.state.fuel_inputs[key]!==prepared[key]))fuelResult=null;setResult(result);break;}}
+ if(intent!==navigationIntent)return;screen=next;navigationTarget=null;paint();window.scrollTo(0,scrollPositions[next]||0);
+ }catch(error){if(intent===navigationIntent){navigationTarget=null;fail(error);}}};
+function toggleSettings(){navigate((navigationTarget||screen)==='settings'?settingsReturn:'settings');}
 window.goBack=()=>{const dialog=document.querySelector('dialog[open]');if(dialog){dialog.close();return true;}
- if(screen==='settings'){navigate(settingsReturn);return true;}if(screen==='flight'){flushEdits().then(()=>rpc('native.finish')).catch(fail);return true;}navigate('flight');return true;};
+ const destination=navigationTarget||screen;
+ if(destination==='settings'){navigate(settingsReturn);return true;}if(destination==='flight'){const intent=++navigationIntent;navigationTarget=null;flushEdits().then(()=>{if(intent===navigationIntent)return rpc('native.finish');}).catch(fail);return true;}navigate('flight');return true;};
 const baseFlightPage=flightPage;
 flightPage=()=>{
  const f=model.state.flight,session=model.state.active_session||{},log=model.state.flight_log||[];

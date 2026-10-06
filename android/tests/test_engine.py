@@ -29,6 +29,29 @@ def flight():
 
 
 class EngineTests(unittest.TestCase):
+    def test_finder_exclusions_are_shared_validated_persisted_and_do_not_leave_stale_rows(self):
+        filters = {'origin': 'VIDP', 'excluded_airports': 'vabb; BOM', 'diversify': False}
+        self.engine.state['finder_filters'] = filters
+        result = self.engine.handle('finder', {})
+        direct = search(self.database, self.engine.criteria(filters), self.engine.query_time)
+        self.assertGreater(result['available'], 0)
+        self.assertEqual([r['pattern_id'] for r in direct['results']], [r['pattern_id'] for r in result['results']])
+        self.assertTrue(all(r['origin'] == 'VIDP' and 'VABB' not in (r['origin'], r['destination']) for r in result['results']))
+        self.engine.handle('persist', {'state': deepcopy(self.engine.state)})
+        self.assertEqual(filters, Engine(self.temp.name, self.database).state['finder_filters'])
+        self.engine.state['finder_filters']['excluded_airports'] = 'VABB, INVALID'
+        with self.assertRaisesRegex(ValueError, '50 aéroports'):
+            self.engine.handle('finder', {})
+        self.assertEqual([], self.engine.rows)
+        with self.assertRaises(ValueError):
+            self.engine.handle('finder', {'more': True})
+        self.engine.state['language'] = 'en'
+        self.engine.state['finder_filters']['excluded_airports'] = 'ZZZA'
+        with self.assertRaisesRegex(ValueError, 'not found in the local database.*ZZZA'):
+            self.engine.handle('finder', {})
+        self.assertEqual([], self.engine.rows)
+        self.assertIn('Avoid these airports', self.engine.metadata()['finder_fields']['excluded_airports']['label'])
+
     def test_portable_export_preview_import_merge_and_legacy_reload(self):
         from backup_bundle import FORMAT, export_backup, parse_backup
         self.engine.handle('save_flight', {'label': 'Local flight'})
@@ -280,6 +303,29 @@ class EngineTests(unittest.TestCase):
         self.engine.state['flight']['aircraft'] = 'Boeing 737-800'
         self.engine.handle('fuel_prepare', {})
         self.assertEqual('', self.engine.state['fuel_inputs']['aircraft'])
+
+    def test_fuel_prepare_clears_missing_new_flight_fields_and_keeps_manual_same_context(self):
+        self.engine.handle('fuel_prepare', {})
+        self.assertEqual('5h', self.engine.state['fuel_inputs']['duration'])
+        self.assertEqual('EGLL', self.engine.state['fuel_inputs']['arrival'])
+        self.assertEqual(12285, self.engine.handle('fuel', {})['total_block_fuel_kg_exact'])
+        state = deepcopy(self.engine.state)
+        state['flight'].update(estimated_flight_time='', arrival_icao='')
+        self.engine.handle('fuel_prepare', {'state': state})
+        self.assertEqual('', self.engine.state['fuel_inputs']['duration'])
+        self.assertEqual('', self.engine.state['fuel_inputs']['arrival'])
+        self.assertEqual('airbus_a220_300', self.engine.state['fuel_inputs']['aircraft'])
+        with self.assertRaisesRegex(ValueError, 'Duration required'):
+            self.engine.handle('fuel', {})
+        state = deepcopy(self.engine.state)
+        state['fuel_inputs'].update(duration='7h', arrival='LFPG')
+        self.engine.handle('fuel_prepare', {'state': state})
+        self.assertEqual('7h', self.engine.state['fuel_inputs']['duration'])
+        self.assertEqual('LFPG', self.engine.state['fuel_inputs']['arrival'])
+        reloaded = Engine(self.temp.name, self.database)
+        reloaded.handle('fuel_prepare', {})
+        self.assertEqual('7h', reloaded.state['fuel_inputs']['duration'])
+        self.assertEqual('LFPG', reloaded.state['fuel_inputs']['arrival'])
 
     @classmethod
     def setUpClass(cls):

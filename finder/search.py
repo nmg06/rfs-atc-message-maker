@@ -5,12 +5,37 @@ from copy import deepcopy
 from datetime import datetime, timedelta, timezone
 import math
 import json
+import re
 from pathlib import Path
 
 from .database import connect_readonly
 from .time_utils import resolve_local
 from .rfs_catalogue import SUPPORTED_TYPES, TYPE_BY_ID, observation_name
 from .provenance import duration_provenance
+
+
+def parse_airport_codes(value, *, exclusion=False):
+    """Normalize codes without dropping a malformed token or unknown input type."""
+    error = 'EXCLUDED_AIRPORT_FORMAT' if exclusion else 'AIRPORT_CODE_FORMAT'
+    if isinstance(value, str):
+        entries = [value]
+    elif isinstance(value, list) and all(isinstance(v, str) for v in value):
+        entries = value
+    else:
+        raise ValueError(error)
+    result = []
+    for entry in entries:
+        tokens = [v.upper() for v in re.split(r'[,;\s]+', entry.strip()) if v]
+        if entry.strip() and not tokens:
+            raise ValueError(error)
+        for code in tokens:
+            if not re.fullmatch(r'[A-Z]{3,4}', code):
+                raise ValueError(error)
+            if code not in result:
+                result.append(code)
+    if len(result) > 50:
+        raise ValueError(error)
+    return result
 
 
 @dataclass
@@ -48,6 +73,7 @@ class Criteria:
     rfs_aircraft_id: str = ""
 
     def validate(self):
+        parse_airport_codes(self.excluded_airports, exclusion=True)
         for key, value in vars(self).items():
             if isinstance(value, list) and (len(value) > 50 or any(not isinstance(v, str) or len(v)>100 for v in value)):
                 raise ValueError(f"Invalid filter: {key}")
@@ -116,13 +142,12 @@ def search(path: Path, criteria: Criteria, now_utc: datetime, *, _include_popula
                 placeholders = ','.join('?' for _ in values)
                 where.append(f"{endpoint}_id IN (SELECT id FROM airports WHERE COALESCE(UPPER({suffix}), '') IN ({placeholders}))")  # nosec B608: fixed endpoint/suffix and bound markers only
                 params.extend(v.strip().upper() for v in values)
-    if criteria.excluded_airports:
-        ex_codes = [v.strip().upper() for v in criteria.excluded_airports if v.strip()]
-        if ex_codes:
-            placeholders = ",".join("?" for _ in ex_codes)
-            where.append(f"origin_id NOT IN (SELECT id FROM airports WHERE icao IN ({placeholders}) OR iata IN ({placeholders}))")  # nosec B608: bound parameter markers only
-            where.append(f"destination_id NOT IN (SELECT id FROM airports WHERE icao IN ({placeholders}) OR iata IN ({placeholders}))")  # nosec B608: bound parameter markers only
-            params.extend(ex_codes * 4)
+    ex_codes = parse_airport_codes(criteria.excluded_airports, exclusion=True)
+    if ex_codes:
+        placeholders = ",".join("?" for _ in ex_codes)
+        where.append(f"origin_id NOT IN (SELECT id FROM airports WHERE icao IN ({placeholders}) OR iata IN ({placeholders}))")  # nosec B608: bound parameter markers only
+        where.append(f"destination_id NOT IN (SELECT id FROM airports WHERE icao IN ({placeholders}) OR iata IN ({placeholders}))")  # nosec B608: bound parameter markers only
+        params.extend(ex_codes * 4)
     if criteria.airline.strip():
         term = criteria.airline.strip()
         if len(term) <= 3 and term.isalnum():
@@ -168,6 +193,14 @@ def search(path: Path, criteria: Criteria, now_utc: datetime, *, _include_popula
         for suffix in ('country', 'continent', 'region'))
     order = "+n_obs DESC,last_seen DESC,pattern_id ASC" if selective else "n_obs DESC,last_seen DESC,pattern_id ASC"
     with connect_readonly(path) as db:
+        if ex_codes:
+            markers = ','.join('?' for _ in ex_codes)
+            known = {code for row in db.execute(
+                'SELECT icao,iata FROM airports WHERE icao IN (' + markers + ') OR iata IN (' + markers + ')',  # nosec B608: markers only; values bound
+                ex_codes * 2) for code in row if code}
+            unknown = [code for code in ex_codes if code not in known]
+            if unknown:
+                raise ValueError('EXCLUDED_AIRPORT_UNKNOWN: ' + ', '.join(unknown))
         candidates = [dict(row) for row in db.execute("SELECT * FROM v_pattern_search WHERE " + " AND ".join(where) +  # nosec B608 - SQL fragments/columns are fixed; all filter values bound
                       " ORDER BY " + order + " LIMIT 20001", params)]
         sources = [dict(r) for r in db.execute("SELECT * FROM sources ORDER BY source_id")]
@@ -260,6 +293,7 @@ class SearchSession:
         path = Path(path).resolve()
         stat = path.stat()
         filters = {key: value for key, value in vars(criteria).items() if key not in ('offset', 'limit')}
+        filters['excluded_airports'] = parse_airport_codes(criteria.excluded_airports, exclusion=True)
         return (str(path), stat.st_mtime_ns, stat.st_size, json.dumps(filters, sort_keys=True), now.isoformat())
 
     def page(self, path, criteria, now):
