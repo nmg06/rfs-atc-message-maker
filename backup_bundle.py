@@ -38,7 +38,7 @@ def defaults():
         'presentation': deepcopy(DEFAULT_PRESENTATION), 'compact_history': True,
         'intro_seen': False, 'joke_seen': False, 'tutorial_seen': False, 'strict_validation': True, 'language': 'en', 'finder_filters': {},
         'fuel_inputs': {}, 'map_settings': {}, 'visual_theme': 'avionique', 'active_session': {}, 'flight_log': [],
-        'design_draft': {}, 'report_draft': {},
+        'design_draft': {}, 'report_draft': {}, 'finder_shortlist': [],
         'recent': {k: [] for k in ('airline', 'aircraft', 'airports', 'controllers', 'servers')}}
 
 
@@ -78,6 +78,20 @@ def normalise_state(value):
     if state['visual_theme'] not in {r[0] for r in THEMES}:
         raise ValueError('Unknown visual theme')
     validate_log(state['active_session'], state['flight_log'])
+    # Comparisons are saved observations, never trusted flight plans or SQL.
+    if len(state['finder_shortlist']) > 3:
+        raise ValueError('Too many comparison flights')
+    for item in state['finder_shortlist']:
+        if not isinstance(item, dict):
+            raise ValueError('Invalid comparison flight')
+        for key in ('key', 'origin', 'destination', 'callsign', 'airline', 'airline_name',
+                    'aircraft_display', 'record_kind'):
+            if item.get(key) is not None and not isinstance(item[key], str):
+                raise ValueError('Invalid comparison text')
+        for key in ('duration_min', 'distance_nm', 'n_obs'):
+            if item.get(key) is not None and (type(item[key]) not in (int, float)
+                                            or not 0 <= item[key] <= 1000000000):
+                raise ValueError('Invalid comparison number')
     view = state['map_settings']
     for key in ('satellite', 'winds'):
         if key in view and type(view[key]) is not bool:

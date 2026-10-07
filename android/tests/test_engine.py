@@ -29,6 +29,34 @@ def flight():
 
 
 class EngineTests(unittest.TestCase):
+    def test_multiple_aircraft_parity_and_restart(self):
+        filters={'origin':'LFPG','aircraft_types':['A20N','B789'],'diversify':False}
+        self.engine.state['finder_filters']=filters
+        response=self.engine.handle('finder',{})
+        reference=search(self.database,self.engine.criteria(filters),self.engine.query_time)
+        self.assertEqual([r['pattern_id'] for r in reference['results']],[r['pattern_id'] for r in response['results']])
+        self.assertGreater(len(response['results']),1)
+        self.assertTrue(all(r['aircraft'] in filters['aircraft_types'] for r in response['results']))
+        self.engine.handle('persist',{'state':deepcopy(self.engine.state)})
+        self.assertEqual(filters,Engine(self.temp.name,self.database).state['finder_filters'])
+
+    def test_comparison_survives_portable_backup_and_rejects_invalid_numbers(self):
+        item={'key':'pattern-1','origin':'LFPG','destination':'KJFK','callsign':'AFR1',
+              'record_kind':'FLIGHT_PATTERN','duration_min':None,'distance_nm':3150}
+        self.engine.state['finder_shortlist']=[item]
+        self.engine.handle('persist',{'state':deepcopy(self.engine.state)})
+        restored=Engine(self.temp.name,self.database)
+        self.assertEqual([item],restored.state['finder_shortlist'])
+        exported=self.engine.handle('export',{})
+        text=exported if isinstance(exported,str) else exported['text']
+        restored.state['finder_shortlist']=[]
+        restored.handle('import',{'text':text,'mode':'replace'})
+        self.assertEqual([item],restored.state['finder_shortlist'])
+        for invalid in [True,-2,float('nan')]:
+            state=deepcopy(self.engine.state)
+            state['finder_shortlist'][0]['duration_min']=invalid
+            with self.assertRaises(ValueError):normalise_state(state)
+
     def test_recent_route_parity_mapping_and_restart_without_invented_duration(self):
         self.engine.state['language']='en'
         filters={'route_catalog':True,'airline':'AFR','diversify':False}

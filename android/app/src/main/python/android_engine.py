@@ -16,6 +16,7 @@ from map_geometry import airport_coordinates, great_circle
 from visual_themes import THEMES, theme_colors
 from flight_planning import airport_plan, elapsed_seconds, validate_log
 from finder.database import connect_readonly
+from finder.aircraft_filters import catalogue as aircraft_catalogue, normalize_types
 from finder.duration import parse_minutes, parse_finder_hours
 from finder.mapping import use_this_flight
 from finder.provenance import duration_provenance
@@ -135,6 +136,7 @@ class Engine:
             'designs': BUILTIN_DESIGNS, 'emoji_styles': EMOJI_STYLES,
             'operation_modes': list(OPERATION_LABELS), 'countries': COUNTRIES,
             'aircraft': load_json('aircraft_fuel_data.json')['aircraft'],
+            'finder_aircraft': aircraft_catalogue(self.database),
             'fuel_catalogue_note': tr(load_json('aircraft_fuel_data.json').get('note', '')),
             'arrivals': sorted(load_json('airport_alternates.json')['destinations']),
             'finder_fields': {f.name: {'default': deepcopy(getattr(Criteria(), f.name)),
@@ -254,6 +256,9 @@ class Engine:
             if key not in known or key == 'offset':
                 continue
             default = known[key]
+            if key == 'aircraft_types':
+                converted[key] = normalize_types(item)
+                continue
             if key in ('origin', 'destination'):
                 try:
                     converted[key] = parse_airport_queries(item)

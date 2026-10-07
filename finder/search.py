@@ -69,6 +69,7 @@ class Criteria:
     callsign: str = ""
     airline: str = ""
     aircraft: str = ""
+    aircraft_types: list[str] = field(default_factory=list)
     manufacturer: str = ""
     family: str = ""
     origin: list[str] = field(default_factory=list)
@@ -101,6 +102,8 @@ class Criteria:
     route_catalog: bool = False
 
     def validate(self):
+        from .aircraft_filters import normalize_types
+        normalize_types(self.aircraft_types)
         parse_airport_codes(self.excluded_airports, exclusion=True)
         for key, value in vars(self).items():
             if isinstance(value, list) and (len(value) > 50 or any(not isinstance(v, str) or len(v)>100 for v in value)):
@@ -201,6 +204,9 @@ def search(path: Path, criteria: Criteria, now_utc: datetime, *, _include_popula
             params.append(term)
     if criteria.rfs_only:
         in_filter(['aircraft'], SUPPORTED_TYPES)
+    if criteria.aircraft_types:
+        from .aircraft_filters import normalize_types
+        in_filter(['aircraft'], normalize_types(criteria.aircraft_types))
     if criteria.rfs_aircraft_id:
         code = TYPE_BY_ID.get(criteria.rfs_aircraft_id)
         if not code:

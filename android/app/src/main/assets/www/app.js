@@ -143,7 +143,6 @@ case'report':await rpc('native.report',{report:reportValue(),consent:$('report-c
 case'forms':await rpc('native.forms');return;
 case'licences':{const r=await rpc('sources');$('data-sources').innerHTML=`<pre>${esc(JSON.stringify(r.sources,null,2))}</pre>`;return;}
 case'welcome-joke':model.state.joke_seen=true;jokeReplay=false;jokeRevealed=true;await commandAction('save',{},'welcome');return;
-case'replay-joke':welcomeReturn='settings';jokeReplay=true;jokeRevealed=false;await navigate('welcome');return;
 case'welcome-done':if($('welcome-remember'))model.state.intro_seen=$('welcome-remember').checked;jokeRevealed=false;await commandAction('save',{},welcomeReturn);if(welcomeReturn==='flight')FlightdeckHelp.maybeOffer();return;
 }}catch(error){fail(error);}}
 function reportValue(){const report={};for(const key of['summary','steps','expected','observed'])report[key]=$(`report-${key}`).value;return report;}
@@ -152,4 +151,4 @@ document.addEventListener('change',event=>{const el=event.target;if(el.id==='map
 document.addEventListener('click',event=>{const el=event.target.closest('button');if(!el||el.disabled)return;if(el.dataset.screen)navigate(el.dataset.screen);else if(el.dataset.action)action(el);});
 $('settings-open').addEventListener('click',()=>toggleSettings());
 $('lang-btn')?.addEventListener('click',async()=>{if(!model)return;const nextLang=model.state.language==='en'?'fr':'en';model.state.language=nextLang;try{const r=await rpc('bootstrap',stateArgs());setResult(r);paint();}catch(e){fail(e);}});
-rpc('bootstrap').then(result=>{setResult(result);$('loading').hidden=true;screen=model.state.intro_seen?'flight':'welcome';paint();if(meta.warning)toast(meta.warning);}).catch(error=>{$('loading').textContent=error.message;$('loading').classList.add('danger');});
+rpc('bootstrap').then(result=>{setResult(result);$('loading').hidden=true;screen=model.state.intro_seen?'flight':'welcome';paint();if(meta.warning)toast(meta.warning);}).catch(error=>{$('loading').replaceChildren();const title=document.createElement('p');title.textContent='Flightdeck · '+error.message;const retry=document.createElement('button');retry.className='primary';retry.textContent=document.documentElement.lang==='fr'?'Réessayer':'Retry';retry.onclick=()=>location.reload();$('loading').append(title,retry);$('loading').classList.add('danger');});

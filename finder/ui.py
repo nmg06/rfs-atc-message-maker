@@ -7,13 +7,15 @@ from zoneinfo import ZoneInfo
 from PySide6.QtCore import QDate, QThread, Signal, Qt, QTimeZone, QTimer
 from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QComboBox,
     QFormLayout, QLineEdit, QCheckBox, QDateEdit, QSplitter, QScrollArea, QWidget, QTableWidget,
-    QTableWidgetItem, QAbstractItemView, QHeaderView, QPlainTextEdit, QFileDialog, QGroupBox, QCompleter)
+    QTableWidgetItem, QAbstractItemView, QHeaderView, QPlainTextEdit, QFileDialog, QGroupBox, QCompleter,
+    QListWidget, QListWidgetItem, QDialogButtonBox)
 
 from .database import connect_readonly
 from .i18n import tr, error_text
 from .search import Criteria, search, SearchSession, parse_airport_codes, parse_airport_queries
 from .duration import parse_minutes, parse_finder_hours
 from .rfs_catalogue import records, TYPE_BY_ID
+from .aircraft_filters import catalogue as aircraft_catalogue, normalize_types
 from .provenance import duration_provenance
 from country_search import country_rows, resolve_country
 from ux import install_wheel_guard, smooth_scroll
@@ -87,6 +89,7 @@ class FinderDialog(QDialog):
         self._persist_timer.timeout.connect(self.persist_filters)
         self.finished.connect(self.persist_filters)
         self.results = []
+        self.selected_aircraft = []
         self.session = SearchSession()
         self.visible_count = 0
         self._runway_cache = {}
@@ -230,6 +233,13 @@ class FinderDialog(QDialog):
                 field.setPlaceholderText('07:00')
             if key == 'aircraft':
                 self.add_completer(field, list(self.rfs_labels))
+                self.aircraft_picker_button = QPushButton('Choisir plusieurs avions…' if language == 'fr' else 'Choose multiple aircraft…')
+                self.aircraft_picker_button.clicked.connect(self.open_aircraft_picker)
+                self.form.addRow(self.aircraft_picker_button)
+                self.aircraft_chips = QWidget()
+                self.aircraft_chips_layout = QVBoxLayout(self.aircraft_chips)
+                self.aircraft_chips_layout.setContentsMargins(0, 0, 0, 0)
+                self.form.addRow(self.aircraft_chips)
             if key.endswith('_country'):
                 self.add_completer(field, [f'{fr} / {en} ({code})' for code, fr, en in country_rows()])
             if key == 'airline':
@@ -323,7 +333,68 @@ class FinderDialog(QDialog):
     def t(self, key):
         return tr(key, self.language)
 
+    def refresh_aircraft_chips(self):
+        while self.aircraft_chips_layout.count():
+            item = self.aircraft_chips_layout.takeAt(0)
+            item.widget().deleteLater()
+        for code in self.selected_aircraft:
+            button = QPushButton(code + ' ×')
+            button.setAccessibleName(('Retirer ' if self.language == 'fr' else 'Remove ') + code)
+            button.clicked.connect(lambda checked=False, code=code: self.remove_aircraft_type(code))
+            self.aircraft_chips_layout.addWidget(button)
+
+    def remove_aircraft_type(self, code):
+        self.selected_aircraft.remove(code)
+        self.refresh_aircraft_chips()
+        self.invalidate()
+
+    def open_aircraft_picker(self):
+        dialog = QDialog(self)
+        dialog.setWindowTitle('Choisir les avions' if self.language == 'fr' else 'Choose aircraft')
+        dialog.resize(560, 650)
+        layout = QVBoxLayout(dialog)
+        hint = QLabel('Les résultats peuvent utiliser l’un des types choisis. Les variantes RFS partageant un code ICAO ne peuvent pas être distinguées par la base.' if self.language == 'fr' else 'Results can use any selected type. RFS variants sharing an ICAO code cannot be distinguished in the database.')
+        hint.setWordWrap(True)
+        layout.addWidget(hint)
+        query = QLineEdit()
+        query.setPlaceholderText('Airbus, Boeing, A320…')
+        query.setAccessibleName('Rechercher un avion' if self.language == 'fr' else 'Search aircraft')
+        layout.addWidget(query)
+        listing = QListWidget()
+        layout.addWidget(listing)
+        try:
+            rows = aircraft_catalogue(self.path)
+        except (OSError, sqlite3.Error) as error:
+            self.status.setText(str(error))
+            return
+        for row in rows:
+            name = row['name']
+            if row['manufacturer'] and row['manufacturer'].casefold() not in name.casefold():
+                name = row['manufacturer'] + ' ' + name
+            item = QListWidgetItem(f"{name} · {row['code']}")
+            item.setData(Qt.ItemDataRole.UserRole, row['code'])
+            item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+            item.setCheckState(Qt.CheckState.Checked if row['code'] in self.selected_aircraft else Qt.CheckState.Unchecked)
+            listing.addItem(item)
+        query.textChanged.connect(lambda value: [listing.item(i).setHidden(value.casefold() not in listing.item(i).text().casefold()) for i in range(listing.count())])
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+        buttons.accepted.connect(dialog.accept)
+        buttons.rejected.connect(dialog.reject)
+        layout.addWidget(buttons)
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            values = [listing.item(i).data(Qt.ItemDataRole.UserRole) for i in range(listing.count()) if listing.item(i).checkState() == Qt.CheckState.Checked]
+            try:
+                self.selected_aircraft = normalize_types(values)
+            except ValueError:
+                self.status.setText(self.t('AIRCRAFT_TYPES_FORMAT'))
+                return
+            if self.selected_aircraft:
+                self.fields['aircraft'].clear()
+            self.refresh_aircraft_chips()
+            self.invalidate()
+
     def translate(self):
+        self.aircraft_picker_button.setText('Choisir plusieurs avions…' if self.language == 'fr' else 'Choose multiple aircraft…')
         self.less_button.setText('Voir moins' if self.language == 'fr' else 'Show less')
         self.database_button.setText(self.t("database"))
         self.search_button.setText(self.t("search"))
@@ -353,6 +424,8 @@ class FinderDialog(QDialog):
             return
         self._restoring = True
         try:
+            self.selected_aircraft = normalize_types(saved.get('aircraft_types', []))
+            self.refresh_aircraft_chips()
             for key, widget in self.fields.items():
                 if key not in saved:
                     continue
@@ -386,6 +459,7 @@ class FinderDialog(QDialog):
                 value = widget.text()
             values[key] = value
         values.update(international_only=self.international.isChecked(), rfs_only=self.rfs_only.isChecked(), diversify=self.diversify.isChecked(), route_catalog=self.route_catalog.isChecked())
+        values['aircraft_types'] = list(self.selected_aircraft)
         self._profile_store.state['finder_filters'] = values
         try:
             self._profile_store.save_state()
@@ -462,6 +536,7 @@ class FinderDialog(QDialog):
 
     def criteria(self):
         values = {}
+        values['aircraft_types'] = list(self.selected_aircraft)
         for key, widget in self.fields.items():
             if isinstance(widget, QDateEdit):
                 values[key] = widget.date().toString('yyyy-MM-dd')

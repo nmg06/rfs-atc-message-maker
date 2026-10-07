@@ -1,3 +1,4 @@
+const {go}=require('./navigation.cjs');
 // Real UI + shared engines: English help, skip/replay, warning focus and free copy.
 const {chromium}=require('playwright');const assert=require('node:assert/strict');
 (async()=>{
@@ -14,10 +15,10 @@ const {chromium}=require('playwright');const assert=require('node:assert/strict'
  await page.locator('.fd-help').waitFor();assert((await page.locator('.fd-help').textContent()).includes('Your cockpit, at your pace'));
  await page.locator('.fd-help [data-help="next"]').click();assert((await page.locator('.fd-help').textContent()).includes('Choose your aircraft'));
  await page.locator('.fd-help [data-help="close"]').first().click();await page.waitForFunction(()=>model.state.tutorial_seen);
- await page.locator('[data-screen="preview"]').click();assert(await page.locator('#copy').isDisabled());
+ await go(page,'preview');assert(await page.locator('#copy').isDisabled());
  const index=await page.evaluate(()=>rendered.issues.findIndex(v=>v.field==='departure_icao'));
  await page.locator(`[data-issue-index="${index}"]`).click();await page.waitForFunction(()=>document.activeElement?.id==='flight-departure_icao');assert.equal(await page.evaluate(()=>screen),'flight');
- await page.locator('[data-screen="preview"]').click();await page.locator('#state-strict_validation').uncheck();await page.waitForFunction(()=>rendered.can_copy);
+ await go(page,'preview');await page.locator('#state-strict_validation').uncheck();await page.waitForFunction(()=>rendered.can_copy);
  assert.equal(await page.locator('#preview').inputValue(),'My incomplete flight Z');assert(await page.locator('[data-issue-index]').count()>0);
  await page.locator('#copy').click();await page.waitForFunction(()=>model.history[0]?.message==='My incomplete flight Z');
  await page.reload();await page.waitForFunction(()=>Boolean(model));assert.equal(await page.evaluate(()=>model.state.strict_validation),false);assert.equal(await page.locator('.fd-help').count(),0);
@@ -25,7 +26,7 @@ const {chromium}=require('playwright');const assert=require('node:assert/strict'
  await page.locator('[data-help-mode="faq"]').click();assert.equal(await page.locator('[data-faq]').count(),30);await page.locator('#fd-help-search').fill('ETE 5');assert.equal(await page.locator('[data-faq]:visible').count(),1);await page.locator('[data-faq]:visible summary').click();assert((await page.locator('[data-faq]:visible').textContent()).includes('about five minutes'));
  await page.locator('.fd-help [data-help="close"]').first().click();await page.locator('#settings-open').click();
  for(const section of ['flight','messages','preview','finder','fuel','map','library']){
-  await page.locator(`[data-screen="${section}"]`).click();await page.waitForFunction(v=>screen===v,section);
+  await go(page,section);await page.waitForFunction(v=>screen===v,section);
   const text=await page.locator('main').innerText();assert(!/Crépuscule|Avionique|Dégagement|Paramètres|Vérifier avant copie|Comprendre cet écran|Rechercher parmi|À compléter|réserve finale/i.test(text),`${section}: French UI leaked`);
   await page.locator('.context-help').click();assert.equal(await page.locator('#fd-help-topic').inputValue(),section);await page.locator('.fd-help [data-help="close"]').first().click();
  }
