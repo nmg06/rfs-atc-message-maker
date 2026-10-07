@@ -1,16 +1,43 @@
-# RFS ATC Message Maker
+# RFS Flightdeck
 
-Application Windows personnelle pour préparer des messages Discord de Real
-Flight Simulator. Les huit modèles fonctionnent sans compte, API ou Internet.
+Ancien nom : RFS ATC Message Maker. Messages Discord, Flight Finder local,
+RFS Fuel Helper et aperçu cartographique pour Real Flight Simulator.
+Les fonctions principales Windows et Android fonctionnent sans compte ni Internet.
+
+**Vous voulez installer l'application ?** Il suffit de télécharger le ZIP Windows
+ou l'APK Android : Python n'est pas nécessaire. Le [guide pas à pas](docs/INSTALLATION.md)
+explique les boutons de téléchargement, l'installation, le premier vol et les
+solutions aux problèmes fréquents. Aucune version iPhone installable actuellement.
+
+**[Téléchargement et installation Windows / Android / état iPhone](docs/INSTALLATION.md)**
+
+**[Tutoriel, 30 questions fréquentes et copie libre](docs/HELP.md)** — aide
+consultable dans l’application, que l’on peut passer et retrouver ensuite.
+
+Les améliorations Flightdeck sont sur `feat/flightdeck-map-performance`, la première
+APK sur `feat/android-offline`. Les workflows produisent des artefacts de test,
+sans publier automatiquement une nouvelle release.
+
+## Base de vols enrichie
+
+La base locale conserve les 203 627 profils historiques et ajoute un catalogue
+de 21 053 routes observées, dont 3 195 nouveaux trajets par callsign. Dans
+Flight Finder, cochez **Routes récentes observées** pour consulter ce complément.
+L’avion et la durée n’y sont pas renseignés : choisissez-les vous-même.
+Les filtres par durée ou avion restent disponibles dans la recherche habituelle.
+Les observations ne garantissent pas qu’un vol existe aujourd’hui.
+[Sources, dates et vérifications](docs/DATA_ENRICHMENT_2026-10-07.md).
 
 ## Utiliser
 
-Ouvrez `lancer.bat`, ou directement
-`dist\RFSATCMessageMaker-v5\RFSATCMessageMaker.exe` après mise à jour, ou
-`RFSATCMessageMaker.exe` dans le paquet téléchargé. Gardez le dossier
-`RFSATCMessageMaker` entier : l'exécutable utilise les fichiers de `_internal`.
+Ouvrez `RFSATCMessageMaker.exe` dans le paquet téléchargé. Gardez le dossier
+`RFSFlightdeck` entier : l'exécutable utilise les fichiers de `_internal`.
 Le paquet est autonome : Python n'est pas nécessaire pour l'utiliser.
 Il cible Windows 10/11 64 bits.
+
+Pour préparer un vol sans ATC, commencez par Flight Finder, utilisez le vol choisi,
+puis ouvrez Fuel Helper. Les messages restent facultatifs. Le guide d'installation
+explique aussi le carnet Android, les palettes et les rappels.
 
 1. Sélectionnez `ATC REQUEST` et renseignez le panneau `Vol actuel`.
 2. Complétez la porte, la piste, le pushback et les autres champs signalés par `*`.
@@ -30,11 +57,25 @@ exécutable. Les fichiers JSON de l'ancienne application restent intacts.
 
 Une première application **Android installable et hors ligne** existe désormais
 dans `android/`, à côté de Windows : moteurs Python partagés, Flight Finder avec
-base embarquée, Fuel Helper, stockage privé et copie native. L'APK debug est
+base embarquée, Fuel Helper, carte locale/frontières, bibliothèque, import des
+quatre fichiers PC, stockage privé et copie native. Depuis Android 0.4 : marges
+Android corrigées, retour des paramètres, détails Finder lisibles, carnet chronométré,
+dix palettes PC/Android, icônes et rappel local facultatif. Satellite/vents en
+option Internet, désactivés au départ. L'APK debug est
 construite et testée sur émulateur API 35, y compris en mode avion et après arrêt
 complet du processus. [Installation, build et limites](docs/android/README.md) ;
 [parité détaillée](docs/android/PARITY.md). Le workflow **Android offline APK**
 fournit l'artefact `RFS-ATC-Android-debug` sans publication de release automatique.
+La 0.4.1 ajoute tutoriel et 30 questions bilingues, copie libre facultative,
+avertissements cliquables et défilement des avions corrigé.
+[État et tests 0.4.1](docs/android/PROGRESS_0.4.1.md) · [English installation guide](docs/INSTALLATION_EN.md).
+
+[État et tests 0.4.2](docs/android/PROGRESS_0.4.2.md).
+
+La 0.4.2 ajoute une vérification facultative des mises à jour et une sauvegarde
+commune PC–Android, avec fusion, aperçu avant import et récupération après
+interruption. [Mises à jour et transfert des données](docs/UPDATES_AND_TRANSFER.md).
+La synchronisation automatique et l’application iOS restent à développer.
 
 `build_exe.bat` crée un environnement Python local, installe PySide6 et
 PyInstaller, puis construit le paquet dans `dist\RFSATCMessageMaker`.
@@ -106,8 +147,9 @@ sont sous `docs/finder/`, et le transfert carburant sous `docs/fuel/reference/`.
 Distribuez le dossier portable complet (pas le seul `.exe`), avec `finder-data/`
 et ses licences pour le Finder. Ne publiez jamais le dossier personnel `data/`.
 Les sources, workflows GitHub et données publiques peuvent être partagés séparément.
-Voir `SECURITY.md`. Le prototype PWA historique, les API live et les livrées
-vérifiées restent hors de la version Windows ; Android est documenté séparément.
+Voir `SECURITY.md`. La carte Windows ajoute des frontières locales et deux options
+Internet explicites : satellite EOX et vents Open-Meteo. Le prototype PWA reste
+historique ; aucune version native iPhone n'est livrée. Android est documenté séparément.
 
 ## Note sur les emojis
 

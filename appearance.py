@@ -1,10 +1,18 @@
 """Thème officiel « Avionique Sobre » : sombre et clair, inspiré de l'aéronautique moderne."""
 from PySide6.QtGui import QColor, QPalette
 from pathlib import Path
+from visual_themes import theme_colors
 
 
-def apply_palette(app, dark: bool) -> None:
-    app.setStyle("Fusion")
+def apply_palette(app, dark: bool, identity='avionique') -> None:
+    # Replacing the native style repolishes every widget (including hidden
+    # dialogs). Install it once; a theme toggle only changes the palette.
+    if not app.property('_rfs_fusion_initialized'):
+        app.setStyle("Fusion")
+        app.setProperty('_rfs_fusion_initialized', True)
+    mode = ('dark' if dark else 'light') + ':' + identity
+    if app.property('_rfs_palette_mode') == mode:
+        return
     p = QPalette()
     colors = {
         QPalette.ColorRole.Window: "#0B1220" if dark else "#F1F5F9",
@@ -22,8 +30,26 @@ def apply_palette(app, dark: bool) -> None:
     }
     for role, color in colors.items():
         p.setColor(role, QColor(color))
+    selected = theme_colors(identity, dark)
+    for role, key in ((QPalette.ColorRole.Window,'bg'), (QPalette.ColorRole.Base,'field'),
+                      (QPalette.ColorRole.Button,'card'), (QPalette.ColorRole.Highlight,'accent'),
+                      (QPalette.ColorRole.HighlightedText,'accent_text')):
+        p.setColor(role, QColor(selected[key]))
     p.setColor(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Text, QColor("#7E8DA3"))
     app.setPalette(p)
+    app.setProperty('_rfs_palette_mode', mode)
+
+
+def colourize_stylesheet(text, dark, identity):
+    """Apply a shared identity to both the established editor and Flightdeck shell."""
+    import re
+    c = theme_colors(identity, dark)
+    replacements = {'#0b1220':c['bg'], '#10151d':c['bg'], '#0d1726':c['field'],
+        '#121d2e':c['card'], '#171e29':c['card'], '#1c2b40':c['card'],
+        '#2563eb':c['accent'], '#60a5fa':c['accent'], '#70e4cd':c['accent'],
+        '#93c5fd':c['accent'], '#1d4ed8':c['accent'], '#1e40af':c['accent']}
+    result = re.sub(r'#[0-9a-fA-F]{6}', lambda m: replacements.get(m[0].lower(),m[0]), text)
+    return result + f'\nQScrollBar::handle:vertical {{ background:{c["accent"]}; }} QPushButton#copy {{ color:{c["accent_text"]}; }}'
 
 
 DARK_STYLESHEET = """
@@ -590,9 +616,33 @@ def get_stylesheet(dark: bool) -> str:
         "    QCheckBox::indicator:hover, QCheckBox::indicator:focus { border-color:#60A5FA; }\n"
         f"    QCheckBox::indicator:disabled {{ background:{border}; border-color:{border}; }}\n"
     )
+    result += modern_style(dark)
     _STYLESHEET_CACHE[dark] = result
     return result
 
 
 def extra_style(dark: bool) -> str:
     return ""
+
+
+def modern_style(dark: bool) -> str:
+    chevron = (Path(__file__).resolve().parent / 'assets' / 'chevron.svg').as_posix()
+    surface, text, muted, border, tinted = (
+        ('#121D2E', '#E6EDF7', '#A7B5C9', '#27364B', '#152B45') if dark
+        else ('#FFFFFF', '#0F172A', '#475569', '#D5DFEB', '#EFF6FF')
+    )
+    return f"""
+    QComboBox::drop-down {{ subcontrol-origin:padding; subcontrol-position:top right; width:26px; border:0; background:transparent; }}
+    QComboBox::down-arrow {{ image:url("{chevron}"); width:12px; height:12px; }}
+    QLabel#title {{ font-size:26px; font-weight:700; }}
+    QFrame#settingsPanel {{ background:{surface}; border:1px solid {border}; border-radius:10px; }}
+    QLabel#routeSummary {{ background:{tinted}; color:{text}; border:1px solid {border}; border-radius:8px; padding:12px; font-size:14px; font-weight:600; }}
+    QToolButton#presentationToggle {{ background:transparent; border:1px solid transparent; padding:6px; }}
+    QToolButton#presentationToggle:hover, QToolButton#presentationToggle:focus {{ background:{surface}; border-color:#60A5FA; }}
+    QPushButton[variant="quiet"] {{ background:transparent; color:{muted}; border-color:transparent; }}
+    QPushButton[variant="quiet"]:hover, QPushButton[variant="quiet"]:focus {{ color:{text}; border-color:{border}; }}
+    QGroupBox {{ border:0; border-top:1px solid {border}; border-radius:0; padding-top:16px; margin-top:18px; }}
+    QGroupBox::title {{ background:{surface}; border:0; border-radius:0; padding:2px 6px; color:{muted}; }}
+    QPlainTextEdit#discordPreview {{ border-color:{border}; font-size:14px; }}
+    QLabel#emptyState {{ color:{muted}; background:{tinted}; border:1px solid {border}; border-radius:8px; padding:18px; }}
+    """

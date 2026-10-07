@@ -4,7 +4,10 @@
 
 Baseline: GitHub `main` at `8747e0e5b4985eb6ddd540919ca659dca0b32622`.
 The separate local Flightdeck delivery is newer, but is not silently substituted
-for this repository. Windows files, tests and workflows remain authoritative and unchanged.
+for this repository. Windows behavior and tests remain authoritative; existing workflows are preserved.
+The subsequent Flightdeck branch imports the verified public local desktop version,
+retains all 71 original tests, and exports its pure modules automatically to Android.
+See ../FLIGHTDECK_NEXT.md for that audit and implementation step.
 
 `rfs_schema.py` defines eight types: ATC REQUEST, AIRBORNE, ARRIVAL BOARD,
 FLIGHT COMPLETED, ATC ACTIVE, ATC OFFLINE, FLIGHT PLAN and DISPATCH FORM.
@@ -79,3 +82,10 @@ arm64-v8a and x86_64. Runtime assets include IANA tzdata. References:
 Document actual commands, counts, APK path and device checks in README/PARITY.
 An APK build is not proof of installation, persistence or airplane-mode interaction.
 Do not mark these checks OK without running them.
+
+## Étape du 7 octobre 2026 — routes récentes
+
+Catalogue local séparé, données source figées, sélection conservatrice, aucune
+modification des profils complets. Moteur commun PC/Android, champs inconnus
+explicites, mapping limité aux valeurs disponibles et pagination SQLite par page.
+Voir `docs/DATA_ENRICHMENT_2026-10-07.md` pour les dates et preuves.

@@ -1,7 +1,10 @@
 # Windows / Android — parité vérifiée
 
-Référence : GitHub main `8747e0e5b4985eb6ddd540919ca659dca0b32622`.
-Vérifications du 3 octobre 2026. `OK` = comportement implémenté et testé ;
+Référence initiale : GitHub main `8747e0e5b4985eb6ddd540919ca659dca0b32622`.
+La branche Flightdeck ajoute la version desktop locale vérifiée (103 tests
+conservant les 71 tests initiaux) et ses améliorations, avec les mêmes moteurs
+purs exportés automatiquement dans Android. Les formules Fuel restent identiques.
+Référence 0.3 du 3 octobre, complétée par les vérifications 0.4 du 4 octobre 2026. `OK` = comportement implémenté et testé ;
 `partiel` = limite connue ou validation Android restante ; `non porté` = absent.
 L'interface téléphone est nouvelle ; les moteurs Windows sont réutilisés sans
 modification et le prototype mobile est conservé.
@@ -10,7 +13,7 @@ modification et le prototype mobile est conservé.
 |---|---|---|---|
 | ATC REQUEST, AIRBORNE, ARRIVAL BOARD, FLIGHT COMPLETED | OK | OK | Moteur identique, tests de génération |
 | ATC ACTIVE, ATC OFFLINE, FLIGHT PLAN, DISPATCH FORM | OK | OK | 1 344 combinaisons au total, exception Dispatch conservée |
-| PUSHBACK / TAXI / ATIS demandés | non porté | partiel | Génération/validation réelles ; extensions sans référence PC, présentation/groupes incomplets |
+| PUSHBACK / TAXI / ATIS demandés | non porté | OK (extensions) | 504 combinaisons de présentation ; designs personnels et groupes PUSHBACK/TAXI validés, sans référence PC |
 | Compagnie, avion, callsign, routes, portes, pistes, FL, ETE, charge, fuel | OK | OK | Tous les champs du schéma, navigation conserve le vol |
 | Pushback, contrôleur, climb, STAR, go-around, champs conditionnels | OK | OK | Schéma et moteurs PC ; tests procédures |
 | Pilotes multiples et sélection par type | OK | OK | Champs/choix portés ; moteur testé |
@@ -19,46 +22,119 @@ modification et le prototype mobile est conservé.
 | Designs guidés/expert / import-export JSON | OK | partiel | Enregistrement/rendu/validation testés ; sélecteur natif à vérifier |
 | Aperçu éditable / validation / limites / alignement Discord | OK | OK | Test copie éditée, 2 000 caractères/6 emojis ; parcours UI |
 | Historique compact / duplication | OK | OK | Compaction PC, conservation/restauration testées ; 200 entrées |
-| Vols sauvegardés / rappel / favoris | OK | partiel | Sauvegarde/restauration testées ; supprimer/renommer à compléter |
-| Bibliothèque pilotes / préférences | OK | partiel | Ajout/rappel/choix conservés ; suggestions/gestion desktop incomplètes |
-| FR/EN / sombre-clair / 249 pays-drapeaux | OK | partiel | Changement langue testé ; quelques textes techniques non traduits |
+| Vols sauvegardés / rappel / favoris | OK | OK | Renommer/supprimer/rappeler, collisions et redémarrage testés ; vol actuel conservé |
+| Bibliothèque pilotes / préférences | OK | OK | Ajouter/modifier/supprimer, choix des messages, rappel et préférences conservés après édition du vol |
+| FR/EN / sombre-clair / 249 pays-drapeaux | OK | partiel | Menus, choix, palettes et aide contrôlés en anglais ; données saisies et fenêtres système gardent leur langue |
 | Finder SQLite local / critères / pagination | OK avec base externe | OK | Snapshot embarqué, 577 résultats LFPG ≤2h, pages 100→200 ; parité PC |
 | UTILISER CE VOL / conservation des inconnues | OK | OK | Mapping PC identique ; UI et champs manuels testés |
-| Fuseaux / DST / avertissements / pistes disponibles | OK | partiel | Moteurs PC, détails/sources ; provenance durées du snapshot limitée |
+| Fuseaux / DST / avertissements / pistes disponibles | OK | OK | Moteurs PC, sources, distinction observé/estimé/non vérifié partagée ; bornes estimées jamais appelées percentiles |
 | 63 avions / 64 arrivées / alternates / formules Fuel | OK | OK | Tous les avions comparés ; A220 /5h/EGLL =12 285 kg |
 | Appliquer avion + fuel / détails exacts | OK | OK | Moteur/UI testés, recalcul avant application |
 | Stockage privé / écriture atomique / relance | JSON local | OK | Nouvelle instance moteur et rechargement UI conservent les collections |
-| Export-import sauvegarde / import état PC | fichiers séparés | partiel | Validation/restauration testées ; état PC seul, autres fichiers séparés |
+| Export-import sauvegarde / import état PC | fichiers séparés | partiel | Les 4 fichiers PC sont désormais importables, validation globale/rollback/migration testés ; sélection multiple native à vérifier sur téléphone |
 | Presse-papiers Android | OK | OK | Texte édité copié exactement sur émulateur API 35, mode avion |
 | Partage natif | OK | partiel | Intent Android implémenté ; choix d'une application destinataire à vérifier |
 | Rapport local / images choisies avec consentement | OK | partiel | ZIP/sélecteur natif implémentés ; test appareil restant |
-| Introduction / blague une seule fois | OK | partiel | Billet factice non interactif adapté ; drapeaux séparés conservés |
-| Sans compte/API/CDN/télémétrie | OK | OK | Ressources locales, sockets interdits dans tests, aucune permission Internet déclarée |
+| Introduction / blague une seule fois / revoir | OK | OK | Décor avant conclusion, reprise sans relecture automatique ; bouton Revoir et tests UI ; aucun champ bancaire éditable |
+| Fonctions principales sans compte/API/CDN/télémétrie | OK | OK | Ressources locales, sockets interdits dans les tests moteur ; Internet facultatif pour satellite/vents uniquement depuis 0.4 |
 | APK debug construite | N/A | OK | assembleDebug + assembleDebugAndroidTest réussis localement |
 | Installation / démarrage / mode avion / fermeture processus / copie native | N/A | OK | APK installée API 35, tests natifs, force-stop/relance et UI réelle vérifiés |
-| Carte Flightdeck de la livraison locale séparée | hors GitHub main | non porté | Code non substitué silencieusement à la référence GitHub |
+| Catalogue avion recherchable dans le vol / préremplissage Fuel | OK | OK | 63 variantes ; variante Finder unique reprise ; choix requis si ambigu |
+| Finder numérique en heures / pages en cache / Voir moins | OK | OK | Parseur UI dédié ; pas de requête répétée ; résultats conservés |
+| Carte Flightdeck, frontières, sélection pays / zoom | OK | OK | Canvas local, 242 frontières, géométrie PC partagée ; zoom/pincement/pays→Finder/reprise testés et carte réelle contrôlée sur APK installée API 35 |
+| Satellite / vents par altitude facultatifs | OK avec Internet | partiel | Fournisseurs PC partagés, JPEG EOX et vent 250 hPa/UTC/AMSL testés depuis Android installé ; confort de superposition sur téléphone physique restant |
+| Menu animé / retour écran et défilement | N/A | OK | Parcours téléphone, retour Android et fermeture du dialogue |
+| Dix palettes claires/sombres | OK | OK | Catalogue partagé, contraste des accents, persistance et UI testés |
+| Préparation hors ATC / pistes locales | OK | OK | Consultation sans affectation ; aucune porte ou compatibilité avion/compagnie inventée |
+| Carnet chronométré / statistiques | non porté | OK | Sessions explicites, pause/reprise/terminer et fermeture testées ; recherches exclues |
+| Trois icônes de lanceur | icône fixe | OK | Océan → défaut vérifié sur APK installée ; délai propre au lanceur et trois icônes seulement |
+| Rappel local facultatif | non porté | partiel | Programmation, publication réelle et annulation testées ; livraison à l'heure prévue/batterie/reboot sur téléphone physique restante |
+| Marges barres système/encoche/clavier | N/A | partiel | Bornes du viewport portrait vérifiées avec insets API 35 ; clavier/paysage et autres appareils restent à vérifier |
 
 ## Résultats enregistrés
 
-- Windows : 71 tests de référence réussis, environnement complet Qt + ETL.
-- Android Python : 14 tests réussis (dont 1 344 combinaisons de messages), import
+- Windows : 114 tests réussis, dont les 71 initiaux et 103 tests Flightdeck ; trois exécutions complètes après correction du cycle des traducteurs Qt.
+- Android Python : 22 tests réussis (1 344 combinaisons PC et 504 extensions), import
   des objets imbriqués et sources sans remise à zéro Finder compris.
 - UI Playwright, 390×844 : navigation, champs, validation, dernier caractère copié,
-  Finder 100→200/transfert, Fuel A220, rechargement, FR→EN réussis, zéro erreur JS.
+  Finder 100→200→100→200/transfert, catalogue vol→Fuel A220, rechargement, FR→EN ; zéro erreur JS.
+  Nouveau parcours : carte/frontières/zoom/pincement/reprise/pays→Finder, bibliothèque,
+  préférences pilotes et drapeaux recherchables. Les preuves 0.3.0 complètent la livraison précédente.
 - Build : `android/gradlew.bat -p android assembleDebug assembleDebugAndroidTest`,
   `BUILD SUCCESSFUL`, APK debug produite. Voir README pour les prérequis.
 - Téléphone physique : aucun connecté pendant ce travail. Les contrôles moteur/
   navigateur ne prouvent pas l'installation ou le fonctionnement sur Android.
 
-- Android réel sur émulateur API 35 : deux tests instrumentés passent, puis
+- Android 0.3 sur émulateur API 35 : trois tests instrumentés passent, dont la carte
+  WebView réelle (242 frontières, trajet de 97 points, identification de la France), puis
   réinstallation dédiée, même instrumentation et arrêt complet du processus.
   Relance : vol EJU149U et fuel 12285 conservés, formulaire WebView visible,
   JSON privé identique, mode avion activé, Wi-Fi/données désactivés.
-  [Exécution GitHub réussie](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37129848910),
-  commit testé `7e684f3975e9d4ec21726e43dbe9a9d026e71a8e`.
-- Vérification de l'APK elle-même : ressources UI présentes, base embarquée
+  [Exécution Flightdeck 0.3 réussie](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37151621335),
+  commit testé `6bdc5a830d43470c86a164aedf9e0861ae8a8a1c`.
+- Vérification de l'APK 0.3 elle-même : ressources UI présentes, base embarquée
   décompressable à 94 892 032 octets et SHA-256 vérifié, aucune permission.
   `scripts/verify_android_apk.py` est exécuté avant mise à disposition de l'artefact.
-- Les contrôles Windows GitHub (71 tests, dépendances, analyse, build EXE) passent
-  sur `ba6af47` ; les workflows Windows sont inchangés. Trois commentaires ciblés
-  documentent les paramètres SQL déjà liés, sans modifier la logique Finder.
+- Les contrôles Windows GitHub initiaux (71 tests, dépendances, analyse, build EXE)
+  et Android installée passent sur `9013687` ; workflows Windows existants conservés.
+  La recherche Flightdeck optimisée est comparée à la version précédente sur la
+  vraie base : mêmes lignes, scores, avertissements et pages. Mesures :
+  [finder-performance.json](../finder-performance.json).
+
+## Étape 0.4
+
+116 tests Windows et 25 tests Android Python passent. Le nouveau parcours UI
+vérifie le retour au défilement exact, les détails Finder sans JSON, sauvegarde
+sans bouton et reprise, pistes réelles, carnet, palettes et sélecteurs recherchables.
+Dessin Canvas mesuré à 0,5–1,8 ms sur Chrome avec densité simulée ×3, sans
+garantie identique sur chaque appareil. Tests natifs et sources en ligne :
+[état et preuves 0.4](PROGRESS_0.4.md).
+
+Quatre tests natifs principaux 0.4 passent sur API 35 en mode avion, puis seconde
+instrumentation, arrêt complet/reprise avec JSON identique et formulaire rendu.
+Un test supplémentaire active explicitement Internet sur l'émulateur dédié et
+vérifie les vrais fournisseurs. Le cinquième test natif, notification/icône,
+est exécuté séparément en dernier et passe également.
+[Exécution 0.4 réussie](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37202466420).
+Ces preuves ne remplacent pas les essais sur le téléphone de l'utilisateur.
+
+## Étape 0.4.1 — aide et corrections
+
+| Fonction | Windows | Android | Prototype web | Vérification |
+|---|---|---|---|---|
+| Tutoriel de 8 rubriques, passer et revoir | OK | OK | OK | Parcours Qt et navigateur, choix conservé après reprise |
+| 30 questions bilingues, recherche et réponses | OK | OK | OK | Contenu unique exporté, FAQ ETE et recherche testées |
+| Copie libre facultative avec alertes conservées | OK | OK | partiel | Moteurs et reprise testés ; contrôles web limités aux champs du prototype |
+| Alertes ouvrant le champ ou l’aperçu | OK | OK | partiel | ICAO focalisé sur PC/Android ; champs présents sur le prototype |
+| Défilement avion par molette et pavé tactile | OK | OK | OK | Qt : liste, en-tête et limites sans changer la sélection ; sélecteurs web natifs |
+| Calcul Fuel web issu des références PC | OK | OK | partiel | 567 combinaisons PC/JS identiques à 10⁻⁶ kg ; application vérifiée ; UI web moins complète |
+
+La traduction des commandes ne traduit pas les textes de l’utilisateur. Le
+prototype ne contient pas le Finder SQLite et ne remplace pas l’APK. Les preuves
+de build/installations de cette étape sont suivies dans [PROGRESS_0.4.1](PROGRESS_0.4.1.md).
+
+## Étape 0.4.2 — mises à jour et transfert
+
+| Fonction | Windows | Android | Prototype web | Vérification |
+|---|---|---|---|---|
+| Sauvegarde commune PC ↔ Android | OK | partiel | non porté | Moteurs réels et redémarrages ; sélecteur natif à vérifier sur téléphone |
+| Fusion sans perte du brouillon, conflits et import répété | OK | OK | non porté | Stockages réels, aperçus/designs/pilotes, import idempotent |
+| Récupération d’un import interrompu | OK | OK | non porté | Journal Windows et snapshots validés ; fichier Android atomique |
+| Vérification manuelle et quotidienne facultative | OK | OK | non porté | Tests Qt/navigateur et HTTPS GitHub natif sur Android 15 (API 35) ; zéro requête automatique sans consentement |
+| Synchronisation automatique entre appareils | non porté | non porté | non porté | Format commun prêt ; appairage et protocole LAN restent nécessaires |
+
+L’import ne transfère pas le consentement aux vérifications, satellite ou vents.
+Une copie de sauvegarde constitue un transfert manuel, pas une synchronisation.
+
+## Complément du 7 octobre 2026
+
+| Fonction | Windows | Android | Preuve / limite |
+|---|---|---|---|
+| Catalogue distinct des routes récentes | OK | OK | Moteur, navigateur et recherche/transfert hors ligne sur APK installée API 35 vérifiés au commit 82bad6d ; confort sur téléphone physique restant |
+| Avion / durée absents du complément | OK | OK | Aucune valeur créée ; valeurs manuelles conservées avec avertissement ; Fuel et recréation de l’activité vérifiés sur APK installée |
+| Conservation des profils historiques | OK | OK (base partagée) | 203 627 profils comparés champ par champ : aucune modification ni suppression |
+
+Le [workflow du 7 octobre](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37626682395)
+vérifie aussi le redémarrage complet, la reprise des sélecteurs et de l’aperçu
+d’import, sans appliquer une sauvegarde automatiquement. Aucun téléphone physique
+n’a été utilisé pour cette étape ; aucune version iPhone n’est livrée.

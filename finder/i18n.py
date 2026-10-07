@@ -4,12 +4,20 @@ EN = {
     "search": "Search observed flights", "use": "USE THIS FLIGHT", "close": "Close",
     "airline": "Airline (name / ICAO / IATA)", "aircraft": "Aircraft (e.g. A20N / A320neo)",
     "manufacturer": "Manufacturer", "family": "Aircraft family (e.g. A320)",
-    "origin": "Departure airport(s) ICAO / IATA", "destination": "Arrival airport(s) ICAO / IATA",
+    "origin": "Departure (ICAO / IATA or city)", "destination": "Arrival (ICAO / IATA or city)",
+    "callsign": "Flight number / Callsign (e.g. AFR123, RYR)",
+    "swap_endpoints": "Swap departure and arrival",
+    "return_flight": "Return flight ↺",
+    "next_leg": "Next leg ✈️",
     "origin_country": "Departure countries (ISO, e.g. FR)", "destination_country": "Arrival countries (ISO)",
     "origin_continent": "Departure continents (EU, AS…)", "destination_continent": "Arrival continents (EU, AS…)",
     "origin_region": "Departure regions (e.g. FR-IDF)", "destination_region": "Arrival regions (ISO subdivision)",
-    "excluded_airports": "Excluded airports (ICAO / IATA)", "min_minutes": "Minimum duration (minutes)",
-    "max_minutes": "Available / maximum duration (minutes)", "target_minutes": "Desired duration (minutes)",
+    "excluded_airports": "Avoid these airports (ICAO / IATA)", "min_minutes": "Minimum duration (hours; 10 = 10 h)",
+    "excluded_hint": "Removed from both departure and arrival. Use commas, spaces or semicolons: VABB, EGLL LFPG. Leave blank to allow all airports.",
+    "EXCLUDED_AIRPORT_FORMAT": "Enter up to 50 airport codes to avoid: ICAO (4 letters) or IATA (3 letters), separated by commas, spaces or semicolons. No filter was ignored.",
+    "AIRPORT_CODE_FORMAT": "Enter airport ICAO (4 letters) or IATA (3 letters) codes, separated by commas, spaces or semicolons.",
+    "EXCLUDED_AIRPORT_UNKNOWN": "These airport codes to avoid were not found in the local database. Correct them or remove them before searching",
+    "max_minutes": "Available / maximum duration (hours)", "target_minutes": "Desired duration (hours)",
     "departure_time": "Desired departure HH:mm (optional)", "arrival_time": "Desired arrival HH:mm (optional)",
     "departure_date": "Departure date", "arrival_date": "Arrival date",
     "departure_tz": "Departure-time IANA zone", "arrival_tz": "Arrival-time IANA zone",
@@ -30,7 +38,7 @@ EN = {
     "UNSUPPORTED_DATABASE_VERSION": "Unsupported aviation database version.",
     "DURATION_IS_AIRBORNE": "Durations are approximate airborne times, excluding taxi and preparation.",
     "HISTORICAL_NOT_SCHEDULED": "Historical observations are not current scheduled services.",
-    "STALE_DATA": "Last observation is more than 45 days old.",
+    "STALE_DATA": "Route not observed in the final 90 days of the season.",
     "LOW_OBSERVATIONS": "Fewer than five observations: limited evidence.",
     "MIXED_AIRCRAFT_TYPES": "Aircraft types varied; the most frequently observed type is shown.",
     "PARTIAL_TRACKS_EXCLUDED_FROM_DURATION": "Incomplete tracks were excluded from duration statistics.",
@@ -42,14 +50,22 @@ EN = {
     "notice": "Runways, gate, fuel, load and cruise level are not inferred. Existing manual values are preserved.",
 }
 FR = {
-    "language": "Langue", "database": "Choisir la base locale…", "search": "Rechercher des vols observés",
+    "title": "Recherche de vols", "minutes": "min", "language": "Langue", "database": "Choisir la base locale…", "search": "Rechercher des vols observés",
     "use": "UTILISER CE VOL", "close": "Fermer", "airline": "Compagnie (nom / ICAO / IATA)",
     "aircraft": "Avion (ex. A20N / A320neo)", "manufacturer": "Constructeur", "family": "Famille d’avion (ex. A320)",
-    "origin": "Départ(s) ICAO / IATA", "destination": "Arrivée(s) ICAO / IATA",
+    "origin": "Départ : ICAO / IATA ou ville (ex. LFPG, Paris)", "destination": "Arrivée : ICAO / IATA ou ville (ex. LFMN, Nice)",
+    "callsign": "Numéro de vol / Callsign (ex. AFR123, RYR)",
+    "swap_endpoints": "Inverser départ et arrivée",
+    "return_flight": "Vol retour ↺",
+    "next_leg": "Vol suivant ✈️",
     "origin_country": "Pays de départ (ISO, ex. FR)", "destination_country": "Pays d’arrivée (ISO)",
     "origin_continent": "Continents de départ (EU, AS…)", "destination_continent": "Continents d’arrivée (EU, AS…)",
     "origin_region": "Régions de départ (ex. FR-IDF)", "destination_region": "Régions d’arrivée (code ISO)",
-    "excluded_airports": "Aéroports exclus (ICAO / IATA)", "min_minutes": "Durée minimale (minutes)",
+    "excluded_airports": "Éviter ces aéroports (ICAO / IATA)", "min_minutes": "Durée minimale (minutes)",
+    "excluded_hint": "Exclus au départ comme à l’arrivée. Virgules, espaces ou points-virgules : VABB, EGLL LFPG. Laissez vide pour autoriser tous les aéroports.",
+    "EXCLUDED_AIRPORT_FORMAT": "Indiquez jusqu’à 50 aéroports à éviter : ICAO (4 lettres) ou IATA (3 lettres), séparés par des virgules, espaces ou points-virgules. Aucun filtre n’a été ignoré.",
+    "AIRPORT_CODE_FORMAT": "Indiquez des codes ICAO (4 lettres) ou IATA (3 lettres), séparés par des virgules, espaces ou points-virgules.",
+    "EXCLUDED_AIRPORT_UNKNOWN": "Ces codes d’aéroports à éviter sont absents de la base locale. Corrigez-les ou retirez-les avant de rechercher",
     "max_minutes": "Temps disponible / durée maximale (minutes)", "target_minutes": "Durée souhaitée (minutes)",
     "departure_time": "Départ souhaité HH:mm (facultatif)", "arrival_time": "Arrivée souhaitée HH:mm (facultatif)",
     "departure_date": "Date de départ", "arrival_date": "Date d’arrivée", "departure_tz": "Fuseau IANA du départ souhaité",
@@ -70,7 +86,7 @@ FR = {
     "ARRIVAL_BEFORE_DEPARTURE": "L’arrivée doit suivre le départ. Pour un vol de nuit, choisissez le lendemain.",
     "DURATION_IS_AIRBORNE": "Durées en vol approximatives, sans roulage ni préparation.",
     "HISTORICAL_NOT_SCHEDULED": "Les observations historiques ne sont pas des horaires de vols actuels.",
-    "STALE_DATA": "Dernière observation datant de plus de 45 jours.",
+    "STALE_DATA": "Route non observée sur les 90 derniers jours de la saison.",
     "DST_GAP_SHIFTED": "Heure inexistante : décalée à la première minute valide après le changement d’heure.",
     "DST_AMBIGUOUS_EARLIER": "Heure ambiguë : première occurrence UTC retenue.",
     "observations": "observations", "coverage": "traces complètes", "error": "Erreur du Finder",
@@ -90,7 +106,7 @@ EN.update({
  'none':'No usable match in these observations. Coverage may be incomplete or filters too restrictive. This does not mean the real flight does not exist.',
  'active_filters':'Active filters', 'score_help':'Score /100: deterministic ranking of frequency, recency, complete tracks and requested duration/time fit. It is neither a safety probability nor a guarantee of accuracy.',
  'frequency':'Frequency', 'recency':'Recency', 'confidence':'Complete tracks', 'duration':'Duration fit', 'arrival':'Arrival fit',
- 'DURATION_FORMAT':'Invalid duration: use 10h, 7 hours, 9h30, 03:00 or 60 min. Bare numbers mean minutes.',
+ 'DURATION_FORMAT':'Invalid duration: use 10, 10h, 7 hours, 9h30, 03:00 or 60 min. Duration fields use hours; time tolerance uses minutes.',
  'DURATION_RANGE':'Duration must be positive and at most 24 hours.',
  'ZONE_UNKNOWN':'Choose a timezone from the city/country list or enter a valid IANA identifier.',
  'COUNTRY_UNKNOWN':'Country not recognized: choose a suggestion or use an ISO code such as FR, RO or MD.',
@@ -98,8 +114,8 @@ EN.update({
  'airline_hint':'This is the airline name, not a country. Use the country filters for Romania or Moldova.',
  'aircraft':'Aircraft from the supplied RFS catalogue / observed code',
  'origin_country':'Departure countries (name or ISO code)', 'destination_country':'Arrival countries (name or ISO code)',
- 'min_minutes':'Minimum duration (h/min; bare = min)', 'max_minutes':'Maximum duration (h/min; bare = min)',
- 'target_minutes':'Desired duration (h/min; bare = min)',
+ 'min_minutes':'Minimum duration (hours; 10 = 10 h)', 'max_minutes':'Maximum duration (hours)',
+ 'target_minutes':'Desired duration (hours)',
  'arrival_tz':'Your arrival timezone — city / country', 'departure_tz':'Departure timezone — city / country',
  'Duration must be between 1 and 1440 minutes':'Duration must be between 1 and 1440 minutes',
  'Minimum duration exceeds maximum duration':'Minimum duration exceeds maximum duration',
@@ -119,7 +135,7 @@ FR.update({
  'none':'Aucune correspondance exploitable dans ces observations. Couverture incomplète ou filtres trop restrictifs possibles. Cela ne signifie pas que le vol réel n’existe pas.',
  'active_filters':'Filtres actifs', 'score_help':'Score /100 : classement déterministe selon fréquence, récence, traces complètes et correspondance aux durées/horaires demandés. Ni probabilité de sécurité, ni garantie d’exactitude.',
  'frequency':'Fréquence', 'recency':'Récence', 'confidence':'Traces complètes', 'duration':'Durée', 'arrival':'Arrivée',
- 'DURATION_FORMAT':'Durée invalide : utilisez 10h, 7 heures, 9h30, 03:00 ou 60 min. Un nombre seul signifie des minutes.',
+ 'DURATION_FORMAT':'Durée invalide : utilisez 10, 10h, 7 heures, 9h30, 03:00 ou 60 min. Les durées sont en heures ; la tolérance horaire en minutes.',
  'DURATION_RANGE':'La durée doit être positive et ne pas dépasser 24 heures.',
  'ZONE_UNKNOWN':'Sélectionnez un fuseau dans la liste ville/pays ou saisissez un identifiant IANA valide.',
  'COUNTRY_UNKNOWN':'Pays non reconnu : sélectionnez une proposition ou utilisez un code ISO comme FR, RO ou MD.',
@@ -127,8 +143,8 @@ FR.update({
  'airline_hint':'Nom de compagnie, pas de pays. Pour la Roumanie ou la Moldavie, utilisez les filtres de pays.',
  'aircraft':'Avion du catalogue RFS fourni / code observé',
  'origin_country':'Pays de départ (nom ou code ISO)', 'destination_country':'Pays d’arrivée (nom ou code ISO)',
- 'min_minutes':'Durée minimale (h/min ; nombre seul = min)', 'max_minutes':'Durée maximale (h/min ; nombre seul = min)',
- 'target_minutes':'Durée souhaitée (h/min ; nombre seul = min)',
+ 'min_minutes':'Durée minimale (heures ; 10 = 10 h)', 'max_minutes':'Durée maximale (heures)',
+ 'target_minutes':'Durée souhaitée (heures)',
  'arrival_tz':'Votre fuseau d’arrivée — ville / pays', 'departure_tz':'Fuseau de départ — ville / pays',
  'DATA_UNAVAILABLE':'La base locale est absente ou indisponible.', 'UNSUPPORTED_DATABASE_VERSION':'Version de base non prise en charge.',
  'LOW_OBSERVATIONS':'Moins de cinq observations : données limitées.',
@@ -141,5 +157,63 @@ FR.update({
 })
 
 
+EN.update({
+ 'columns':['Airline / callsign', 'Observed route', 'Aircraft', 'Duration / origin', 'Score'],
+ 'diversify':'Limit profiles per airline/route (3, or 10 with an airline filter)',
+ 'duration_observed_short':'observed', 'duration_estimated_short':'estimated', 'duration_unknown_short':'unverified',
+ 'duration_observed':'Observed median duration (complete tracks)',
+ 'duration_estimated':'Estimated duration (matching heuristic)', 'duration_unverified':'Duration of unverified origin',
+ 'duration_formula':'This value matches round(great-circle distance in NM / 390 kt × 60 + 15 min): one assumed speed and a fixed allowance. The original transformation script has not been found.',
+ 'duration_formula_limits':'The stored ±5% bounds are an arithmetic convention, not observed dispersion or guaranteed accuracy. They are not displayed as percentiles. The estimate does not model the actual route, aircraft, winds or weather.',
+ 'DURATION_PROVENANCE_NOTICE':'Duration origin is shown per result: observed median, heuristic estimate or unverified value. Simulator use only.',
+ 'DURATION_ESTIMATED_HEURISTIC':'Duration added after import; it matches a distance heuristic, not an observed median. Check the estimate before using it.',
+ 'DURATION_POST_IMPORT_UNVERIFIED':'Duration added with insufficient complete tracks; its calculation has not been verified. No observed percentiles are claimed.',
+})
+FR.update({
+ 'columns':['Compagnie / callsign', 'Trajet observé', 'Avion', 'Durée / origine', 'Score'],
+ 'diversify':'Limiter les profils par compagnie/trajet (3, ou 10 si compagnie filtrée)',
+ 'duration_observed_short':'observée', 'duration_estimated_short':'estimée', 'duration_unknown_short':'non vérifiée',
+ 'duration_observed':'Durée médiane observée (traces complètes)',
+ 'duration_estimated':'Durée estimée (formule concordante)', 'duration_unverified':'Durée d’origine non vérifiée',
+ 'duration_formula':'Cette valeur correspond à arrondi(distance orthodromique en NM / 390 kt × 60 + 15 min) : une vitesse supposée unique et un supplément fixe. Le script de transformation original n’a pas été retrouvé.',
+ 'duration_formula_limits':'Les bornes ±5 % stockées sont une convention arithmétique, pas une dispersion observée ni une précision garantie. Elles ne sont pas affichées comme percentiles. L’estimation ne modélise pas la route effective, l’avion, le vent ou la météo.',
+ 'DURATION_PROVENANCE_NOTICE':'L’origine de la durée est indiquée par résultat : médiane observée, estimation par formule ou valeur non vérifiée. Simulation uniquement.',
+ 'DURATION_ESTIMATED_HEURISTIC':'Durée ajoutée après import, concordante avec une formule de distance ; ce n’est pas une médiane observée. Vérifiez l’estimation avant utilisation.',
+ 'DURATION_POST_IMPORT_UNVERIFIED':'Durée ajoutée avec trop peu de traces complètes ; son calcul n’a pas été vérifié. Aucun percentile observé n’est revendiqué.',
+})
+
+
 def tr(key, language='fr'):
     return (EN if language == 'en' else FR).get(key, EN.get(key, key))
+
+
+def error_text(message, language='fr'):
+    code, separator, details = str(message).partition(': ')
+    return tr(code, language) + (separator + details if separator else '')
+
+EN.update({
+    'start_hint': 'Choose an airline, an airport or a duration, then search. You can also search without filters.',
+    'no_match_hint': 'No matching profile. Try removing a filter or widening the duration. Historical coverage is incomplete.',
+})
+FR.update({
+    'start_hint': 'Choisissez une compagnie, un aéroport ou une durée, puis lancez la recherche. Vous pouvez aussi chercher sans filtre.',
+    'no_match_hint': 'Aucun profil correspondant. Retirez un filtre ou élargissez la durée. La couverture historique est incomplète.',
+})
+
+EN.update({"more_count": "Show more · {shown} / {total}", "page_added": "{count} profiles added · showing rows {start}–{end}"})
+FR.update({"more_count": "Voir plus · {shown} / {total}", "page_added": "{count} profils ajoutés · lignes {start}–{end}"})
+
+EN.update({
+ 'route_catalog': 'Recent route evidence (aircraft and duration unavailable)',
+ 'ROUTE_EVIDENCE_NOTICE': 'Route inferred from repeated ADS-B evidence. Airline inferred from callsign prefix. Aircraft and duration unknown; your manual values are preserved. Confidence measures a source evidence bucket, not a flight guarantee.',
+ 'ROUTE_FILTER_UNAVAILABLE': 'Recent routes have no aircraft, duration or timetable. Clear aircraft/RFS, duration and departure/arrival time filters, or switch back to complete flight profiles.',
+ 'ROUTE_CATALOG_UNAVAILABLE': 'This older local database has no recent route catalog. Choose the enriched bundled database to use this option.',
+ 'route_unknown': 'Not provided',
+})
+FR.update({
+ 'route_catalog': 'Routes récentes observées (avion et durée indisponibles)',
+ 'ROUTE_EVIDENCE_NOTICE': 'Route déduite de traces ADS-B répétées. Compagnie déduite du préfixe du callsign. Avion et durée inconnus ; vos valeurs manuelles sont conservées. La confiance mesure une catégorie de preuves de la source, pas une garantie de vol.',
+ 'ROUTE_FILTER_UNAVAILABLE': 'Les routes récentes ne renseignent ni avion, ni durée, ni horaires. Effacez les filtres avion/RFS, durée et heures de départ/arrivée, ou revenez aux profils de vols complets.',
+ 'ROUTE_CATALOG_UNAVAILABLE': 'Cette ancienne base locale ne contient pas le catalogue des routes récentes. Choisissez la base embarquée enrichie pour utiliser cette option.',
+ 'route_unknown': 'Non renseigné',
+})

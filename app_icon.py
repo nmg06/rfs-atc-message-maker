@@ -34,6 +34,7 @@ def icon_image(size=256):
     return image
 
 
+@lru_cache(maxsize=1)
 def make_icon():
     icon = QIcon()
     for size in (16, 32, 48, 64, 128, 256):

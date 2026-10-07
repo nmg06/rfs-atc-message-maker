@@ -1,0 +1,26 @@
+CatchFlights observed route database — snapshot 2026-10-07
+128173 routes, derived from observed ADS-B flight tracks.
+
+Licence
+-------
+This database is made available under the Open Database License (ODbL)
+v1.0: https://opendatacommons.org/licenses/odbl/1-0/
+Any rights in individual contents of the database are licensed under the
+Database Contents License: https://opendatacommons.org/licenses/dbcl/1-0/
+
+Attribution
+-----------
+Contains information derived from:
+  * adsb.lol globe_history (ODbL v1.0)
+    https://github.com/adsblol/globe_history_2026
+  * MrAirspace aircraft-flight-schedules (ODbL v1.0)
+    https://github.com/MrAirspace/aircraft-flight-schedules
+
+What this is
+------------
+Origin and destination per callsign, worked out from where aircraft were
+actually observed departing and arriving — not a curated schedule. The
+evidence columns are part of the answer: a row chosen from several
+candidates on thin evidence is a weaker claim than one seen on many days,
+and `confidence` is the measured hit rate for the bucket a row falls in.
+Column meanings travel in manifest.json.

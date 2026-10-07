@@ -2,6 +2,16 @@ plugins {
     id 'com.android.application'
     id 'com.chaquo.python'
 }
+// A published APK needs the same private key on every build. Debug builds
+// remain independent; missing release credentials must never produce a
+// supposedly installable public APK.
+def releaseKeys = ['RFS_ANDROID_KEYSTORE', 'RFS_ANDROID_STORE_PASSWORD',
+                   'RFS_ANDROID_KEY_ALIAS', 'RFS_ANDROID_KEY_PASSWORD']
+def releaseCredentials = releaseKeys.collectEntries { [(it): System.getenv(it)] }
+def hasReleaseSigning = releaseKeys.every { releaseCredentials[it] }
+if (releaseKeys.any { releaseCredentials[it] } && !hasReleaseSigning) {
+    throw new GradleException('Incomplete Android release signing configuration. See docs/android/SIGNING.md.')
+}
 android {
     namespace 'com.nmg06.rfsatc'
     compileSdk 35
@@ -9,10 +19,13 @@ android {
         applicationId 'com.nmg06.rfsatc'
         minSdk 24
         targetSdk 35
-        versionCode 1
-        versionName '0.1.0-android'
+        versionCode 7
+        versionName '0.4.3-flightdeck'
         ndk { abiFilters 'arm64-v8a', 'x86_64' }
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+        // Launcher component changes are tested in a separate final invocation.
+        // Android may restart a task when the package-change broadcast arrives.
+        testInstrumentationRunnerArguments class: 'com.nmg06.rfsatc.OfflineAppTest#launchEngineDatabaseFinderFuelAndRestartWithoutInternetPermission,com.nmg06.rfsatc.OfflineAppTest#nativeClipboardUsesEditedPreviewExactly,com.nmg06.rfsatc.OfflineAppTest#offlineMapRendersLocalBordersRouteAndCountrySelection,com.nmg06.rfsatc.OfflineAppTest#viewportIsOutsideSystemBarsAndCutout,com.nmg06.rfsatc.OfflineAppTest#recentRoutesKeepUnknownFieldsAndManualFlightOffline'
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
@@ -20,7 +33,20 @@ android {
     }
     sourceSets.main.assets.srcDir "$buildDir/generated/assets"
     buildFeatures { buildConfig true }
-    buildTypes.release { minifyEnabled false }
+    signingConfigs {
+        if (hasReleaseSigning) {
+            published {
+                storeFile file(releaseCredentials['RFS_ANDROID_KEYSTORE'])
+                storePassword releaseCredentials['RFS_ANDROID_STORE_PASSWORD']
+                keyAlias releaseCredentials['RFS_ANDROID_KEY_ALIAS']
+                keyPassword releaseCredentials['RFS_ANDROID_KEY_PASSWORD']
+            }
+        }
+    }
+    buildTypes.release {
+        minifyEnabled false
+        if (hasReleaseSigning) { signingConfig signingConfigs.published }
+    }
     packaging.resources.excludes += ['META-INF/DEPENDENCIES']
 }
 chaquopy {
@@ -35,7 +61,7 @@ tasks.register('prepareSharedEngine', Exec) {
     workingDir rootProject.projectDir.parentFile
     commandLine(System.getenv('RFS_BUILD_PYTHON') ?: 'python', 'scripts/prepare_android.py')
     inputs.files(fileTree(rootProject.projectDir.parentFile) {
-        include '*.py', 'finder/*.py', 'fuel/calculator.py', 'docs/fuel/reference/*.json', 'scripts/prepare_android.py'
+        include '*.py', 'finder/*.py', 'fuel/*.py', 'docs/fuel/reference/*.json', 'assets/world_countries.json', 'assets/WORLD_MAP_LICENSE.md', 'assets/help-ui.*', 'scripts/prepare_android.py', 'scripts/export_help.py', 'scripts/export_web_fuel.py'
     }, fileTree(rootProject.file('bundled')))
     outputs.dir "$buildDir/generated"
 }
@@ -45,7 +71,18 @@ tasks.configureEach {
     }
 }
 tasks.named('preBuild').configure { dependsOn 'prepareSharedEngine' }
+tasks.register('requireReleaseSigning') {
+    doLast {
+        if (!hasReleaseSigning || !file(releaseCredentials['RFS_ANDROID_KEYSTORE']).isFile()) {
+            throw new GradleException('Release signing key missing. Configure the private key as documented in docs/android/SIGNING.md. Use assembleDebug for local testing.')
+        }
+    }
+}
+tasks.configureEach {
+    if (name == 'preReleaseBuild') { dependsOn 'requireReleaseSigning' }
+}
 dependencies {
+    implementation 'androidx.core:core:1.13.1'
     implementation 'androidx.webkit:webkit:1.12.1'
     androidTestImplementation 'androidx.test:runner:1.6.2'
     androidTestImplementation 'androidx.test:rules:1.6.1'
