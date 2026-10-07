@@ -168,10 +168,10 @@ def search(path: Path, criteria: Criteria, now_utc: datetime, *, _include_popula
             for item in raw_items:
                 norm = item.upper()
                 if re.fullmatch(r'[A-Z]{3,4}', norm):
-                    pieces.append(f"{endpoint}_id IN (SELECT id FROM airports WHERE icao = ? OR iata = ? OR instr(lower(municipality), ?) > 0 OR instr(lower(name), ?) > 0)")
+                    pieces.append(f"{endpoint}_id IN (SELECT id FROM airports WHERE icao = ? OR iata = ? OR instr(lower(municipality), ?) > 0 OR instr(lower(name), ?) > 0)")  # nosec B608: endpoint comes from a fixed tuple; airport/city values use bound parameters.
                     params.extend([norm, norm, item.lower(), item.lower()])
                 else:
-                    pieces.append(f"{endpoint}_id IN (SELECT id FROM airports WHERE instr(lower(municipality), ?) > 0 OR instr(lower(name), ?) > 0)")
+                    pieces.append(f"{endpoint}_id IN (SELECT id FROM airports WHERE instr(lower(municipality), ?) > 0 OR instr(lower(name), ?) > 0)")  # nosec B608: endpoint comes from a fixed tuple; airport/city values use bound parameters.
                     params.extend([item.lower(), item.lower()])
             if pieces:
                 where.append("(" + " OR ".join(pieces) + ")")

@@ -26,12 +26,12 @@ def connect(path):
 
 def route_keys(db, searchable=False):
     where = " WHERE duration_min IS NOT NULL AND n_complete>=3" if searchable else ""
-    return set(db.execute("SELECT callsign,o.icao,d.icao FROM flight_patterns p "
+    return set(db.execute("SELECT callsign,o.icao,d.icao FROM flight_patterns p "  # nosec B608: suffix is selected between two fixed SQL literals.
                           "JOIN airports o ON o.id=p.origin_id JOIN airports d ON d.id=p.destination_id" + where))
 
 
 def duration_keys(db):
-    return set(db.execute("SELECT callsign,o.icao,d.icao FROM flight_patterns p "
+    return set(db.execute("SELECT callsign,o.icao,d.icao FROM flight_patterns p "  # nosec B608: suffix is selected between two fixed SQL literals.
                           "JOIN airports o ON o.id=p.origin_id JOIN airports d ON d.id=p.destination_id "
                           "WHERE duration_min IS NOT NULL"))
 
@@ -47,7 +47,7 @@ def summary(path, *, require_observed_durations=True):
                 "patterns": db.execute("SELECT count(*) FROM flight_patterns").fetchone()[0],
                 "total_searchable_patterns": db.execute("SELECT count(*) FROM flight_patterns WHERE duration_min IS NOT NULL").fetchone()[0],
                 "searchable_patterns": db.execute("SELECT count(*) FROM flight_patterns WHERE n_complete>=3 AND duration_min IS NOT NULL").fetchone()[0],
-                "rfs_searchable_patterns": db.execute("SELECT count(*) FROM flight_patterns WHERE n_complete>=3 AND duration_min IS NOT NULL AND aircraft IN (" + ','.join('?' for _ in SUPPORTED_TYPES) + ")", SUPPORTED_TYPES).fetchone()[0],
+                "rfs_searchable_patterns": db.execute("SELECT count(*) FROM flight_patterns WHERE n_complete>=3 AND duration_min IS NOT NULL AND aircraft IN (" + ','.join('?' for _ in SUPPORTED_TYPES) + ")", SUPPORTED_TYPES).fetchone()[0],  # nosec B608: only ? markers generated; catalogue values are bound.
                 "recent_observations": db.execute("SELECT count(*) FROM recent_observations").fetchone()[0],
                 "first_seen": db.execute("SELECT min(first_seen) FROM flight_patterns").fetchone()[0],
                 "last_seen": db.execute("SELECT max(last_seen) FROM flight_patterns").fetchone()[0],

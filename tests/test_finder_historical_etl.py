@@ -36,10 +36,14 @@ class ManifestTests(unittest.TestCase):
         self.assertTrue(all(e["retrieved_at"] for e in entries))
 
     def test_manifest_rejects_traversal_duplicate_and_untrusted_flight_source(self):
+        from scripts.rebuild_historical_finder import download_source
         good = {"file": "2026_Q1_detailed_github.parquet", "bytes": 1,
                 "sha256": "a" * 64, "url": "https://github.com/MrAirspace/aircraft-flight-schedules/releases/download/aircraft_flight_schedules_2026_quarter1/2026_Q1_detailed_github.parquet"}
         with tempfile.TemporaryDirectory() as folder:
             path = Path(folder) / "manifest.json"
+            for url in ('file:///private-file', 'http://github.com/file.parquet', 'https://example.invalid/data.parquet'):
+                with self.assertRaisesRegex(ValueError,'Unapproved flight source URL'):
+                    download_source(Path(folder),dict(good,url=url))
             for entries in ([dict(good, file="../escape")], [good, good], [dict(good, bytes=True)],
                             [dict(good, url="https://example.invalid/dataset.parquet")]):
                 path.write_text(json.dumps(entries), encoding="utf-8")

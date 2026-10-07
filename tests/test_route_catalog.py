@@ -64,6 +64,9 @@ class RouteCatalogTests(unittest.TestCase):
             search(self.out,Criteria(route_catalog=True,excluded_airports=['ZZZZ']),NOW)
 
     def test_unavailable_filters_fail_explicitly(self):
+        for filters in ({'airline': "AFR' OR 1=1 --"}, {'callsign': "' OR 1=1 --"},
+                        {'origin_country': ["FR') OR 1=1 --"]}):
+            self.assertEqual([],search(self.out,Criteria(route_catalog=True,**filters),NOW)['results'])
         for filters in ({'rfs_only':True},{'aircraft':'A320'},{'min_minutes':60},{'departure_time':'12:00'}):
             with self.subTest(filters=filters), self.assertRaisesRegex(ValueError,'ROUTE_FILTER_UNAVAILABLE'):
                 search(self.out,Criteria(route_catalog=True,**filters),NOW)

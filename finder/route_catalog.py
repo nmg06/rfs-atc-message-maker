@@ -63,22 +63,22 @@ def search_routes(path, criteria, now, *, include_population=False):
             raise ValueError('ROUTE_CATALOG_UNAVAILABLE')
         if excluded:
             markers = ','.join('?' for _ in excluded)
-            known = {code for row in db.execute(f'SELECT icao,iata FROM airports WHERE icao IN ({markers}) OR iata IN ({markers})', excluded * 2) for code in row if code}
+            known = {code for row in db.execute(f'SELECT icao,iata FROM airports WHERE icao IN ({markers}) OR iata IN ({markers})', excluded * 2) for code in row if code}  # nosec B608: only fixed SQL fragments/column names and ? markers; user values bound separately.
             unknown = [code for code in excluded if code not in known]
             if unknown:
                 raise ValueError('EXCLUDED_AIRPORT_UNKNOWN: ' + ', '.join(unknown))
             for endpoint in ('origin', 'destination'):
-                where.append(f'{endpoint}_id NOT IN (SELECT id FROM airports WHERE icao IN ({markers}) OR iata IN ({markers}))')
+                where.append(f'{endpoint}_id NOT IN (SELECT id FROM airports WHERE icao IN ({markers}) OR iata IN ({markers}))')  # nosec B608: only fixed SQL fragments/column names and ? markers; user values bound separately.
                 params.extend(excluded * 2)
         order = 'confidence DESC,evidence_days DESC,last_seen DESC,n_obs DESC,callsign,origin,destination'
-        filtered = 'SELECT * FROM v_observed_routes WHERE ' + ' AND '.join(where)
-        matches = db.execute('SELECT count(*) FROM (' + filtered + ')', params).fetchone()[0]
+        filtered = 'SELECT * FROM v_observed_routes WHERE ' + ' AND '.join(where)  # nosec B608: only fixed SQL fragments/column names and ? markers; user values bound separately.
+        matches = db.execute('SELECT count(*) FROM (' + filtered + ')', params).fetchone()[0]  # nosec B608: only fixed SQL fragments/column names and ? markers; user values bound separately.
         if criteria.diversify:
             # SQLite ranks keys before fetching a page: do not materialize every route in Python.
-            filtered = ('SELECT * FROM (SELECT *,ROW_NUMBER() OVER (PARTITION BY airline,origin_id,destination_id ORDER BY ' +
+            filtered = ('SELECT * FROM (SELECT *,ROW_NUMBER() OVER (PARTITION BY airline,origin_id,destination_id ORDER BY ' +  # nosec B608: only fixed SQL fragments/column names and ? markers; user values bound separately.
                         order + ') AS route_rank FROM (' + filtered + ')) WHERE route_rank <= ' +
                         ('10' if criteria.airline else '3'))
-        available = db.execute('SELECT count(*) FROM (' + filtered + ')', params).fetchone()[0] if criteria.diversify else matches
+        available = db.execute('SELECT count(*) FROM (' + filtered + ')', params).fetchone()[0] if criteria.diversify else matches  # nosec B608: only fixed SQL fragments/column names and ? markers; user values bound separately.
         sql = filtered + ' ORDER BY ' + order
         page_params = params
         if not include_population:

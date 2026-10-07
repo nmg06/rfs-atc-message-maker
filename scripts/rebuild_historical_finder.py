@@ -81,6 +81,12 @@ def unpack_references(cache: Path, entries: list[dict], archive: Path = REFERENC
 
 
 def download_source(cache: Path, entry: dict) -> None:
+    if not re.fullmatch(
+        r"https://github\.com/MrAirspace/aircraft-flight-schedules/releases/download/"
+        r"aircraft_flight_schedules_2026_quarter[12]/2026_Q[12]_detailed_github\.parquet",
+        entry.get("url", ""),
+    ):
+        raise ValueError("Unapproved flight source URL")
     destination = cache / entry["file"]
     temporary = destination.with_name(destination.name + ".part")
     if temporary.exists():
@@ -90,7 +96,7 @@ def download_source(cache: Path, entry: dict) -> None:
     count = 0
     print(f"Downloading pinned build source {entry['file']} ({entry['bytes']:,} bytes)", flush=True)
     try:
-        with urllib.request.urlopen(request, timeout=30) as response, temporary.open("xb") as stream:
+        with urllib.request.urlopen(request, timeout=30) as response, temporary.open("xb") as stream:  # nosec B310: exact HTTPS GitHub release allowlist checked above; content pinned by size/hash.
             for block in iter(lambda: response.read(4 * 1024 * 1024), b""):
                 count += len(block)
                 if count > entry["bytes"]:
