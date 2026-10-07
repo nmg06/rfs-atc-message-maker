@@ -25,7 +25,7 @@ android {
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         // Launcher component changes are tested in a separate final invocation.
         // Android may restart a task when the package-change broadcast arrives.
-        testInstrumentationRunnerArguments class: 'com.nmg06.rfsatc.OfflineAppTest#launchEngineDatabaseFinderFuelAndRestartWithoutInternetPermission,com.nmg06.rfsatc.OfflineAppTest#nativeClipboardUsesEditedPreviewExactly,com.nmg06.rfsatc.OfflineAppTest#offlineMapRendersLocalBordersRouteAndCountrySelection,com.nmg06.rfsatc.OfflineAppTest#viewportIsOutsideSystemBarsAndCutout'
+        testInstrumentationRunnerArguments class: 'com.nmg06.rfsatc.OfflineAppTest#launchEngineDatabaseFinderFuelAndRestartWithoutInternetPermission,com.nmg06.rfsatc.OfflineAppTest#nativeClipboardUsesEditedPreviewExactly,com.nmg06.rfsatc.OfflineAppTest#offlineMapRendersLocalBordersRouteAndCountrySelection,com.nmg06.rfsatc.OfflineAppTest#viewportIsOutsideSystemBarsAndCutout,com.nmg06.rfsatc.OfflineAppTest#recentRoutesKeepUnknownFieldsAndManualFlightOffline'
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17

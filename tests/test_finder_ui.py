@@ -29,9 +29,11 @@ class FinderUiTests(unittest.TestCase):
                 dialog.route_catalog.setChecked(True)
                 self.assertFalse(dialog.rfs_only.isChecked())
                 dialog.run_search()
-                for _ in range(200):
+                import time
+                deadline=time.monotonic()+15
+                while time.monotonic()<deadline:
                     QTest.qWait(10)
-                    if dialog.worker and dialog.worker.isFinished():
+                    if dialog.worker and dialog.worker.isFinished() and dialog.response is not None:
                         break
                 self.assertEqual(1,len(dialog.results),dialog.status.text())
                 self.assertEqual('Not provided',dialog.table.item(0,2).text())

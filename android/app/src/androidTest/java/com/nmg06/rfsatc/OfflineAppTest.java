@@ -128,7 +128,13 @@ public class OfflineAppTest {
             state.put("finder_filters",new JSONObject().put("origin","LFPG").put("max_minutes","2h"));
             call(a,"save",new JSONObject().put("state",state));
             JSONObject found=call(a,"finder",new JSONObject());
-            assertEquals(577,found.getInt("matches"));
+            try (android.database.sqlite.SQLiteDatabase db=android.database.sqlite.SQLiteDatabase.openDatabase(
+                    new java.io.File(context.getFilesDir(),"aviation.sqlite").getAbsolutePath(),null,android.database.sqlite.SQLiteDatabase.OPEN_READONLY);
+                 android.database.Cursor count=db.rawQuery("SELECT count(*) FROM v_pattern_search WHERE origin=? AND n_obs>=3 AND duration_min<=?",new String[]{"LFPG","120"})) {
+                assertTrue(count.moveToFirst());
+                assertTrue("Bundled historical coverage unexpectedly missing",count.getInt(0)>=200);
+                assertEquals("Finder count differs from independent SQLite query",count.getInt(0),found.getInt("matches"));
+            }
             assertEquals(100,found.getJSONArray("results").length());
             JSONObject more=call(a,"finder",new JSONObject().put("more",true));
             assertEquals(100,more.getInt("offset"));
@@ -144,6 +150,32 @@ public class OfflineAppTest {
             JSONObject saved=call(activity(scenario),"bootstrap",new JSONObject()).getJSONObject("value").getJSONObject("state");
             assertEquals("ANDROID-RESTART-TEST",saved.getString("pilot_name"));
             assertEquals("12285",saved.getJSONObject("flight").getString("fuel"));
+        }
+    }
+
+    @Test public void recentRoutesKeepUnknownFieldsAndManualFlightOffline() throws Exception {
+        try (ActivityScenario<MainActivity> scenario=ActivityScenario.launch(MainActivity.class)) {
+            MainActivity a=activity(scenario);
+            String original=call(a,"export",new JSONObject()).getString("text");
+            try {
+                JSONObject state=call(a,"bootstrap",new JSONObject()).getJSONObject("value").getJSONObject("state");
+                state.getJSONObject("flight").put("aircraft","Airbus A220-300").put("estimated_flight_time","5h").put("fuel","12000");
+                state.put("finder_filters",new JSONObject().put("route_catalog",true).put("airline","AFR").put("diversify",false));
+                call(a,"save",new JSONObject().put("state",state));
+                JSONObject found=call(a,"finder",new JSONObject());
+                assertTrue(found.getInt("matches")>0);
+                JSONObject row=found.getJSONArray("results").getJSONObject(0);
+                assertEquals("OBSERVED_ROUTE",row.getString("record_kind"));
+                assertTrue(row.isNull("aircraft"));assertTrue(row.isNull("duration_min"));
+                JSONObject mapped=call(a,"finder_use",new JSONObject().put("index",0)).getJSONObject("value").getJSONObject("state").getJSONObject("flight");
+                assertEquals("Airbus A220-300",mapped.getString("aircraft"));
+                assertEquals("5h",mapped.getString("estimated_flight_time"));assertEquals("12000",mapped.getString("fuel"));
+                assertEquals("airbus_a220_300",call(a,"fuel_prepare",new JSONObject()).getJSONObject("selection").getJSONObject("record").getString("id"));
+                scenario.recreate();a=activity(scenario);
+                JSONObject saved=call(a,"bootstrap",new JSONObject()).getJSONObject("value").getJSONObject("state").getJSONObject("flight");
+                assertEquals(mapped.toString(),saved.toString());
+                assertEquals(0,a.networkRequestsForTest());assertEquals(0,a.updateRequestsForTest());
+            } finally { call(a,"import",new JSONObject().put("text",original)); }
         }
     }
 

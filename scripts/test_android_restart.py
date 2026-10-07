@@ -29,11 +29,12 @@ def run(adb, serial):
         'launchEngineDatabaseFinderFuelAndRestartWithoutInternetPermission',
         'nativeClipboardUsesEditedPreviewExactly',
         'offlineMapRendersLocalBordersRouteAndCountrySelection',
-        'viewportIsOutsideSystemBarsAndCutout'))
+        'viewportIsOutsideSystemBarsAndCutout',
+        'recentRoutesKeepUnknownFieldsAndManualFlightOffline'))
     report = command('shell', 'am', 'instrument', '-w', '-e', 'class', core_tests,
                      PACKAGE+'.test/androidx.test.runner.AndroidJUnitRunner', timeout=360)
     print(report)
-    if 'OK (4 tests)' not in report or 'FAILURES' in report:
+    if 'OK (5 tests)' not in report or 'FAILURES' in report:
         raise ValueError('Instrumentation did not pass: ' + report)
     def saved():
         return json.loads(command('shell', 'run-as', PACKAGE, 'cat', 'files/rfs_android.json'))
@@ -61,7 +62,7 @@ def run(adb, serial):
         raise ValueError('Restored flight UI not visible after process restart')
     if saved() != original:
         raise ValueError('Persistent data changed across process restart')
-    print(json.dumps({'airplane_mode': True, 'instrumentation_tests': 4,
+    print(json.dumps({'airplane_mode': True, 'instrumentation_tests': 5,
         'process_restart_persistent': True, 'restored_webview_rendered': True,
         'callsign': callsign, 'fuel': original['state']['flight']['fuel']}))
 

@@ -32,7 +32,6 @@ jobs:
     timeout-minutes: 20
     environment: flightdeck-release
     env:
-      RFS_ANDROID_KEYSTORE: ${{ runner.temp }}/flightdeck-release.jks
       RFS_ANDROID_STORE_PASSWORD: ${{ secrets.RFS_ANDROID_STORE_PASSWORD }}
       RFS_ANDROID_KEY_ALIAS: ${{ secrets.RFS_ANDROID_KEY_ALIAS }}
       RFS_ANDROID_KEY_PASSWORD: ${{ secrets.RFS_ANDROID_KEY_PASSWORD }}
@@ -50,12 +49,14 @@ jobs:
           packages: 'platform-tools platforms;android-35 build-tools;35.0.0'
       - name: Restore private signing key
         env:
+          RFS_ANDROID_KEYSTORE: ${{ runner.temp }}/flightdeck-release.jks
           KEYSTORE_BASE64: ${{ secrets.RFS_ANDROID_KEYSTORE_BASE64 }}
           EXPECTED_CERT: ${{ vars.RFS_ANDROID_CERT_SHA256 }}
         run: |
           test -n "$KEYSTORE_BASE64" && test -n "$EXPECTED_CERT" && test -n "$RFS_ANDROID_STORE_PASSWORD" && test -n "$RFS_ANDROID_KEY_ALIAS" && test -n "$RFS_ANDROID_KEY_PASSWORD" || { echo 'Configure the protected signing environment first: docs/android/SIGNING.md'; exit 1; }
           umask 077
           printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RFS_ANDROID_KEYSTORE"
+          echo "RFS_ANDROID_KEYSTORE=$RFS_ANDROID_KEYSTORE" >> "$GITHUB_ENV"
       - run: python -m pip install tzdata==2026.4
       - run: python -m unittest discover -s android/tests -v
       - name: Build signed candidate
