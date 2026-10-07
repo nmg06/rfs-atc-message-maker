@@ -10,13 +10,13 @@ You do not need Python to install the packaged apps.
 | Android 7+, ARM64 | Android APK | Installable test version |
 | iPhone / iPad | No native package | iOS app not currently available |
 
-Verified 0.4.3 test downloads from 7 October: [Android APK](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37626682395/artifacts/11484870149) · [Windows ZIP](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37626682163/artifacts/11484747125). GitHub sign-in required; these artifacts expire on 6 November 2026. The offline Finder includes a separate observed-route catalogue; missing aircraft and durations remain unknown.
+Verified 0.4.3 test downloads from 8 October: [Android APK](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37703182410/artifacts/11518127678) · [Windows ZIP](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37703176770/artifacts/11518846272). GitHub sign-in required; these artifacts expire on 6 November 2026. The offline Finder includes a separate observed-route catalogue; missing aircraft and durations remain unknown.
 
 ## Download from GitHub
 
 Open the [Windows builds](https://github.com/nmg06/rfs-atc-message-maker/actions/workflows/flightdeck.yml)
 or [Android builds](https://github.com/nmg06/rfs-atc-message-maker/actions/workflows/android.yml).
-Choose a successful green run for **feat/flightdeck-map-performance**, then scroll
+Choose a successful green run for **feat/flightdeck-user-experience**, then scroll
 to **Artifacts**. Download **RFSFlightdeck-Windows-x64-test** or
 **RFS-ATC-Android-debug** and extract the downloaded ZIP.
 

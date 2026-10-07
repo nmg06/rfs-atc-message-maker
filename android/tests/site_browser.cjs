@@ -10,7 +10,7 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict');
  await page.locator('#platform-windows').click();assert((await page.locator('#installation').innerText()).includes('RFSATCMessageMaker.exe'));
  await page.locator('#platform-windows').press('ArrowRight');assert.equal(await page.locator('#platform-ios').getAttribute('aria-selected'),'true');assert(!(await page.locator('#installation').innerText()).includes('Télécharger pour Android'));
  await page.locator('#platform-ios').press('Home');assert.equal(await page.locator('#platform-android').getAttribute('aria-selected'),'true');
- assert((await page.locator('#installation .button').getAttribute('href')).includes('37626682395'));
+ assert.match(await page.locator('#installation .button').getAttribute('href'), /^https:\/\/github\.com\/nmg06\/rfs-atc-message-maker\/actions\/runs\/\d+\/artifacts\/\d+$/);
  await page.locator('#site-language').click();assert.equal(await page.locator('html').getAttribute('lang'),'en');
  assert(!/Choisissez|départ|téléchargez|Vos questions|Votre prochain/.test(await page.locator('body').innerText()));
  await page.locator('#site-theme').click();await page.reload();assert.equal(await page.locator('body').evaluate(el=>el.classList.contains('dark')),true);assert.equal(await page.locator('html').getAttribute('lang'),'en');

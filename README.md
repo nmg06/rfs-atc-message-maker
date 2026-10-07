@@ -14,9 +14,15 @@ solutions aux problèmes fréquents. Aucune version iPhone installable actuellem
 **[Tutoriel, 30 questions fréquentes et copie libre](docs/HELP.md)** — aide
 consultable dans l’application, que l’on peut passer et retrouver ensuite.
 
-Les améliorations Flightdeck sont sur `feat/flightdeck-map-performance`, la première
-APK sur `feat/android-offline`. Les workflows produisent des artefacts de test,
+La refonte et les derniers paquets sont sur `feat/flightdeck-user-experience`.
+Le [rapport de revue](docs/UX_REVIEW_2026-10-07.md) détaille les améliorations,
+les tests et les limites. Les workflows produisent des artefacts de test,
 sans publier automatiquement une nouvelle release.
+
+Le Finder PC/Android permet de choisir plusieurs avions dès l'ouverture de la
+liste. Android propose une préparation par étapes, quatre rubriques principales
+et un menu Outils, ainsi qu'une comparaison de trois résultats réels sauvegardée
+localement. L'accueil web explique l'installation ; son prototype reste limité.
 
 ## Base de vols enrichie
 

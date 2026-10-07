@@ -15,17 +15,17 @@ Python n'est pas nécessaire pour installer les fichiers proposés ici.
 | Android 7 ou plus, ARM64 | APK Android | Version de test installable |
 | iPhone / iPad | Aucun pour l'instant | Version iOS non disponible |
 
-**Téléchargements 0.4.3 du 7 octobre vérifiés : [Android](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37626682395/artifacts/11484870149) · [Windows](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37626682163/artifacts/11484747125).**
+**Téléchargements 0.4.3 du 8 octobre vérifiés : [Android](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37703182410/artifacts/11518127678) · [Windows](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37703176770/artifacts/11518846272).**
 Connectez-vous à GitHub, cliquez sur votre lien puis décompressez le ZIP reçu.
 Ces fichiers de test expirent le 6 novembre 2026 ; les instructions ci-dessous
 permettent de retrouver un build plus récent.
 
 Les fichiers de test sont dans **GitHub Actions**, sur la branche
-**feat/flightdeck-map-performance**. Le [bilan du 7 octobre](DATA_ENRICHMENT_2026-10-07.md)
+**feat/flightdeck-user-experience**. Le [bilan du 7 octobre](DATA_ENRICHMENT_2026-10-07.md)
 donne les liens des builds vérifiés et les limites connues.
 
 1. Ouvrez [les téléchargements Windows](https://github.com/nmg06/rfs-atc-message-maker/actions/workflows/flightdeck.yml) ou [Android](https://github.com/nmg06/rfs-atc-message-maker/actions/workflows/android.yml).
-2. Choisissez une exécution **verte**, sur la branche **feat/flightdeck-map-performance**.
+2. Choisissez une exécution **verte**, sur la branche **feat/flightdeck-user-experience**.
 3. Descendez jusqu'à **Artifacts**. Touchez **RFSFlightdeck-Windows-x64-test** pour Windows, ou **RFS-ATC-Android-debug** pour Android.
 4. Décompressez le ZIP téléchargé : il contient le paquet Windows ou **app-debug.apk**.
 
