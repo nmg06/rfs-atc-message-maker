@@ -130,6 +130,11 @@ Une copie de sauvegarde constitue un transfert manuel, pas une synchronisation.
 
 | Fonction | Windows | Android | Preuve / limite |
 |---|---|---|---|
-| Catalogue distinct des routes récentes | OK | partiel | Recherche, filtres, pagination et mapping du moteur testés ; essais de la nouvelle APK sur téléphone physique à effectuer |
-| Avion / durée absents du complément | OK | OK (moteur) | Aucune valeur créée ; valeurs manuelles conservées avec avertissement ; redémarrage du moteur testé |
+| Catalogue distinct des routes récentes | OK | OK | Moteur, navigateur et recherche/transfert hors ligne sur APK installée API 35 vérifiés au commit 82bad6d ; confort sur téléphone physique restant |
+| Avion / durée absents du complément | OK | OK | Aucune valeur créée ; valeurs manuelles conservées avec avertissement ; Fuel et recréation de l’activité vérifiés sur APK installée |
 | Conservation des profils historiques | OK | OK (base partagée) | 203 627 profils comparés champ par champ : aucune modification ni suppression |
+
+Le [workflow du 7 octobre](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37626682395)
+vérifie aussi le redémarrage complet, la reprise des sélecteurs et de l’aperçu
+d’import, sans appliquer une sauvegarde automatiquement. Aucun téléphone physique
+n’a été utilisé pour cette étape ; aucune version iPhone n’est livrée.

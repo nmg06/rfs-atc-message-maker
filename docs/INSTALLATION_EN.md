@@ -10,7 +10,7 @@ You do not need Python to install the packaged apps.
 | Android 7+, ARM64 | Android APK | Installable test version |
 | iPhone / iPad | No native package | iOS app not currently available |
 
-Verified 0.4.2 test downloads: [Android APK](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37234427403/artifacts/11314783690) · [Windows ZIP](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37234427393/artifacts/11315221754). GitHub sign-in required; these artifacts expire on 3 November 2026.
+Verified 0.4.3 test downloads from 7 October: [Android APK](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37626682395/artifacts/11484870149) · [Windows ZIP](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37626682163/artifacts/11484747125). GitHub sign-in required; these artifacts expire on 6 November 2026. The offline Finder includes a separate observed-route catalogue; missing aircraft and durations remain unknown.
 
 ## Download from GitHub
 

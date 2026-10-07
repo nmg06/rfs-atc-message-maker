@@ -29,7 +29,7 @@ invalidé. Aucune durée, affectation de piste ou porte n’est inventée.
   la dernière publication vérifiée le 7 octobre est Q2 2026. Les profils complets
   utilisent Q1 + Q2, jusqu’au 30 juin. Aucun Q3 disponible dans les releases vérifiées.
 - [CatchFlights, export du 7 octobre](https://github.com/catchflights/routes/releases/tag/routes-2026-10-07) :
-  128 173 lignes avant sélection ; observations retenues jusqu’au 7 octobre à
+  128 173 lignes avant sélection ; observations retenues du 22 août au 7 octobre à
   07:16:33 UTC. Export dérivé de traces ADS-B, **pas un horaire publié**.
   ODbL 1.0, contenus DBCL, attribution CatchFlights / adsb.lol / MrAirspace.
 - [SFO Museum, septembre](https://github.com/sfomuseum-data/sfomuseum-data-flights-2026-09) :
@@ -86,8 +86,12 @@ Base candidate SHA-256 : `5df24e6a17b16458ba67c46d24b22f6178644ebdd3619ea0a5a713
 spécifique aux routes récentes passe : anglais, champs inconnus, détails lisibles,
 transfert, conservation après rechargement et aucune requête distante.
 APK debug et APK de tests compilées ; contenu de la base embarquée vérifié.
-Les essais de cette nouvelle version sur téléphone physique et émulateur installé
-restent à réaliser : la compilation seule ne les prouve pas.
+L’APK est également installée et vérifiée sur émulateur API 35 au commit
+`82bad6d` : cinq tests hors ligne, arrêt complet/reprise du processus, quatre tests
+de cycle de vie (dont l’import après recréation), puis deux tests facultatifs en ligne
+et de personnalisation passent. [Workflow Android réussi](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37626682395).
+Les contrôles Windows, dépendances et CodeQL passent également sur ce commit.
+Les essais sur téléphone physique restent à effectuer avant publication officielle.
 
 Le prototype web public ne fournit pas le Finder SQLite Android : ce nouveau
 catalogue concerne les applications PC et Android, pas le prototype.

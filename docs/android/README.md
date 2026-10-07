@@ -26,7 +26,8 @@ au démarrage. Un moteur trop ancien affiche une aide locale et conserve les
 données ; mettez à jour WebView avant de relancer. Les essais natifs documentés
 utilisent API 35, pas tous les modèles de téléphone.
 L'APK debug universelle contient les deux architectures, environ
-60 à 66 Mo selon le build. Prévoir environ 250 Mo libres pour l'installation et la base privée.
+106 Mo pour le build local du 7 octobre, avec la base enrichie de 138 Mo
+décompressée. Prévoir au moins 500 Mo libres pour l'installation et la base privée.
 
 Candidate Flightdeck `0.4.3-flightdeck`, identifiant `com.nmg06.rfsatc` conservé.
 Catalogue d'avions recherchable dans le vol, variante unique Finder préremplie
