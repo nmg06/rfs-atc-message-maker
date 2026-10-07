@@ -235,6 +235,7 @@ public class MainActivity extends Activity {
     }
 
     private static byte[] readLimited(InputStream in, int limit) throws IOException {
+        if (in == null) throw new IOException("File stream unavailable");
         try (InputStream input = in; ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             byte[] buffer = new byte[8192]; int n;
             while ((n = input.read(buffer)) != -1) {
@@ -256,7 +257,7 @@ public class MainActivity extends Activity {
     }
 
     private void reply(String id, String json) {
-        runOnUiThread(() -> { if (!isDestroyed()) web.evaluateJavascript("window.androidReply(" + JSONObject.quote(id) + "," + json + ")", null); });
+        runOnUiThread(() -> { if (!isDestroyed() && web != null) web.evaluateJavascript("window.androidReply(" + JSONObject.quote(id) + "," + json + ")", null); });
     }
 
     public class Bridge {
@@ -269,7 +270,8 @@ public class MainActivity extends Activity {
             runOnUiThread(()->{if(isDestroyed())return;if(supported)web.loadUrl(ORIGIN+"/assets/www/index.html");else showWebViewError();});
         }
         @JavascriptInterface public void request(String id, String method, String payload) {
-            if (!id.matches("[0-9]{1,12}") || payload.length() > 2 * 1024 * 1024) return;
+            if (!id.matches("[0-9]{1,12}")) return;
+            if (payload.length() > 2 * 1024 * 1024) { reply(id, error("Payload exceeds size limit")); return; }
             if(method.equals("native.updatesCheck")) {
                 try{network.execute(()->{try{reply(id,new JSONObject().put("ok",true).put("result",updates.check(new JSONObject(payload).optBoolean("automatic",false))).toString());}catch(Exception e){reply(id,error("Update check unavailable"));}});}
                 catch(java.util.concurrent.RejectedExecutionException e){reply(id,error("Update check busy"));}

@@ -17,3 +17,4 @@ finder-data/
 *.keystore
 *.p12
 .private-signing/
+node_modules/

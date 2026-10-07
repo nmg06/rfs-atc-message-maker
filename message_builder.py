@@ -177,7 +177,7 @@ def custom_context(kind: str, flight: dict, data: dict, pilot: str, message: str
         values.update({key: "" for key in fields})
     values.update({key: str(value) for key, value in {**flight, **data}.items() if not isinstance(value, (dict, list))})
     values.update(message=message, message_type=kind, pilot=pilot,
-                  pilots=" / ".join([pilot] + [str(p.get("name", "")) for p in additional_pilots(flight)]))
+                  pilots=" / ".join([pilot] + [str(p.get("name", "")) for p in additional_pilots(flight, kind)]))
     return values
 
 
@@ -227,7 +227,7 @@ def _group_identity(body, kind, flight, data, pilot, extra):
     kept=[]
     for line in body.splitlines():
         stripped=strip_emojis(line).strip().upper()
-        if (stripped.startswith(('CALLSIGN','AIRCRAFT','PILOT','RUNWAY','DEPARTURE RUNWAY','ARRIVAL RUNWAY'))
+        if (stripped.startswith(('CALLSIGN', 'CALL SIGN', 'AIRCRAFT', 'PILOT', 'RUNWAY', 'DEPARTURE RUNWAY', 'ARRIVAL RUNWAY'))
             or line.strip().startswith('✈') or stripped.startswith('NAME:')):
             continue
         kept.append(line)

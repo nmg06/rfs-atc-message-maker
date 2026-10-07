@@ -82,3 +82,10 @@ arm64-v8a and x86_64. Runtime assets include IANA tzdata. References:
 Document actual commands, counts, APK path and device checks in README/PARITY.
 An APK build is not proof of installation, persistence or airplane-mode interaction.
 Do not mark these checks OK without running them.
+
+## Étape du 7 octobre 2026 — routes récentes
+
+Catalogue local séparé, données source figées, sélection conservatrice, aucune
+modification des profils complets. Moteur commun PC/Android, champs inconnus
+explicites, mapping limité aux valeurs disponibles et pagination SQLite par page.
+Voir `docs/DATA_ENRICHMENT_2026-10-07.md` pour les dates et preuves.

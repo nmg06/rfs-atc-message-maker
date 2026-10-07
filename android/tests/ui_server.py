@@ -31,7 +31,12 @@ class Handler(SimpleHTTPRequestHandler):
             self.path = self.path.removeprefix('/prototype')
             self.directory = str(ROOT/'mobile')
             return super().do_GET()
-        if self.path == '/world-countries.js':
+        if self.path in ('/', '/index.html'):
+            raw = (ROOT/'android/app/src/main/assets/www/index.html').read_text(encoding='utf-8')
+            raw = raw.replace("script-src 'self'", "script-src 'self' 'unsafe-eval'")
+            data = raw.encode('utf-8')
+            self.send_response(200);self.send_header('Content-Type','text/html; charset=utf-8');self.send_header('Content-Length',str(len(data)));self.end_headers();self.wfile.write(data)
+        elif self.path == '/world-countries.js':
             raw=(ROOT/'android/app/build/generated/assets/www/world-countries.js').read_bytes()
             self.send_response(200);self.send_header('Content-Type','application/javascript');self.end_headers();self.wfile.write(raw)
         else:

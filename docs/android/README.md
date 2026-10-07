@@ -299,3 +299,12 @@ Accueil : billet fictif affiché avant sa conclusion ; aucune saisie ni paiement
 Après cette première présentation, la blague ne se rejoue pas toute seule.
 Paramètres > Revoir la blague de bienvenue permet de la revoir volontairement.
 Sur Windows : Aide et suggestions > Revoir la blague.
+
+## Catalogue de routes du 7 octobre 2026
+
+Flight Finder propose aussi un catalogue distinct de routes récentes observées.
+Le moteur et la base sont les mêmes sur PC et Android. Les valeurs absentes
+(avion/durée) restent inconnues ; les valeurs manuelles du vol sont conservées.
+Voir [sources, utilisation et vérifications](../DATA_ENRICHMENT_2026-10-07.md).
+APK de test reconstruite : `android/app/build/outputs/apk/debug/app-debug.apk`.
+La nouvelle APK doit encore être essayée sur téléphone physique avant publication.

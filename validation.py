@@ -78,6 +78,6 @@ def validate(message_type: str, flight: dict, data: dict, pilot_name: str) -> li
             continue
         source = flight if key in flight else data
         value = str(source.get(key, '') or '').strip()
-        if value and (not re.fullmatch('\\d+(?:\\+)?', value)):
+        if value and (not re.fullmatch(r'\d+(?:\+)?', value.replace(' ', '').replace(',', ''))):
             issues.append(Issue(key, tr('{v0} doit être un nombre saisi par vous.', v0=tr(FLIGHT_FIELDS[key].label) if key in FLIGHT_FIELDS else tr(MESSAGE_FIELDS[message_type][key].label))))
     return issues

@@ -4,10 +4,12 @@ import re
 
 
 def parse_minutes(text):
+    if text is None:
+        return None
     value = str(text).strip().lower().replace(',', '.')
     if not value:
         return None
-    match = re.fullmatch(r'(\d+)\s*:\s*(\d{2})', value)
+    match = re.fullmatch(r'(\d+)\s*:\s*(\d{1,2})', value)
     if match:
         hours, minutes = map(int, match.groups())
         if minutes >= 60:
@@ -32,7 +34,11 @@ def parse_minutes(text):
 
 def parse_finder_hours(text):
     """Phone/desktop duration fields: an unqualified number is hours, not minutes."""
+    if text is None:
+        return None
     value = str(text).strip().lower().replace(',', '.')
+    if not value:
+        return None
     if re.fullmatch(r'\d+(?:\.\d+)?', value):
         value += 'h'
     return parse_minutes(value)

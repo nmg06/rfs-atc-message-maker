@@ -19,7 +19,12 @@ def elapsed_seconds(session, now=None):
     started = session.get('started_at')
     if started:
         instant = datetime.fromisoformat(started)
-        result += max(0, ((now or datetime.now(timezone.utc)) - instant).total_seconds())
+        target_now = now or datetime.now(timezone.utc)
+        if instant.tzinfo is None:
+            instant = instant.replace(tzinfo=timezone.utc)
+        if target_now.tzinfo is None:
+            target_now = target_now.replace(tzinfo=timezone.utc)
+        result += max(0, (target_now - instant).total_seconds())
     return round(result)
 
 

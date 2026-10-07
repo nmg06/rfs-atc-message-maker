@@ -105,3 +105,38 @@ EN.update({
     'Champ suivant à compléter': 'Next field to complete',
 })
 EN.update({'Présentation du message': 'Message appearance', '01  Préparer le vol': '01  Prepare your flight', '02  Aperçu Discord': '02  Discord preview', 'Favoris et historique': 'Favourites and history', 'Un favori conserve un modèle de vol ; l’historique retrouve les messages copiés.': 'A favourite saves a flight preset; history keeps copied messages.', 'Recrée le message depuis le formulaire et remplace les modifications manuelles. Ctrl+Entrée': 'Rebuild the message from the form, replacing manual edits. Ctrl+Enter', 'Copier le message — Ctrl+Maj+C': 'Copy message — Ctrl+Shift+C'})
+
+EN.update({
+    'Flight Finder': 'Flight Finder',
+    'Revoir la blague': 'Replay the joke',
+    'I was kidding !': 'I was kidding!',
+    'Erreur de sauvegarde': 'Save error',
+    "Impossible d'enregistrer l'état actuel sur le disque. Voulez-vous quitter quand même ?": "Could not save the current state to disk. Do you want to quit anyway?",
+    'Piste invalide : 01 à 36, éventuellement L/R/C.': 'Invalid runway: 01 to 36, optionally L/R/C.',
+    'Information ATIS : une lettre de A à Z.': 'ATIS information: a letter from A to Z.',
+    'QNH : 800 à 1100 hPa.': 'QNH: 800 to 1100 hPa.',
+    'Direction invalide.': 'Invalid direction.',
+    'Pilote {index} : callsign requis.': 'Pilot {index}: callsign required.',
+    'Piste du pilote invalide.': 'Pilot runway invalid.',
+    'Rose': 'Rose',
+    'Glacier': 'Glacier',
+    'Graphite': 'Graphite',
+    'Design': 'Design',
+    'Emojis': 'Emojis',
+    '0 / 6 emojis': '0 / 6 emojis',
+    '{v0} / 6 emojis': '{v0} / 6 emojis',
+    'Date': 'Date',
+    'Type': 'Type',
+    'Route': 'Route',
+    'Callsign': 'Callsign',
+})
+
+FR.update({
+    'Flight Finder': 'Recherche de vols',
+    'Revoir la blague': 'Revoir la blague',
+    'I was kidding !': 'C’était une blague !',
+    'Date': 'Date',
+    'Type': 'Type',
+    'Route': 'Route',
+    'Callsign': 'Indicatif',
+})

@@ -11,7 +11,7 @@ from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushB
 
 from .database import connect_readonly
 from .i18n import tr, error_text
-from .search import Criteria, search, SearchSession, parse_airport_codes
+from .search import Criteria, search, SearchSession, parse_airport_codes, parse_airport_queries
 from .duration import parse_minutes, parse_finder_hours
 from .rfs_catalogue import records, TYPE_BY_ID
 from .provenance import duration_provenance
@@ -164,6 +164,10 @@ class FinderDialog(QDialog):
         self.rfs_only = QCheckBox(self.t('rfs_only'))
         self.rfs_only.setChecked(True)
         self.form.addRow(self.rfs_only)
+        self.route_catalog = QCheckBox(self.t('route_catalog'))
+        self.form.addRow(self.route_catalog)
+        self.route_catalog.setToolTip(self.t('ROUTE_EVIDENCE_NOTICE'))
+        self.route_catalog.toggled.connect(lambda enabled: self.rfs_only.setChecked(False) if enabled else None)
         self.rfs_labels = {r['name']:r['id'] for r in records()}
         self.timezones = {}
         local_zone = bytes(QTimeZone.systemTimeZoneId()).decode()
@@ -185,7 +189,7 @@ class FinderDialog(QDialog):
         self.fields, self.labels = {}, {}
         self.list_keys = ("origin", "destination", "excluded_airports", "origin_country", "destination_country",
                           "origin_continent", "destination_continent", "origin_region", "destination_region")
-        keys = ("airline", "aircraft", "manufacturer", "family", "origin", "destination", "excluded_airports", "min_minutes",
+        keys = ("airline", "callsign", "aircraft", "manufacturer", "family", "origin", "destination", "excluded_airports", "min_minutes",
                 "max_minutes", "target_minutes", "origin_country", "destination_country",
                 "origin_continent", "destination_continent", "origin_region", "destination_region",
                 "departure_time", "departure_date", "departure_tz", "arrival_time", "arrival_date", "arrival_tz", "time_tolerance")
@@ -212,8 +216,14 @@ class FinderDialog(QDialog):
                     field.setText("60")
             self.labels[key], self.fields[key] = label, field
             target_form = times if key.startswith(('departure_', 'arrival_')) or key == 'time_tolerance' else (
-                self.form if key in ('airline', 'aircraft', 'origin', 'destination', 'excluded_airports', 'min_minutes', 'max_minutes', 'target_minutes') else advanced)
+                self.form if key in ('airline', 'callsign', 'aircraft', 'origin', 'destination', 'excluded_airports', 'min_minutes', 'max_minutes', 'target_minutes') else advanced)
             target_form.addRow(label, field)
+            if key == 'destination':
+                self.swap_button = QPushButton(self.t('swap_endpoints'))
+                self.swap_button.clicked.connect(self.swap_endpoints)
+                self.form.addRow(self.swap_button)
+            if key == 'callsign':
+                field.setPlaceholderText('AFR123 · RYR · DLH')
             if key.endswith('_minutes'):
                 field.setPlaceholderText('10 = 10h · 9h30 · 03:00 · 60 min')
             if key.endswith('_time'):
@@ -272,6 +282,12 @@ class FinderDialog(QDialog):
         actions = QHBoxLayout()
         self.search_button = QPushButton(objectName="primary")
         self.search_button.clicked.connect(self.run_search)
+        self.return_button = QPushButton(self.t('return_flight'))
+        self.return_button.setEnabled(False)
+        self.return_button.clicked.connect(self.return_flight)
+        self.next_leg_button = QPushButton(self.t('next_leg'))
+        self.next_leg_button.setEnabled(False)
+        self.next_leg_button.clicked.connect(self.next_leg)
         self.use_button = QPushButton(objectName="copy")
         self.use_button.setEnabled(False)
         self.use_button.clicked.connect(self.use_flight)
@@ -283,7 +299,7 @@ class FinderDialog(QDialog):
         self.less_button.clicked.connect(self.show_less)
         self.close_button = QPushButton()
         self.close_button.clicked.connect(self.reject)
-        for button in (self.search_button, self.less_button, self.more_button, self.use_button, self.close_button):
+        for button in (self.search_button, self.less_button, self.more_button, self.return_button, self.next_leg_button, self.use_button, self.close_button):
             actions.addWidget(button)
         self.outer.addLayout(actions)
         for button in self.findChildren(QPushButton):
@@ -297,7 +313,7 @@ class FinderDialog(QDialog):
                 field.currentTextChanged.connect(self.invalidate)
             else:
                 field.textChanged.connect(self.invalidate)
-        for check in (self.international, self.rfs_only, self.diversify):
+        for check in (self.international, self.rfs_only, self.diversify, self.route_catalog):
             check.toggled.connect(self.invalidate)
         self.load_suggestions()
         self.restore_filters()
@@ -315,11 +331,18 @@ class FinderDialog(QDialog):
         self.close_button.setText(self.t("close"))
         self.hint.setText(self.t("optional"))
         self.international.setText(self.t("international"))
+        self.route_catalog.setText(self.t('route_catalog'))
         self.real.setText(self.t("real"))
         for key, label in self.labels.items():
             label.setText(self.t(key))
         self.table.setHorizontalHeaderLabels(self.t("columns"))
         self.details.setPlaceholderText(self.t("details"))
+        if hasattr(self, 'swap_button'):
+            self.swap_button.setText(self.t('swap_endpoints'))
+        if hasattr(self, 'return_button'):
+            self.return_button.setText(self.t('return_flight'))
+        if hasattr(self, 'next_leg_button'):
+            self.next_leg_button.setText(self.t('next_leg'))
         self.excluded_hint.setText(self.t('excluded_hint'))
 
     def restore_filters(self):
@@ -343,7 +366,7 @@ class FinderDialog(QDialog):
                     widget.setCurrentIndex(index) if index >= 0 else widget.setCurrentText(str(value))
                 else:
                     widget.setText(', '.join(value) if isinstance(value, list) else str(value))
-            for key, widget in (('international_only', self.international), ('rfs_only', self.rfs_only), ('diversify', self.diversify)):
+            for key, widget in (('international_only', self.international), ('rfs_only', self.rfs_only), ('diversify', self.diversify), ('route_catalog', self.route_catalog)):
                 if type(saved.get(key)) is bool:
                     widget.setChecked(saved[key])
         finally:
@@ -362,7 +385,7 @@ class FinderDialog(QDialog):
             else:
                 value = widget.text()
             values[key] = value
-        values.update(international_only=self.international.isChecked(), rfs_only=self.rfs_only.isChecked(), diversify=self.diversify.isChecked())
+        values.update(international_only=self.international.isChecked(), rfs_only=self.rfs_only.isChecked(), diversify=self.diversify.isChecked(), route_catalog=self.route_catalog.isChecked())
         self._profile_store.state['finder_filters'] = values
         try:
             self._profile_store.save_state()
@@ -405,8 +428,9 @@ class FinderDialog(QDialog):
             self.airline_labels = {}
             try:
                 with connect_readonly(self.path) as db:
-                    for row in db.execute('SELECT icao, iata, name FROM airports ORDER BY icao'):
-                        label = f"{row['icao']} / {row['iata'] or ''} — {row['name']}"
+                    for row in db.execute('SELECT icao, iata, name, municipality FROM airports ORDER BY icao'):
+                        city = f" ({row['municipality']})" if row['municipality'] and row['municipality'] != row['name'] else ""
+                        label = f"{row['icao']} / {row['iata'] or ''} — {row['name']}{city}"
                         self.airport_labels[label] = row['icao']
                     for row in db.execute('SELECT icao, iata, name FROM airlines ORDER BY name'):
                         label = f"{row['name']} ({row['icao']} / {row['iata'] or ''})"
@@ -450,10 +474,17 @@ class FinderDialog(QDialog):
                 values[key] = zone
             elif key in ('origin_country', 'destination_country'):
                 values[key] = [resolve_country(v.strip()) for v in text.split(',') if v.strip()]
-            elif key in ('origin', 'destination', 'excluded_airports'):
+            elif key in ('origin', 'destination'):
                 resolved = self.airport_labels.get(text, text)
                 try:
-                    values[key] = parse_airport_codes(resolved, exclusion=key == 'excluded_airports')
+                    values[key] = parse_airport_queries(resolved)
+                except ValueError:
+                    widget.setFocus()
+                    raise
+            elif key == 'excluded_airports':
+                resolved = self.airport_labels.get(text, text)
+                try:
+                    values[key] = parse_airport_codes(resolved, exclusion=True)
                 except ValueError:
                     widget.setFocus()
                     raise
@@ -471,6 +502,7 @@ class FinderDialog(QDialog):
                 values[key] = text
         values['international_only'] = self.international.isChecked()
         values['rfs_only'] = self.rfs_only.isChecked()
+        values['route_catalog'] = self.route_catalog.isChecked()
         values['diversify'] = self.diversify.isChecked()
         return Criteria(**values)
 
@@ -547,13 +579,13 @@ class FinderDialog(QDialog):
         self.table.setRowCount(len(self.results))
         for index in range(first_new, len(self.results)):
             row = self.results[index]
-            minutes = round(row["duration_min"])
+            minutes = round(row["duration_min"]) if row["duration_min"] is not None else None
             origin = duration_provenance(row)
             label = self.t('duration_observed_short' if origin == 'AGGREGATED_COMPLETE_TRACKS'
                            else 'duration_estimated_short' if origin == 'ESTIMATED_DISTANCE_HEURISTIC'
                            else 'duration_unknown_short')
             values = (f"{row['airline_name']} / {row['callsign']}", f"{row['origin']} → {row['destination']}",
-                      row.get("aircraft_display", row["aircraft"]), f"{minutes//60}h{minutes%60:02} · {label}", f"{row['score']:.1f}")
+                      (row.get("aircraft_display") or row["aircraft"] or self.t("route_unknown")), (f"{minutes//60}h{minutes%60:02} · {label}" if minutes is not None else self.t("route_unknown")), f"{row['score']:.1f}")
             for column, value in enumerate(values):
                 self.table.setItem(index, column, QTableWidgetItem(value))
         self.visible_count = len(self.results)
@@ -601,8 +633,11 @@ class FinderDialog(QDialog):
 
     def show_result(self):
         index = self.table.currentRow()
-        self.use_button.setEnabled(0 <= index < len(self.results))
-        if not 0 <= index < len(self.results):
+        has_sel = 0 <= index < len(self.results)
+        self.use_button.setEnabled(has_sel)
+        self.return_button.setEnabled(has_sel)
+        self.next_leg_button.setEnabled(has_sel)
+        if not has_sel:
             self.details.clear()
             return
         row = self.results[index]
@@ -610,18 +645,18 @@ class FinderDialog(QDialog):
         observed = origin == 'AGGREGATED_COMPLETE_TRACKS'
         duration_label = ('duration_observed' if observed else 'duration_estimated'
                           if origin == 'ESTIMATED_DISTANCE_HEURISTIC' else 'duration_unverified')
-        duration_line = f"{self.t(duration_label)}: {row['duration_min']:.0f} min"
+        duration_line = (f"{self.t(duration_label)}: {row['duration_min']:.0f} min" if row["duration_min"] is not None else self.t("route_unknown"))
         if observed and row.get('duration_p10') is not None and row.get('duration_p90') is not None:
             duration_line += f" (P10–P90: {row['duration_p10']:.0f}–{row['duration_p90']:.0f})"
-        lines = [self.t("observed"), f"ICAO: {row['aircraft']}", f"{row['airline_name']} • {row['callsign']} • {row.get('aircraft_display') or row['aircraft_model'] or row['aircraft']}",
+        lines = [self.t("observed"), f"ICAO: {row['aircraft'] or self.t('route_unknown')}", f"{row['airline_name']} • {row['callsign']} • {row.get('aircraft_display') or row['aircraft_model'] or row['aircraft'] or self.t('route_unknown')}",
             f"{row['origin']} — {row['origin_name']} → {row['destination']} — {row['destination_name']}",
             duration_line,
             f"{self.t('distance')}: {row['distance_nm']:.0f} NM" if row['distance_nm'] is not None else self.t('unknown'),
             f"{row['n_obs']} {self.t('observations')} • {row['n_complete']} {self.t('coverage')}",
-            f"{self.t('times')}: {row['latest_departure']} → {row['latest_arrival']}"]
+            f"{self.t('times')}: {row['first_seen']} → {row['last_seen']}" if row.get("record_kind") == "OBSERVED_ROUTE" else f"{self.t('times')}: {row['latest_departure']} → {row['latest_arrival']}"]
         if origin == 'ESTIMATED_DISTANCE_HEURISTIC':
             lines += [self.t('duration_formula'), self.t('duration_formula_limits')]
-        elif not observed:
+        elif not observed and row["duration_min"] is not None:
             lines.append(self.t('DURATION_POST_IMPORT_UNVERIFIED'))
         if row.get("sim_departure_utc"):
             dep = datetime.fromisoformat(row["sim_departure_utc"])
@@ -647,6 +682,32 @@ class FinderDialog(QDialog):
         lines += [s["attribution_text"] + "\n" + s["url"] for s in self.sources]
         lines += ["", self.t("score_help"), self.t("rfs_notice"), "Score: " + ", ".join(f"{self.t(k)}={v*100:.0f}%" for k,v in row["subscores"].items())]
         self.details.setPlainText("\n".join(lines))
+
+    def swap_endpoints(self):
+        orig = self.fields['origin'].text()
+        dest = self.fields['destination'].text()
+        self.fields['origin'].setText(dest)
+        self.fields['destination'].setText(orig)
+
+    def return_flight(self):
+        index = self.table.currentRow()
+        if 0 <= index < len(self.results):
+            row = self.results[index]
+            self.fields['origin'].setText(row['destination'])
+            self.fields['destination'].setText(row['origin'])
+            if 'callsign' in self.fields:
+                self.fields['callsign'].clear()
+            self.run_search()
+
+    def next_leg(self):
+        index = self.table.currentRow()
+        if 0 <= index < len(self.results):
+            row = self.results[index]
+            self.fields['origin'].setText(row['destination'])
+            self.fields['destination'].clear()
+            if 'callsign' in self.fields:
+                self.fields['callsign'].clear()
+            self.run_search()
 
     def use_flight(self):
         index = self.table.currentRow()

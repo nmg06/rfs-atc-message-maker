@@ -87,3 +87,17 @@ extracted or distributed. No guarantee of coverage or current operations is made
 Phase 2: better autocomplete/geographical groups, richer route views and aliases,
 manually verified livery compatibility, separate fuel adapter, mobile/PWA only
 when explicitly requested. No fuel model or online service is part of this build.
+
+## Complément de routes du 7 octobre 2026
+
+21 053 routes directes CatchFlights retenues, dont 3 195 combinaisons
+callsign/départ/arrivée supplémentaires. Les 203 627 profils existants sont
+conservés à l’identique. Catalogue séparé : avion et durée inconnus,
+compagnie déduite du préfixe du callsign. Seuils : confiance source ≥0,95,
+un seul candidat, au moins trois jours et trois observations, aéroports et
+préfixe compagnie connus. Ce n’est pas un horaire actuel garanti.
+
+Source : https://github.com/catchflights/routes/releases/tag/routes-2026-10-07
+ODbL 1.0, contenus DBCL ; attribution CatchFlights, adsb.lol et MrAirspace.
+Le fichier source figé est redistribué dans `finder/source-data/`, avec son
+manifest et sa somme SHA-256. Voir `docs/licenses/CATCHFLIGHTS_NOTICE.txt`.

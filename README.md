@@ -18,6 +18,16 @@ Les améliorations Flightdeck sont sur `feat/flightdeck-map-performance`, la pre
 APK sur `feat/android-offline`. Les workflows produisent des artefacts de test,
 sans publier automatiquement une nouvelle release.
 
+## Base de vols enrichie
+
+La base locale conserve les 203 627 profils historiques et ajoute un catalogue
+de 21 053 routes observées, dont 3 195 nouveaux trajets par callsign. Dans
+Flight Finder, cochez **Routes récentes observées** pour consulter ce complément.
+L’avion et la durée n’y sont pas renseignés : choisissez-les vous-même.
+Les filtres par durée ou avion restent disponibles dans la recherche habituelle.
+Les observations ne garantissent pas qu’un vol existe aujourd’hui.
+[Sources, dates et vérifications](docs/DATA_ENRICHMENT_2026-10-07.md).
+
 ## Utiliser
 
 Ouvrez `RFSATCMessageMaker.exe` dans le paquet téléchargé. Gardez le dossier

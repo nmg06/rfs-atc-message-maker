@@ -125,3 +125,11 @@ de build/installations de cette étape sont suivies dans [PROGRESS_0.4.1](PROGRE
 
 L’import ne transfère pas le consentement aux vérifications, satellite ou vents.
 Une copie de sauvegarde constitue un transfert manuel, pas une synchronisation.
+
+## Complément du 7 octobre 2026
+
+| Fonction | Windows | Android | Preuve / limite |
+|---|---|---|---|
+| Catalogue distinct des routes récentes | OK | partiel | Recherche, filtres, pagination et mapping du moteur testés ; essais de la nouvelle APK sur téléphone physique à effectuer |
+| Avion / durée absents du complément | OK | OK (moteur) | Aucune valeur créée ; valeurs manuelles conservées avec avertissement ; redémarrage du moteur testé |
+| Conservation des profils historiques | OK | OK (base partagée) | 203 627 profils comparés champ par champ : aucune modification ni suppression |

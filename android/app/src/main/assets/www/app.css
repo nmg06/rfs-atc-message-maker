@@ -22,3 +22,8 @@ nav{padding:10px 8px 14px;min-height:78px}nav button{touch-action:manipulation}m
 .map-shell{border:1px solid var(--border);border-radius:14px;overflow:hidden;margin:14px 0;background:var(--field)}#route-map{display:block;width:100%;height:clamp(260px,45vh,520px);touch-action:none;cursor:grab}#route-map:active{cursor:grabbing}#map-status{padding:9px 12px;margin:0}.map-actions{margin-bottom:14px}.map-actions button:first-child,.map-actions button:nth-child(2){flex:0 0 52px}.map-countries{margin-top:14px}.library-actions{margin-top:12px}.pilot-editor{max-height:85vh;overflow:auto}nav button{overflow-wrap:anywhere;font-size:10px;min-height:48px}nav button span{font-size:18px}
 
 .issue-link{display:block;text-align:left;width:100%;margin:8px 0;padding:12px;line-height:1.5}.issue-target{outline:3px solid var(--accent,#70e4cd);outline-offset:3px}.context-help{margin:0 0 18px;min-height:44px}.copy-policy{margin:16px 0}
+.header-controls{display:flex;align-items:center;gap:8px}
+.lang-btn{min-height:38px;padding:6px 12px;font-weight:700;font-size:12px;border:1px solid var(--accent);color:var(--accent);background:transparent;border-radius:9px;cursor:pointer;line-height:1}
+.welcome-lang-row{display:flex;gap:10px;justify-content:center;margin-bottom:16px}
+.quiet-chip{font-size:12px;padding:6px 12px;border-radius:16px;background:var(--field);border:1px solid var(--border);color:var(--text);min-height:34px;cursor:pointer}
+.quiet-chip.primary{background:var(--accent);color:var(--accent-text);border-color:var(--accent);font-weight:700}

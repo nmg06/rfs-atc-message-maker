@@ -76,12 +76,16 @@ LOGGER = setup_logging()
 
 
 def _merge(default: Any, loaded: Any) -> Any:
+    if default is None:
+        return deepcopy(loaded)
+    if type(default) is int and type(loaded) is bool:
+        return deepcopy(default)
     if not isinstance(loaded, type(default)):
         return deepcopy(default)
     if isinstance(default, dict) and isinstance(loaded, dict):
         result = deepcopy(default)
         for key, value in loaded.items():
-            result[key] = _merge(default[key], value) if key in default else value
+            result[key] = _merge(default[key], value) if key in default else deepcopy(value)
         return result
     return loaded
 

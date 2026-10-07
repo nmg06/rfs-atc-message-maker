@@ -3,6 +3,10 @@ const {chromium}=require('playwright');
 const assert=require('node:assert/strict');
 (async()=>{
  const port=Number(process.argv[2]);
+ const request=async(method,args={})=>(await(await fetch(`http://127.0.0.1:${port}/rpc`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({method,args})})).json());
+ const boot=await request('bootstrap');assert(boot.ok);
+ boot.result.value.state.language='fr';
+ assert((await request('save',{state:boot.result.value.state})).ok);
  const browser=await chromium.launch({headless:true,...(process.env.RFS_TEST_BROWSER?{channel:process.env.RFS_TEST_BROWSER}:{})});
  const page=await browser.newPage({viewport:{width:390,height:844}});
  const errors=[];page.on('pageerror',error=>errors.push(error.message));

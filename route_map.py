@@ -385,18 +385,20 @@ class RouteMap(QWidget):
             return self._online_note or 'Chargement des vents… / Loading winds…'
         if self._online_note:
             return self._online_note+' · dernier cache '+self._wind['samples'][0]['time'][:16]+' UTC'
-        samples = self._wind['samples']
+        samples = self._wind.get('samples') or []
+        if not samples:
+            return self._online_note or ('Chargement des vents…' if self._language == 'fr' else 'Loading winds…')
         height = sum(row['height_m'] for row in samples)/len(samples)
         fr = self._language == 'fr'
         note = f"Open-Meteo · {height:.0f} m AMSL"
-        if self._route:
+        if self._route and len(self._route) >= 2:
             from map_online import bearing, tailwind
             components = []
             for index in range(0, len(self._route)-1, 24):
                 lat, lon = self._route[index]
                 sample = min(samples, key=lambda s: abs(s['latitude']-lat)+abs((s['longitude']-lon+180)%360-180)*math.cos(math.radians(lat)))
                 components.append(tailwind(sample['speed'], sample['direction'], bearing(self._route[index], self._route[index+1])))
-            average = sum(components)/len(components)
+            average = sum(components)/len(components) if components else 0
             direction = ('arrière' if average >= 0 else 'face') if fr else ('tailwind' if average >= 0 else 'headwind')
             note += f" · {direction} ≈ {abs(average):.0f} kt"
         note += f" · {samples[0]['time'][:16]} UTC · " + ('prévision, peut différer de RFS' if fr else 'forecast, may differ from RFS')
@@ -561,7 +563,7 @@ class RouteMap(QWidget):
             self._drag = event.position()
             self.update()
             self._schedule_wind()
-        elif self._wind and self.wind_level.currentData():
+        elif self._wind and self.wind_level.currentData() and self._wind.get('samples'):
             position = event.position()
             sample = min(self._wind['samples'], key=lambda s: (self._point(s['latitude'], s['longitude'])-position).manhattanLength())
             self.setToolTip(self._wind_note()+f"\n{sample['speed']:.0f} kt depuis {sample['direction']:.0f}° · {sample['height_m']:.0f} m AMSL")

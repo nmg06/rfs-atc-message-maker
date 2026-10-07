@@ -6,11 +6,17 @@ from finder.rfs_catalogue import TYPE_BY_ID, observation_name
 
 def resolve_aircraft(flight, catalogue=None):
     catalogue = catalogue if catalogue is not None else load_json('aircraft_fuel_data.json')['aircraft']
+    if flight.get('fuel_aircraft_id'):
+        exact = find_aircraft(flight['fuel_aircraft_id'], catalogue)
+        if exact:
+            return {'record': deepcopy(exact), 'candidates': [exact['id']], 'source': 'USER_EXACT_VARIANT'}
     selected = flight.get('selected_flight') or {}
     provenance = selected.get('fields', {}).get('aircraft', '')
     observed = bool(selected) and provenance not in ('USER_INPUT', 'USER_INPUT_FUEL_VARIANT')
+    if selected.get('status') == 'OBSERVED_ROUTE' and not provenance:
+        observed = False  # This catalog never supplies an aircraft; use the retained manual choice.
     if not observed:
-        exact = find_aircraft(flight.get('fuel_aircraft_id') or flight.get('aircraft',''), catalogue)
+        exact = find_aircraft(flight.get('aircraft',''), catalogue)
         if exact:
             return {'record': deepcopy(exact), 'candidates': [exact['id']], 'source': 'USER_EXACT_VARIANT'}
     code = selected.get('aircraft_icao') or ''

@@ -14,6 +14,32 @@ from .rfs_catalogue import SUPPORTED_TYPES, TYPE_BY_ID, observation_name
 from .provenance import duration_provenance
 
 
+def parse_airport_queries(value):
+    """Normalize airport codes or city names without rejecting word queries."""
+    if isinstance(value, str):
+        entries = [value]
+    elif isinstance(value, list) and all(isinstance(v, str) for v in value):
+        entries = value
+    else:
+        raise ValueError('AIRPORT_CODE_FORMAT')
+    result = []
+    for entry in entries:
+        raw_tokens = [v.strip() for v in re.split(r'[,;]+', entry.strip()) if v.strip()]
+        for raw in raw_tokens:
+            sub = raw.split()
+            if len(sub) > 1 and all(re.fullmatch(r'[A-Za-z]{3,4}', w) for w in sub):
+                for w in sub:
+                    u = w.upper()
+                    if u not in result:
+                        result.append(u)
+            else:
+                if raw not in result:
+                    result.append(raw)
+    if len(result) > 50:
+        raise ValueError('AIRPORT_CODE_FORMAT')
+    return result
+
+
 def parse_airport_codes(value, *, exclusion=False):
     """Normalize codes without dropping a malformed token or unknown input type."""
     error = 'EXCLUDED_AIRPORT_FORMAT' if exclusion else 'AIRPORT_CODE_FORMAT'
@@ -40,6 +66,7 @@ def parse_airport_codes(value, *, exclusion=False):
 
 @dataclass
 class Criteria:
+    callsign: str = ""
     airline: str = ""
     aircraft: str = ""
     manufacturer: str = ""
@@ -71,6 +98,7 @@ class Criteria:
     diversify: bool = True
     rfs_only: bool = False
     rfs_aircraft_id: str = ""
+    route_catalog: bool = False
 
     def validate(self):
         parse_airport_codes(self.excluded_airports, exclusion=True)
@@ -96,6 +124,9 @@ def search(path: Path, criteria: Criteria, now_utc: datetime, *, _include_popula
     if now_utc.tzinfo is None:
         raise ValueError("now_utc must be timezone-aware")
     now_utc = now_utc.astimezone(timezone.utc)
+    if criteria.route_catalog:
+        from .route_catalog import search_routes
+        return search_routes(path, criteria, now_utc, include_population=_include_population)
     warnings = ["DURATION_PROVENANCE_NOTICE", "HISTORICAL_NOT_SCHEDULED"]
     departure = arrival = None
     for endpoint in ("departure", "arrival"):
@@ -131,11 +162,19 @@ def search(path: Path, criteria: Criteria, now_utc: datetime, *, _include_popula
         where.append(("NOT " if negate else "") + "(" + " OR ".join(pieces) + ")")
 
     for endpoint in ("origin", "destination"):
-        codes = [v.strip().upper() for v in getattr(criteria, endpoint) if v.strip()]
-        if codes:
-            placeholders = ",".join("?" for _ in codes)
-            where.append(f"{endpoint}_id IN (SELECT id FROM airports WHERE icao IN ({placeholders}) OR iata IN ({placeholders}))")  # nosec B608: fixed endpoint and bound parameter markers only
-            params.extend(codes * 2)
+        raw_items = [v.strip() for v in getattr(criteria, endpoint) if v.strip()]
+        if raw_items:
+            pieces = []
+            for item in raw_items:
+                norm = item.upper()
+                if re.fullmatch(r'[A-Z]{3,4}', norm):
+                    pieces.append(f"{endpoint}_id IN (SELECT id FROM airports WHERE icao = ? OR iata = ? OR instr(lower(municipality), ?) > 0 OR instr(lower(name), ?) > 0)")
+                    params.extend([norm, norm, item.lower(), item.lower()])
+                else:
+                    pieces.append(f"{endpoint}_id IN (SELECT id FROM airports WHERE instr(lower(municipality), ?) > 0 OR instr(lower(name), ?) > 0)")
+                    params.extend([item.lower(), item.lower()])
+            if pieces:
+                where.append("(" + " OR ".join(pieces) + ")")
         for suffix in ("country", "continent", "region"):
             values = getattr(criteria, endpoint + "_" + suffix)
             if values:
@@ -148,6 +187,10 @@ def search(path: Path, criteria: Criteria, now_utc: datetime, *, _include_popula
         where.append(f"origin_id NOT IN (SELECT id FROM airports WHERE icao IN ({placeholders}) OR iata IN ({placeholders}))")  # nosec B608: bound parameter markers only
         where.append(f"destination_id NOT IN (SELECT id FROM airports WHERE icao IN ({placeholders}) OR iata IN ({placeholders}))")  # nosec B608: bound parameter markers only
         params.extend(ex_codes * 4)
+    if getattr(criteria, 'callsign', '').strip():
+        term = criteria.callsign.strip().upper()
+        where.append("(callsign LIKE ? OR callsign = ?)")
+        params.extend([f"%{term}%", term])
     if criteria.airline.strip():
         term = criteria.airline.strip()
         if len(term) <= 3 and term.isalnum():
@@ -245,7 +288,16 @@ def search(path: Path, criteria: Criteria, now_utc: datetime, *, _include_popula
         row['duration_provenance'] = duration_provenance(row)
         if row["n_obs"] < 5:
             row["warnings"].append("LOW_OBSERVATIONS")
-        if age_days > 45:
+        last_obs_str = build.get("last_observation")
+        if last_obs_str:
+            try:
+                last_obs_date = datetime.fromisoformat(last_obs_str).astimezone(timezone.utc)
+                season_age_days = max(0, (last_obs_date - last_seen).total_seconds() / 86400)
+            except (ValueError, TypeError):
+                season_age_days = age_days
+        else:
+            season_age_days = age_days
+        if season_age_days > 90:
             row["warnings"].append("STALE_DATA")
         if row['duration_provenance'] == 'ESTIMATED_DISTANCE_HEURISTIC':
             row['warnings'].append('DURATION_ESTIMATED_HEURISTIC')
@@ -261,7 +313,7 @@ def search(path: Path, criteria: Criteria, now_utc: datetime, *, _include_popula
         row["sim_arrival_utc"] = proposed_arrival.isoformat() if proposed_arrival else None
         results.append(row)
     results.sort(key=lambda r: (-r["score"], -r["n_obs"], -datetime.fromisoformat(r["last_seen"]).timestamp(),
-                               r["callsign"], r["origin"], r["destination"], r["pattern_id"]))
+                               r.get("callsign") or "", r.get("origin") or "", r.get("destination") or "", r.get("pattern_id") or 0))
     diversified, counts = [], {}
     max_per_route = 10 if criteria.airline else 3
     for row in results:
@@ -288,6 +340,7 @@ class SearchSession:
         self.key = None
         self.population = []
         self.metadata = None
+        self.route_pages = {}
 
     def query_key(self, path, criteria, now):
         path = Path(path).resolve()
@@ -299,6 +352,14 @@ class SearchSession:
     def page(self, path, criteria, now):
         criteria.validate()
         key = self.query_key(path, criteria, now)
+        if criteria.route_catalog:
+            if key != self.key:
+                self.clear()
+                self.key = key
+            page_key = (criteria.offset, criteria.limit)
+            if page_key not in self.route_pages:
+                self.route_pages[page_key] = search(path, criteria, now)
+            return deepcopy(self.route_pages[page_key])
         if key != self.key:
             response = search(path, criteria, now, _include_population=True)
             population = response.pop('_population')

@@ -29,6 +29,31 @@ def flight():
 
 
 class EngineTests(unittest.TestCase):
+    def test_recent_route_parity_mapping_and_restart_without_invented_duration(self):
+        self.engine.state['language']='en'
+        filters={'route_catalog':True,'airline':'AFR','diversify':False}
+        self.engine.state['finder_filters']=filters
+        response=self.engine.handle('finder',{})
+        reference=search(self.database,self.engine.criteria(filters),self.engine.query_time)
+        self.assertGreater(response['available'],0)
+        self.assertEqual([r['route_id'] for r in reference['results']], [r['route_id'] for r in response['results']])
+        row=response['results'][0]
+        self.assertIsNone(row['duration_min'])
+        self.assertIsNone(row['aircraft'])
+        detail=self.engine.handle('finder_details',{'index':0})
+        self.assertIn('Airline inferred',detail['duration']['note'])
+        current=deepcopy(self.engine.state['flight'])
+        self.engine.handle('finder_use',{'index':0})
+        self.assertEqual(use_this_flight(current,row),self.engine.state['flight'])
+        for key in ('aircraft','estimated_flight_time','fuel','departure_gate'):
+            self.assertEqual(current[key],self.engine.state['flight'][key])
+        reloaded=Engine(self.temp.name,self.database)
+        self.assertEqual(self.engine.state['flight'],reloaded.state['flight'])
+        self.assertTrue(reloaded.state['finder_filters']['route_catalog'])
+        prepared=reloaded.handle('fuel_prepare',{})
+        self.assertEqual('airbus_a220_300',prepared['selection']['record']['id'])
+        self.assertEqual(current['estimated_flight_time'],reloaded.state['fuel_inputs']['duration'])
+
     def test_finder_exclusions_are_shared_validated_persisted_and_do_not_leave_stale_rows(self):
         filters = {'origin': 'VIDP', 'excluded_airports': 'vabb; BOM', 'diversify': False}
         self.engine.state['finder_filters'] = filters
@@ -40,7 +65,7 @@ class EngineTests(unittest.TestCase):
         self.engine.handle('persist', {'state': deepcopy(self.engine.state)})
         self.assertEqual(filters, Engine(self.temp.name, self.database).state['finder_filters'])
         self.engine.state['finder_filters']['excluded_airports'] = 'VABB, INVALID'
-        with self.assertRaisesRegex(ValueError, '50 aéroports'):
+        with self.assertRaisesRegex(ValueError, r'50 (aéroports|airport)'):
             self.engine.handle('finder', {})
         self.assertEqual([], self.engine.rows)
         with self.assertRaises(ValueError):
@@ -417,7 +442,7 @@ class EngineTests(unittest.TestCase):
         self.assertEqual(current['fuel'],result['value']['state']['flight']['fuel'])
         self.assertEqual(current['arrival_runway'],result['value']['state']['flight']['arrival_runway'])
         self.assertEqual(before,hashlib.sha256(self.database.read_bytes()).hexdigest())
-        self.assertEqual(577,first['matches'])
+        self.assertEqual(691,first['matches'])
 
     def test_finder_all_criteria_and_stale_query_invalidation(self):
         converted=self.engine.criteria({'origin':'CDG, LHR','min_minutes':'1h','max_minutes':'2h30','departure_time':'08:00','departure_tz':'Europe/Paris','rfs_only':True,'family':'A320','international_only':True})

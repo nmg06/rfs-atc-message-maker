@@ -19,7 +19,7 @@ from finder.database import connect_readonly
 from finder.duration import parse_minutes, parse_finder_hours
 from finder.mapping import use_this_flight
 from finder.provenance import duration_provenance
-from finder.search import Criteria, SearchSession, parse_airport_codes
+from finder.search import Criteria, SearchSession, parse_airport_codes, parse_airport_queries
 from finder.i18n import tr as finder_tr, error_text as finder_error_text
 from finder.rfs_catalogue import TYPE_BY_ID
 from fuel.calculator import calculate_fuel, load_json
@@ -254,9 +254,14 @@ class Engine:
             if key not in known or key == 'offset':
                 continue
             default = known[key]
-            if key in ('origin', 'destination', 'excluded_airports'):
+            if key in ('origin', 'destination'):
                 try:
-                    converted[key] = parse_airport_codes(item, exclusion=key == 'excluded_airports')
+                    converted[key] = parse_airport_queries(item)
+                except ValueError as error:
+                    raise ValueError(finder_error_text(error, self.state['language'])) from error
+            elif key == 'excluded_airports':
+                try:
+                    converted[key] = parse_airport_codes(item, exclusion=True)
                 except ValueError as error:
                     raise ValueError(finder_error_text(error, self.state['language'])) from error
             elif isinstance(default, list):
@@ -277,6 +282,9 @@ class Engine:
 
     def duration_details(self, row):
         origin = duration_provenance(row)
+        if row.get('record_kind') == 'OBSERVED_ROUTE':
+            return {'origin': 'UNKNOWN', 'label': finder_tr('route_unknown', self.state['language']),
+                    'note': finder_tr('ROUTE_EVIDENCE_NOTICE', self.state['language']), 'bounds_kind': 'unknown', 'bounds': [None, None]}
         observed = origin == 'AGGREGATED_COMPLETE_TRACKS'
         estimated = origin == 'ESTIMATED_DISTANCE_HEURISTIC'
         label = finder_tr('duration_observed' if observed else 'duration_estimated' if estimated else 'duration_unverified', self.state['language'])
@@ -395,7 +403,10 @@ class Engine:
                 row['duration_details'] = self.duration_details(row)
             return result
         if method == 'finder_details':
-            row = self.rows[int(args['index'])]
+            idx = int(args.get('index', -1))
+            if idx < 0 or idx >= len(self.rows):
+                raise ValueError('Finder row no longer available')
+            row = self.rows[idx]
             runways = {}
             with connect_readonly(self.database) as db:
                 for endpoint in ('origin', 'destination'):
@@ -403,7 +414,10 @@ class Engine:
             return {'row': row, 'runways': runways, 'duration': self.duration_details(row),
                     'warnings': [finder_tr(w, self.state['language']) for w in row['warnings']]}
         if method == 'finder_use':
-            row = self.rows[int(args['index'])]
+            idx = int(args.get('index', -1))
+            if idx < 0 or idx >= len(self.rows):
+                raise ValueError('Finder row no longer available')
+            row = self.rows[idx]
             candidate = deepcopy(self.value)
             candidate['state']['flight'] = use_this_flight(self.state['flight'], row)
             candidate['state']['current_flight_id'] = ''
@@ -434,7 +448,10 @@ class Engine:
         elif method == 'fuel_use':
             inputs = self.state['fuel_inputs']
             # Recalculate on apply; a stale UI result cannot apply old inputs.
-            result = calculate_fuel(inputs.get('aircraft', ''), fuel_hours(inputs.get('duration', '')) or 0, inputs.get('arrival', ''))
+            hours = fuel_hours(inputs.get('duration', ''))
+            if hours is None or hours <= 0:
+                raise ValueError('Duration required: 5h, 5h30, 330min')
+            result = calculate_fuel(inputs.get('aircraft', ''), hours, inputs.get('arrival', ''))
             candidate = deepcopy(self.value)
             flight = candidate['state']['flight']
             flight.update(fuel=f"{result['total_block_fuel_kg_exact']:.0f}", aircraft=result['aircraft']['name'],
@@ -482,11 +499,21 @@ class Engine:
         elif method in ('load_flight', 'load_history', 'load_preset'):
             candidate = deepcopy(self.value)
             if method == 'load_flight':
-                item = next(v for v in self.state['saved_flights'] if v['id'] == args['id'])
+                item = next((v for v in self.state['saved_flights'] if v.get('id') == args.get('id')), None)
+                if not item:
+                    raise ValueError('Saved flight not found')
                 candidate['state']['per_type'].update(deepcopy(item.get('per_type', {})))
                 candidate['state']['current_flight_id'] = item['id']
+            elif method == 'load_history':
+                idx = int(args.get('index', -1))
+                if idx < 0 or idx >= len(self.value['history']):
+                    raise ValueError('History entry not found')
+                item = self.value['history'][idx]
             else:
-                item = self.value['history'][int(args['index'])] if method == 'load_history' else self.value['presets'][args['id']]
+                pid = args.get('id', '')
+                if pid not in self.value['presets']:
+                    raise ValueError('Preset not found')
+                item = self.value['presets'][pid]
                 kind = item['message_type']
                 candidate['state'].update(message_type=kind, pilot_name=item.get('pilot_name', self.state['pilot_name']),
                     presentation={**DEFAULT_PRESENTATION, **item.get('presentation', {})}, current_flight_id='')

@@ -14,6 +14,39 @@ import storage
 
 
 class FinderUiTests(unittest.TestCase):
+    def test_recent_routes_display_unknown_fields_and_details_in_english(self):
+        import sqlite3
+        from finder.route_catalog import SCHEMA
+        with tempfile.TemporaryDirectory() as folder:
+            path=Path(folder)/'aviation.sqlite'
+            fixture(path)
+            with sqlite3.connect(path) as db:
+                db.executescript(SCHEMA)
+                db.execute("INSERT INTO observed_routes VALUES (1,'AFR999','AFR',1,2,.97,5,8,'2026-09-02T12:00:00+00:00','2026-10-06T12:00:00+00:00',200,'test')")
+            db.close()
+            dialog=FinderDialog(None,path,'en')
+            try:
+                dialog.route_catalog.setChecked(True)
+                self.assertFalse(dialog.rfs_only.isChecked())
+                dialog.run_search()
+                for _ in range(200):
+                    QTest.qWait(10)
+                    if dialog.worker and dialog.worker.isFinished():
+                        break
+                self.assertEqual(1,len(dialog.results),dialog.status.text())
+                self.assertEqual('Not provided',dialog.table.item(0,2).text())
+                self.assertEqual('Not provided',dialog.table.item(0,3).text())
+                text=dialog.details.toPlainText()
+                self.assertIn('aircraft',text.lower())
+                self.assertIn('Airline inferred',text)
+                self.assertNotIn('None',text)
+                self.assertNotIn('0h00',text)
+                self.assertNotIn('Durée',text)
+            finally:
+                if dialog.worker:
+                    dialog.worker.wait(5000)
+                dialog.close()
+
     @classmethod
     def setUpClass(cls):
         cls.app=QApplication.instance() or QApplication([])
@@ -78,3 +111,34 @@ class FinderUiTests(unittest.TestCase):
             self.assertIn('missing',dialog.status.text().lower())
             self.assertFalse(dialog.use_button.isEnabled())
             dialog.close()
+    def test_swap_endpoints_and_return_flight_buttons(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / 'aviation.sqlite'
+            fixture(path)
+            dialog = FinderDialog(None, path, 'en')
+            try:
+                dialog.fields['origin'].setText('LFPG')
+                dialog.fields['destination'].setText('EGLL')
+                dialog.swap_button.click()
+                self.assertEqual('EGLL', dialog.fields['origin'].text())
+                self.assertEqual('LFPG', dialog.fields['destination'].text())
+                dialog.fields['origin'].setText('')
+                dialog.fields['destination'].setText('')
+                dialog.fields['callsign'].setText('AIC104')
+                dialog.run_search()
+                for _ in range(200):
+                    QTest.qWait(10)
+                    if dialog.worker and dialog.worker.isFinished() and dialog.results:
+                        break
+                self.assertEqual(1, len(dialog.results))
+                self.assertTrue(dialog.return_button.isEnabled())
+                self.assertTrue(dialog.next_leg_button.isEnabled())
+                dialog.return_flight()
+                self.assertEqual('LFPG', dialog.fields['origin'].text())
+                self.assertEqual('VIDP', dialog.fields['destination'].text())
+                self.assertEqual('', dialog.fields['callsign'].text())
+            finally:
+                if dialog.worker:
+                    dialog.worker.wait(5000)
+                dialog.close()
+                self.app.processEvents()

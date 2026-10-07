@@ -304,5 +304,22 @@
   "last_observation": "2026-06-30T23:59:59+00:00",
   "built_at": "2026-10-06T19:35:21.703837+00:00",
   "integrity_check": "ok",
-  "foreign_key_check": []
+  "foreign_key_check": [],
+  "observed_route_catalog": {
+    "input_rows": 128173,
+    "insufficient_evidence": 107084,
+    "accepted_routes": 21053,
+    "new_callsign_routes": 3195,
+    "invalid_route": 18,
+    "unknown_airline_excluded": 18,
+    "snapshot": "2026-10-07",
+    "source_sha256": "ac314dfbee338f3b6bc5331ac4c85dbf1d9158d771d9694a304e2bb05313960c",
+    "baseline_sha256": "af2cdec5a45219f77adc4bf408a5ba4b9cb772ca5289557017d890c283e3e7af",
+    "preserved_flight_patterns": 203627,
+    "lost_or_changed_profiles": 0,
+    "unexpected_profiles": 0,
+    "integrity": "ok",
+    "last_observation": "2026-10-07T07:16:33+00:00",
+    "candidate_sha256": "5df24e6a17b16458ba67c46d24b22f6178644ebdd3619ea0a5a713a351a2a1cb"
+  }
 }

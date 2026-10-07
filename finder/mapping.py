@@ -22,6 +22,11 @@ def use_this_flight(current: dict, result: dict) -> dict:
         if value:
             flight[target] = value
             known[target] = "STATIC_DB" if source != "callsign" else "OBSERVED"
+            if result.get('record_kind') == 'OBSERVED_ROUTE':
+                if source == 'airline_name':
+                    known[target] = 'DERIVED_FROM_CALLSIGN_PREFIX'
+                elif source == 'callsign':
+                    known[target] = 'OBSERVED_ROUTE_EVIDENCE'
     if result.get('aircraft_display'):
         flight['aircraft'] = safe_text(result['aircraft_display'])
         known['aircraft'] = 'OBSERVED_TYPE_ONLY'
@@ -50,7 +55,8 @@ def use_this_flight(current: dict, result: dict) -> dict:
     flight["selected_flight"] = {"schema_version": 1, "pattern_id": result.get("pattern_id"),
         "aircraft_icao": result.get('aircraft'),
         "source_id": result.get("source_id"), "last_seen": result.get("last_seen"), "fields": known,
-        "status": "HISTORICAL_OBSERVED", "n_obs": result.get("n_obs"),
+        "status": "OBSERVED_ROUTE" if result.get('record_kind') == 'OBSERVED_ROUTE' else "HISTORICAL_OBSERVED",
+        "route_id": result.get('route_id'), "n_obs": result.get("n_obs"),
         "duration_provenance": duration_provenance(result), "n_complete": result.get('n_complete'),
         "sim_departure_utc": result.get("sim_departure_utc"), "sim_arrival_utc": result.get("sim_arrival_utc")}
     return flight

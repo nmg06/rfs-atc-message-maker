@@ -36,7 +36,7 @@ def defaults():
         'message_type': 'ATC REQUEST', 'current_flight_id': '', 'flight': empty_flight(),
         'per_type': per_type, 'saved_flights': [], 'preview_edits': {},
         'presentation': deepcopy(DEFAULT_PRESENTATION), 'compact_history': True,
-        'intro_seen': False, 'joke_seen': False, 'tutorial_seen': False, 'strict_validation': True, 'language': 'fr', 'finder_filters': {},
+        'intro_seen': False, 'joke_seen': False, 'tutorial_seen': False, 'strict_validation': True, 'language': 'en', 'finder_filters': {},
         'fuel_inputs': {}, 'map_settings': {}, 'visual_theme': 'avionique', 'active_session': {}, 'flight_log': [],
         'design_draft': {}, 'report_draft': {},
         'recent': {k: [] for k in ('airline', 'aircraft', 'airports', 'controllers', 'servers')}}
@@ -391,8 +391,8 @@ def merge_payloads(current, imported, language='en'):
                 and local.get(key) == baseline.get(key)):
             local[key] = deepcopy(value)
     local['pilot_library'] = _union(local['pilot_library'], other['pilot_library'])
-    local['flight_log'] = _union(local['flight_log'], other['flight_log'])
-    result['history'] = _union(result['history'], incoming['history'])
+    local['flight_log'] = _union(local['flight_log'], other['flight_log'])[:500]
+    result['history'] = _union(result['history'], incoming['history'])[:200]
     saved = local['saved_flights']
     for item in other['saved_flights']:
         match = next((s for s in saved if s['id'] == item['id']), None)

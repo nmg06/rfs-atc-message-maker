@@ -60,7 +60,13 @@ def main() -> int:
             app.processEvents()
             fuel_dialog.grab().save(str(DATA_DIR / 'smoke-fuel.png'))
             found = search(database, Criteria(origin=['LFPG'], max_minutes=120), datetime.now(timezone.utc)) if database.is_file() else None
-            (DATA_DIR / 'smoke-result.json').write_text(json.dumps({'window': window.windowTitle(), 'finder': dialog.windowTitle(), 'dst_utc': instant.isoformat(), 'warnings': warnings, 'real_database_matches': found['matches'] if found else None, 'fuel_example_kg': calculate_fuel('airbus_a220_300', 5, 'EGLL')['total_block_fuel_kg_exact'], 'map_airports':list(window.route_map._codes), 'map_route_samples':len(window.route_map._route), 'map_land_loaded':not land_path().isEmpty()}), encoding='utf-8')
+            from finder.database import connect_readonly
+            with connect_readonly(database) as db:
+                has_routes = bool(db.execute("SELECT 1 FROM sqlite_master WHERE name='observed_routes'").fetchone())
+            recent_routes = search(database, Criteria(route_catalog=True, airline='AFR'), datetime.now(timezone.utc)) if has_routes else None
+            if recent_routes and (not recent_routes['results'] or recent_routes['results'][0]['duration_min'] is not None or recent_routes['results'][0]['aircraft'] is not None):
+                raise RuntimeError('Recent route catalog is missing or invents unavailable flight fields')
+            (DATA_DIR / 'smoke-result.json').write_text(json.dumps({'window': window.windowTitle(), 'finder': dialog.windowTitle(), 'dst_utc': instant.isoformat(), 'warnings': warnings, 'real_database_matches': found['matches'] if found else None, 'recent_route_matches': recent_routes['matches'] if recent_routes else None, 'fuel_example_kg': calculate_fuel('airbus_a220_300', 5, 'EGLL')['total_block_fuel_kg_exact'], 'map_airports':list(window.route_map._codes), 'map_route_samples':len(window.route_map._route), 'map_land_loaded':not land_path().isEmpty()}), encoding='utf-8')
             window.language_combo.setCurrentIndex(window.language_combo.findData('en'))
             app.processEvents()
             window.open_help('preview')

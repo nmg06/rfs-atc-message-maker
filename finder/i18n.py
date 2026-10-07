@@ -4,7 +4,11 @@ EN = {
     "search": "Search observed flights", "use": "USE THIS FLIGHT", "close": "Close",
     "airline": "Airline (name / ICAO / IATA)", "aircraft": "Aircraft (e.g. A20N / A320neo)",
     "manufacturer": "Manufacturer", "family": "Aircraft family (e.g. A320)",
-    "origin": "Departure airport(s) ICAO / IATA", "destination": "Arrival airport(s) ICAO / IATA",
+    "origin": "Departure (ICAO / IATA or city)", "destination": "Arrival (ICAO / IATA or city)",
+    "callsign": "Flight number / Callsign (e.g. AFR123, RYR)",
+    "swap_endpoints": "Swap departure and arrival",
+    "return_flight": "Return flight ↺",
+    "next_leg": "Next leg ✈️",
     "origin_country": "Departure countries (ISO, e.g. FR)", "destination_country": "Arrival countries (ISO)",
     "origin_continent": "Departure continents (EU, AS…)", "destination_continent": "Arrival continents (EU, AS…)",
     "origin_region": "Departure regions (e.g. FR-IDF)", "destination_region": "Arrival regions (ISO subdivision)",
@@ -34,7 +38,7 @@ EN = {
     "UNSUPPORTED_DATABASE_VERSION": "Unsupported aviation database version.",
     "DURATION_IS_AIRBORNE": "Durations are approximate airborne times, excluding taxi and preparation.",
     "HISTORICAL_NOT_SCHEDULED": "Historical observations are not current scheduled services.",
-    "STALE_DATA": "Last observation is more than 45 days old.",
+    "STALE_DATA": "Route not observed in the final 90 days of the season.",
     "LOW_OBSERVATIONS": "Fewer than five observations: limited evidence.",
     "MIXED_AIRCRAFT_TYPES": "Aircraft types varied; the most frequently observed type is shown.",
     "PARTIAL_TRACKS_EXCLUDED_FROM_DURATION": "Incomplete tracks were excluded from duration statistics.",
@@ -46,10 +50,14 @@ EN = {
     "notice": "Runways, gate, fuel, load and cruise level are not inferred. Existing manual values are preserved.",
 }
 FR = {
-    "language": "Langue", "database": "Choisir la base locale…", "search": "Rechercher des vols observés",
+    "title": "Recherche de vols", "minutes": "min", "language": "Langue", "database": "Choisir la base locale…", "search": "Rechercher des vols observés",
     "use": "UTILISER CE VOL", "close": "Fermer", "airline": "Compagnie (nom / ICAO / IATA)",
     "aircraft": "Avion (ex. A20N / A320neo)", "manufacturer": "Constructeur", "family": "Famille d’avion (ex. A320)",
-    "origin": "Départ(s) ICAO / IATA", "destination": "Arrivée(s) ICAO / IATA",
+    "origin": "Départ : ICAO / IATA ou ville (ex. LFPG, Paris)", "destination": "Arrivée : ICAO / IATA ou ville (ex. LFMN, Nice)",
+    "callsign": "Numéro de vol / Callsign (ex. AFR123, RYR)",
+    "swap_endpoints": "Inverser départ et arrivée",
+    "return_flight": "Vol retour ↺",
+    "next_leg": "Vol suivant ✈️",
     "origin_country": "Pays de départ (ISO, ex. FR)", "destination_country": "Pays d’arrivée (ISO)",
     "origin_continent": "Continents de départ (EU, AS…)", "destination_continent": "Continents d’arrivée (EU, AS…)",
     "origin_region": "Régions de départ (ex. FR-IDF)", "destination_region": "Régions d’arrivée (code ISO)",
@@ -78,7 +86,7 @@ FR = {
     "ARRIVAL_BEFORE_DEPARTURE": "L’arrivée doit suivre le départ. Pour un vol de nuit, choisissez le lendemain.",
     "DURATION_IS_AIRBORNE": "Durées en vol approximatives, sans roulage ni préparation.",
     "HISTORICAL_NOT_SCHEDULED": "Les observations historiques ne sont pas des horaires de vols actuels.",
-    "STALE_DATA": "Dernière observation datant de plus de 45 jours.",
+    "STALE_DATA": "Route non observée sur les 90 derniers jours de la saison.",
     "DST_GAP_SHIFTED": "Heure inexistante : décalée à la première minute valide après le changement d’heure.",
     "DST_AMBIGUOUS_EARLIER": "Heure ambiguë : première occurrence UTC retenue.",
     "observations": "observations", "coverage": "traces complètes", "error": "Erreur du Finder",
@@ -194,3 +202,18 @@ FR.update({
 
 EN.update({"more_count": "Show more · {shown} / {total}", "page_added": "{count} profiles added · showing rows {start}–{end}"})
 FR.update({"more_count": "Voir plus · {shown} / {total}", "page_added": "{count} profils ajoutés · lignes {start}–{end}"})
+
+EN.update({
+ 'route_catalog': 'Recent route evidence (aircraft and duration unavailable)',
+ 'ROUTE_EVIDENCE_NOTICE': 'Route inferred from repeated ADS-B evidence. Airline inferred from callsign prefix. Aircraft and duration unknown; your manual values are preserved. Confidence measures a source evidence bucket, not a flight guarantee.',
+ 'ROUTE_FILTER_UNAVAILABLE': 'Recent routes have no aircraft, duration or timetable. Clear aircraft/RFS, duration and departure/arrival time filters, or switch back to complete flight profiles.',
+ 'ROUTE_CATALOG_UNAVAILABLE': 'This older local database has no recent route catalog. Choose the enriched bundled database to use this option.',
+ 'route_unknown': 'Not provided',
+})
+FR.update({
+ 'route_catalog': 'Routes récentes observées (avion et durée indisponibles)',
+ 'ROUTE_EVIDENCE_NOTICE': 'Route déduite de traces ADS-B répétées. Compagnie déduite du préfixe du callsign. Avion et durée inconnus ; vos valeurs manuelles sont conservées. La confiance mesure une catégorie de preuves de la source, pas une garantie de vol.',
+ 'ROUTE_FILTER_UNAVAILABLE': 'Les routes récentes ne renseignent ni avion, ni durée, ni horaires. Effacez les filtres avion/RFS, durée et heures de départ/arrivée, ou revenez aux profils de vols complets.',
+ 'ROUTE_CATALOG_UNAVAILABLE': 'Cette ancienne base locale ne contient pas le catalogue des routes récentes. Choisissez la base embarquée enrichie pour utiliser cette option.',
+ 'route_unknown': 'Non renseigné',
+})
