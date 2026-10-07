@@ -2,6 +2,9 @@
 (() => {
  const baseAction=action;
  function showImport(value) {
+  // A recreated Android activity delivers the retained preview through an
+  // event, rather than the Promise owned by the destroyed WebView.
+  if(document.getElementById('backup-import-dialog'))return;
   const detail=value.import_preview, summary=detail.summary||detail, source=detail.source||{};
   const count=(...keys)=>keys.map(k=>summary[k]).find(v=>typeof v==='number')||0;
   const platform=String(source.platform||'');
@@ -31,6 +34,9 @@
   if(el.dataset.action!=='import')return baseAction(el);
   try{await rpc('save',stateArgs());const value=await rpc('native.import');if(value.import_preview)showImport(value);}catch(error){fail(error);}
  };
+ document.addEventListener('flightdeck-import-resume',event=>{
+  if(event.detail?.import_preview)showImport(event.detail);
+ });
  const baseBack=window.goBack;
  window.goBack=function(...args){if($('backup-import-dialog')?.dataset.applying==='true')return true;return baseBack?.(...args);};
 })();

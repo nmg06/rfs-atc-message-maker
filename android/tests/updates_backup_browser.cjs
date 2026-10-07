@@ -23,7 +23,10 @@ const {chromium}=require('playwright');const assert=require('node:assert/strict'
  await page.locator('#updates-enabled').uncheck();await page.locator('#updates-check').click();await page.waitForFunction(()=>!document.querySelector('#updates-check').disabled);
  assert.equal(await page.evaluate(async()=> (await rpc('native.updatesTestCount')).requests),2);
  await page.evaluate(async()=>{const backup=JSON.parse((await rpc('export')).text);backup.source.platform='windows';backup.payload.state.flight.callsign='REMOTE-FLIGHT';backup.payload.state.preview_edits={'ATC REQUEST':'Keep imported manual message'};await rpc('native.importTestSelect',{text:JSON.stringify(backup)});});
- await page.locator('#import').click();await page.locator('#backup-import-dialog').waitFor();assert((await page.locator('#backup-import-dialog').innerText()).includes('Windows'));
+ // Deliver the retained native result after a WebView recreation. Duplicate
+ // notifications must reopen exactly one preview without applying its data.
+ await page.evaluate(async()=>{const detail=await rpc('native.import');document.dispatchEvent(new CustomEvent('flightdeck-import-resume',{detail}));document.dispatchEvent(new CustomEvent('flightdeck-import-resume',{detail}));});
+ await page.locator('#backup-import-dialog').waitFor();assert.equal(await page.locator('#backup-import-dialog').count(),1);assert.equal(await page.evaluate(()=>model.state.flight.callsign),'LOCAL-KEEP');assert((await page.locator('#backup-import-dialog').innerText()).includes('Windows'));
  await page.setViewportSize({width:320,height:640});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth),320);
  // Delay the actual apply RPC. Android's Back entry point must keep the
  // modal open until commit completes, rather than sending an accidental cancel.
