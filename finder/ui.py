@@ -364,8 +364,8 @@ class FinderDialog(QDialog):
         layout.addWidget(listing)
         try:
             rows = aircraft_catalogue(self.path)
-        except (OSError, sqlite3.Error) as error:
-            self.status.setText(str(error))
+        except (OSError, sqlite3.Error, ValueError):
+            self.status.setText(self.t('DATA_UNAVAILABLE'))
             return
         for row in rows:
             name = row['name']

@@ -155,7 +155,8 @@ adb shell am start -n com.nmg06.rfsatc/.MainActivity
 ```
 
 Le premier lancement décompresse la base locale puis initialise Python.
-Onglets : Vol, Carte, Messages, Aperçu, Finder, Fuel, Bibliothèque ; paramètres en haut.
+Navigation : Mon vol, Explorer, Carburant, Messages ; Outils ouvre Carte,
+Aperçu et Bibliothèque. Les paramètres restent en haut.
 Les champs et préférences sont enregistrés après chaque modification.
 La copie utilise le vrai presse-papiers Android ; collez ensuite dans Discord.
 Avec **Vérifier avant copie** activé, les erreurs et limites empêchent la copie.

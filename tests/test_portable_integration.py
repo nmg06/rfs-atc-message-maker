@@ -150,6 +150,20 @@ class PortableIntegrationTests(unittest.TestCase):
             self.assertEqual(android_memory, self.android.value)
         self.assertEqual(backups_before, sorted(str(path.relative_to(self.folder)) for path in self.folder.rglob('before-import-*')))
 
+    def test_unavailable_finder_does_not_block_portable_import_and_restart(self):
+        database = self.folder / 'missing-aviation.sqlite'
+        android = self.android_module.Engine(self.android_folder, database)
+        original = self.payload('PC-WITHOUT-FINDER')
+        android.handle('import', {'text': export_backup(original, platform='windows')})
+        bootstrap = android.handle('bootstrap', {})
+        self.assertEqual([], bootstrap['metadata']['finder_aircraft'])
+        self.assertIn('database unavailable', bootstrap['metadata']['finder_aircraft_warning'])
+        self.assertFalse(database.exists(), 'Reading must not create an empty Finder database')
+        restarted = self.android_module.Engine(self.android_folder, database)
+        self.assertEqual(original, parse_backup(restarted.handle('export', {})['text'])['payload'])
+        self.pc.import_backup(restarted.handle('export', {})['text'], mode='replace')
+        self.assertEqual(original, parse_backup(self.pc.export_backup())['payload'])
+
 
 if __name__ == '__main__':
     unittest.main()

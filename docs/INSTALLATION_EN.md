@@ -48,15 +48,22 @@ Install an update over the previous app when the signing key matches. If Android
 reports an incompatible update, export your data before uninstalling. Local test
 APKs and GitHub builds may use different debug keys. Uninstalling removes private data.
 The first launch unpacks the included Finder database locally; it downloads nothing.
+Allow at least 500 MB of free space for installation and the local database.
 
 ## Prepare your first flight
 
 1. Choose English in Settings if needed. You can skip the tutorial and replay it later.
-2. In Finder, choose an airline or airports and search. Results are historical profiles.
+2. On Android, open **Explore**; on Windows, open **Find a flight**. Choose an airline or airports and search. **Choose one or more aircraft** immediately opens the full list. Search a name, select several types or remove a selection. A minimum duration of **10 means 10 hours**.
 3. Review **Details**, then **Use this flight**. Check retained manual values.
 4. Choose an exact RFS aircraft variant and open Fuel Helper. Review total duration and arrival.
 5. Calculate, then apply aircraft and fuel. This tool is for simulation only.
 6. If you need ATC, choose a message, review its preview and copy it to Discord or RFS.
+
+Android has four main sections: **My flight, Explore, Fuel, Messages**. **Tools**
+opens the map, preview and library. Tap the fuel shortcut in your flight to
+calculate using its duration and arrival. **Compare** keeps up to three real
+search results side by side; **View my comparison** takes you there.
+Unknown values stay unknown.
 
 **Check before copying** enforces required fields and message limits. Disable it
 to copy incomplete text with warnings retained. Tap a warning to locate its field.
@@ -69,6 +76,8 @@ duration used by Fuel Helper is a separate value.
 the 30 FAQs from **Help** on Windows or **Settings → Onboard help** on Android.
 The current flight saves automatically; Save flight also creates a named copy.
 Export before changing phones or uninstalling. Review the warning before importing.
+The welcome joke appears once; it has no replay button. Tutorials and FAQs can
+still be reopened.
 
 Finder, fuel, messages, local map, borders and help work in airplane mode.
 Satellite and real-world wind layers use Internet only when enabled. Game weather

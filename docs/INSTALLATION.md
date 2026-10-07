@@ -67,8 +67,8 @@ Vous pouvez télécharger le ZIP GitHub sur le téléphone, le décompresser dan
 4. Autorisez **Installer depuis cette source** si demandé, puis **Installer** et **Ouvrir**.
 5. Ensuite, retrouvez **RFS Flightdeck** dans la liste des applications. Vous pouvez placer l'icône sur l'écran d'accueil.
 
-La copie locale 0.4.2 s'appelle **RFSFlightdeck-Android-0.4.2-debug.apk**.
-Prévoir environ 250 Mo libres. Le premier lancement prépare la base embarquée :
+Une APK transmise directement peut porter un nom plus long ; elle s'installe de la même façon.
+Prévoir au moins 500 Mo libres. Le premier lancement prépare la base embarquée :
 laissez cette étape se terminer. Aucun téléchargement de base n'est nécessaire.
 Essayez en mode avion : Finder, carburant, messages, copie et carte locale restent disponibles.
 
@@ -81,11 +81,16 @@ de cette livraison utilisent la même clé.
 
 ## Préparer son premier vol
 
-1. Ouvrez **Finder**, choisissez compagnie, aéroports ou pays, puis recherchez. Dans la durée minimum, **10 signifie 10 heures**.
+1. Sur Android, ouvrez **Explorer** ; sur PC, **Trouver un vol**. Choisissez compagnie, aéroports ou pays, puis recherchez. Dans la durée minimum, **10 signifie 10 heures**. **Choisir un ou plusieurs avions** ouvre la liste complète : cochez les types voulus, cherchez un nom ou retirez une sélection.
 2. Touchez **Détails**, puis **Utiliser ce vol**. Les informations inconnues ne remplacent pas inutilement vos champs manuels.
-3. Ouvrez **Fuel**, vérifiez avion, durée et arrivée. Une variante unique est reprise automatiquement ; un type ambigu demande un choix. Calculez, puis **Appliquer avion + carburant**.
+3. Ouvrez **Carburant**, ou utilisez le raccourci à côté du champ carburant. Vérifiez avion, durée et arrivée. Une variante unique est reprise automatiquement ; un type ambigu demande un choix. Calculez, puis **Appliquer avion + carburant**.
 4. Dans **Vol**, vérifiez vos informations. **Préparation au sol** montre les pistes présentes dans la base. Choisissez les pistes et portes disponibles dans RFS : aucune affectation n'est inventée.
-5. Pour l'ATC, ouvrez **Texte**, choisissez le message, puis **Aperçu > Copier**. Collez ensuite dans Discord ou RFS.
+5. Pour l'ATC, ouvrez **Messages**, choisissez le message, puis **Outils > Aperçu > Copier** sur Android. Collez ensuite dans Discord ou RFS.
+
+Sur Android, quatre rubriques restent accessibles en bas : **Mon vol, Explorer,
+Carburant, Messages**. **Outils** ouvre la carte, l'aperçu et la bibliothèque.
+Dans les résultats, **Comparer** garde jusqu'à trois vols côte à côte ;
+**Voir ma comparaison** y mène. Les valeurs inconnues restent indiquées.
 
 Dans **ARRIVAL BOARD**, **ETE restante = 5 min** signifie une arrivée prévue
 dans environ cinq minutes. Ce champ est distinct de la **durée estimée du vol**,
@@ -107,8 +112,8 @@ Son horaire est approximatif selon Android et l'économie d'énergie.
 Il n'effectue aucune recherche ou météo en arrière-plan.
 Après un arrêt forcé Android, reprogrammez le rappel dans les Paramètres.
 
-Pour revoir la blague manquée : Android **Paramètres > Revoir la blague de bienvenue** ;
-Windows **Aide et suggestions > Revoir la blague**. Aucun paiement ni saisie bancaire.
+La blague de bienvenue apparaît une seule fois. Le tutoriel et les questions
+fréquentes restent accessibles dans l'aide.
 
 ## Carte, satellite et vents
 

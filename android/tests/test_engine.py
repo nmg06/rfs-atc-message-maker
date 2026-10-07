@@ -29,6 +29,26 @@ def flight():
 
 
 class EngineTests(unittest.TestCase):
+    def test_missing_or_invalid_finder_keeps_messages_fuel_and_storage_available(self):
+        invalid = Path(self.temp.name) / 'invalid.sqlite'
+        invalid.write_bytes(b'not a SQLite database')
+        for database in (Path(self.temp.name) / 'missing.sqlite', invalid):
+            engine = Engine(self.temp.name, database)
+            state = deepcopy(self.engine.state)
+            state['language'] = 'en'
+            engine.sync(state)
+            bootstrap = engine.handle('bootstrap', {})
+            self.assertEqual([], bootstrap['metadata']['finder_aircraft'])
+            self.assertIn('database unavailable', bootstrap['metadata']['finder_aircraft_warning'])
+            self.assertTrue(bootstrap['render']['can_copy'])
+            engine.state['fuel_inputs'] = {'aircraft':'airbus_a220_300','duration':'5h','arrival':'EGLL'}
+            result = engine.handle('fuel', {})
+            self.assertEqual(12285, result['total_block_fuel_kg_exact'])
+            backup = engine.handle('export', {})['text']
+            engine.handle('import', {'text':backup})
+            self.assertEqual(engine.value, Engine(self.temp.name, database).value)
+        self.assertFalse((Path(self.temp.name) / 'missing.sqlite').exists())
+
     def test_multiple_aircraft_parity_and_restart(self):
         filters={'origin':'LFPG','aircraft_types':['A20N','B789'],'diversify':False}
         self.engine.state['finder_filters']=filters

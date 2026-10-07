@@ -7,6 +7,7 @@ import math
 import os
 from pathlib import Path
 import re
+import sqlite3
 import tempfile
 import uuid
 from zoneinfo import available_timezones
@@ -126,6 +127,15 @@ class Engine:
 
     def metadata(self):
         language = self.state['language']
+        finder_aircraft_warning = ''
+        try:
+            finder_aircraft = aircraft_catalogue(self.database)
+        except (OSError, sqlite3.Error, ValueError):
+            finder_aircraft = []
+            finder_aircraft_warning = (
+                'Base Flight Finder indisponible. Les messages, le carburant et les sauvegardes restent utilisables.'
+                if language == 'fr' else
+                'Flight Finder database unavailable. Messages, fuel and backups remain usable.')
         def spec(fields_dict):
             return {key: {**asdict(field), 'label': tr(field.label), 'hint': tr(field.hint),
                           'choice_labels': [tr(c) for c in field.choices]} for key, field in fields_dict.items()}
@@ -136,7 +146,8 @@ class Engine:
             'designs': BUILTIN_DESIGNS, 'emoji_styles': EMOJI_STYLES,
             'operation_modes': list(OPERATION_LABELS), 'countries': COUNTRIES,
             'aircraft': load_json('aircraft_fuel_data.json')['aircraft'],
-            'finder_aircraft': aircraft_catalogue(self.database),
+            'finder_aircraft': finder_aircraft,
+            'finder_aircraft_warning': finder_aircraft_warning,
             'fuel_catalogue_note': tr(load_json('aircraft_fuel_data.json').get('note', '')),
             'arrivals': sorted(load_json('airport_alternates.json')['destinations']),
             'finder_fields': {f.name: {'default': deepcopy(getattr(Criteria(), f.name)),
