@@ -81,10 +81,17 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Prepare public website only
+        run: python scripts/prepare_site.py
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '.'
+          path: 'build/site'
 
       - name: Deploy to GitHub Pages
         id: deployment
