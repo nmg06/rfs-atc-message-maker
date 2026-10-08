@@ -23,6 +23,8 @@ const {go}=require('./navigation.cjs');
   assert(await page.locator('#finder-empty').isVisible());await page.locator('#finder-aircraft-picker').click();
   if(!await page.locator('#finder-aircraft-query').count())console.error(await page.evaluate(()=>({toast:$('toast').textContent,aircraft:meta.finder_aircraft?.length})),errors);
   assert.equal(await page.locator('#finder-aircraft-query').inputValue(),'');
+  assert.equal(await page.locator('[data-workspace-aircraft="C152"]').locator('..').textContent().then(v=>v.includes('No flight profiles')),true);
+  assert(await page.locator('[data-workspace-aircraft="C172"]').locator('..').textContent().then(v=>v.includes('Cessna')&&v.includes('flight profiles')));
   const total=await page.evaluate(()=>meta.finder_aircraft.length);
   assert(total>100);assert.equal(await page.locator('[data-workspace-aircraft]').count(),total);
   await page.locator('#finder-aircraft-options').hover();await page.mouse.wheel(0,450);

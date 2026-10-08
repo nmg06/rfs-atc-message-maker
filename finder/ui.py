@@ -121,6 +121,9 @@ class FinderDialog(QDialog):
         self.hint = QLabel()
         self.hint.setWordWrap(True)
         self.outer.addWidget(self.hint)
+        self.discovery_hint = QLabel()
+        self.discovery_hint.setWordWrap(True)
+        self.outer.addWidget(self.discovery_hint)
         split = QSplitter()
         split.setChildrenCollapsible(False)
         split.setHandleWidth(16)
@@ -353,7 +356,7 @@ class FinderDialog(QDialog):
         dialog.setWindowTitle('Choisir les avions' if self.language == 'fr' else 'Choose aircraft')
         dialog.resize(560, 650)
         layout = QVBoxLayout(dialog)
-        hint = QLabel('Les résultats peuvent utiliser l’un des types choisis. Les variantes RFS partageant un code ICAO ne peuvent pas être distinguées par la base.' if self.language == 'fr' else 'Results can use any selected type. RFS variants sharing an ICAO code cannot be distinguished in the database.')
+        hint = QLabel('Le compteur indique les profils historiques recherchables avant vos autres filtres. Un avion du catalogue peut n’avoir aucun profil. Les variantes cargo/passagers partageant un code ICAO restent regroupées.' if self.language == 'fr' else 'Counts show searchable historical profiles before your other filters. A catalogue aircraft may have no profile. Cargo/passenger variants sharing an ICAO code remain grouped.')
         hint.setWordWrap(True)
         layout.addWidget(hint)
         query = QLineEdit()
@@ -369,9 +372,9 @@ class FinderDialog(QDialog):
             return
         for row in rows:
             name = row['name']
-            if row['manufacturer'] and row['manufacturer'].casefold() not in name.casefold():
-                name = row['manufacturer'] + ' ' + name
-            item = QListWidgetItem(f"{name} · {row['code']}")
+            count = row['profile_count']
+            coverage = (f'{count} profils de vol' if count else 'Aucun profil de vol') if self.language == 'fr' else (f'{count} flight profiles' if count else 'No flight profiles')
+            item = QListWidgetItem(f"{name} · {row['code']} · {coverage}")
             item.setData(Qt.ItemDataRole.UserRole, row['code'])
             item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
             item.setCheckState(Qt.CheckState.Checked if row['code'] in self.selected_aircraft else Qt.CheckState.Unchecked)
@@ -401,6 +404,7 @@ class FinderDialog(QDialog):
         self.use_button.setText(self.t("use"))
         self.close_button.setText(self.t("close"))
         self.hint.setText(self.t("optional"))
+        self.discovery_hint.setText('Envie de cargo ? Recherchez une compagnie comme FedEx (FDX), UPS ou Cargolux (CLX). Pour les petits avions, choisissez Cessna, Cirrus ou Twin Otter dans la liste. La couverture varie selon l’appareil ; le compteur indique les profils disponibles.' if self.language == 'fr' else 'Looking for cargo? Search an airline such as FedEx (FDX), UPS or Cargolux (CLX). For smaller aircraft, choose Cessna, Cirrus or Twin Otter from the list. Coverage varies by aircraft; counts show available profiles.')
         self.international.setText(self.t("international"))
         self.route_catalog.setText(self.t('route_catalog'))
         self.real.setText(self.t("real"))

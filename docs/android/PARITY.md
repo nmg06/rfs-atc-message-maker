@@ -156,3 +156,16 @@ dont la liste et sélection multiple, presse-papiers, base locale et recréation
 de l'activité ; arrêt complet/relance, sauvegardes et services facultatifs.
 Il s'agit d'un émulateur, pas d'un téléphone physique.
 Voir [rapport de revue et limites](../UX_REVIEW_2026-10-07.md).
+
+### Couverture des avions — 8 octobre 2026
+
+| Fonction | Windows | Android |
+| --- | --- | --- |
+| Compteur de profils historiques recherchables dans la liste d’avions, avant les autres filtres | OK | OK |
+| Catalogue complet, avions sans profils indiqués explicitement et toujours sélectionnables | OK | OK |
+| Recherche du nom FedEx / Federal Express, profils et routes récentes | OK | OK |
+| Horaires officiels des compagnies intégrés à côté des observations | non porté | non porté |
+| Profils disponibles pour chacun des appareils du catalogue | partiel | partiel |
+
+La couverture n’est pas un horaire garanti. Les limites et le relevé de la base
+embarquée sont dans [Cargo et petits avions](../finder/CARGO_AND_SMALL_AIRCRAFT.md).

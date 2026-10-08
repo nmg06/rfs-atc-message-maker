@@ -122,6 +122,12 @@ class Criteria:
 ALIASES = {"a320neo": "A20N", "a321neo": "A21N", "a319neo": "A19N", "b737max8": "B38M"}
 
 
+def airline_query(value):
+    # The reference uses Federal Express; users commonly search for FedEx.
+    term = value.strip()
+    return 'FDX' if term.casefold() == 'fedex' else term
+
+
 def search(path: Path, criteria: Criteria, now_utc: datetime, *, _include_population=False) -> dict:
     criteria.validate()
     if now_utc.tzinfo is None:
@@ -195,7 +201,7 @@ def search(path: Path, criteria: Criteria, now_utc: datetime, *, _include_popula
         where.append("(callsign LIKE ? OR callsign = ?)")
         params.extend([f"%{term}%", term])
     if criteria.airline.strip():
-        term = criteria.airline.strip()
+        term = airline_query(criteria.airline)
         if len(term) <= 3 and term.isalnum():
             where.append("airline IN (SELECT icao FROM airlines WHERE icao = ? COLLATE NOCASE OR iata = ? COLLATE NOCASE)")
             params.extend([term] * 2)

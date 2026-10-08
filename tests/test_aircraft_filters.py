@@ -34,3 +34,34 @@ class AircraftFilterTests(unittest.TestCase):
 
     def test_catalogue_is_available_before_any_query_is_typed(self):
         self.assertEqual({'A20N','B789'}, {r['code'] for r in catalogue(self.path)})
+
+    def test_coverage_counts_eligible_profiles_and_keeps_uncovered_types(self):
+        import sqlite3
+        with sqlite3.connect(self.path) as db:
+            db.execute("INSERT INTO aircraft_types VALUES ('C172','Aviones Colombia 172','Aviones Colombia','C172')")
+            db.execute("INSERT INTO aircraft_types VALUES ('C152','Cessna 152','Cessna','C152')")
+            db.execute("UPDATE flight_patterns SET n_obs=2 WHERE pattern_id=2")
+            db.execute("UPDATE flight_patterns SET duration_min=NULL WHERE pattern_id=3")
+        db.close()
+        rows = catalogue(self.path)
+        self.assertEqual({'A20N':1,'B789':2,'C172':0,'C152':0}, {r['code']:r['profile_count'] for r in rows})
+        self.assertEqual({'A20N','B789'}, {r['code'] for r in rows[:2]})
+        self.assertIn('Cessna', next(r['name'] for r in rows if r['code']=='C172'))
+        for row in rows:
+            response=search(self.path, Criteria(aircraft_types=[row['code']],diversify=False),NOW)
+            self.assertEqual(row['profile_count'], response['matches'])
+
+    def test_fedex_alias_works_in_historical_and_recent_modes(self):
+        import sqlite3
+        from finder.route_catalog import SCHEMA
+        with sqlite3.connect(self.path) as db:
+            db.execute("INSERT INTO airlines VALUES ('FDX','FX','Federal Express',NULL,NULL)")
+            db.execute("UPDATE flight_patterns SET airline='FDX',callsign='FDX101' WHERE pattern_id=1")
+            db.executescript(SCHEMA)
+            db.execute("INSERT INTO observed_routes VALUES (1,'FDX101','FDX',1,2,.99,5,8,'2026-09-02','2026-09-29',200,'test')")
+        db.close()
+        for recent in (False,True):
+            for term in ('FedEx','fedex','FDX','Federal Express'):
+                response=search(self.path, Criteria(airline=term,route_catalog=recent),NOW)
+                self.assertEqual(1,response['matches'],(recent,term))
+                self.assertEqual('FDX',response['results'][0]['airline'])

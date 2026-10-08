@@ -315,3 +315,7 @@ Le moteur et la base sont les mêmes sur PC et Android. Les valeurs absentes
 Voir [sources, utilisation et vérifications](../DATA_ENRICHMENT_2026-10-07.md).
 APK de test reconstruite : `android/app/build/outputs/apk/debug/app-debug.apk`.
 La nouvelle APK doit encore être essayée sur téléphone physique avant publication.
+
+La liste d’avions PC et Android indique les profils historiques disponibles.
+Voir [Cargo, petits avions et sources d’horaires officiels](../finder/CARGO_AND_SMALL_AIRCRAFT.md) pour les
+chiffres vérifiés et les limites de couverture.

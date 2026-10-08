@@ -49,6 +49,20 @@ class EngineTests(unittest.TestCase):
             self.assertEqual(engine.value, Engine(self.temp.name, database).value)
         self.assertFalse((Path(self.temp.name) / 'missing.sqlite').exists())
 
+    def test_aircraft_metadata_includes_real_cargo_and_small_aircraft_coverage(self):
+        metadata = self.engine.metadata()
+        types = {r['code']:r for r in metadata['finder_aircraft']}
+        for code in ('C172','C208','SR22'):
+            self.assertGreater(types[code]['profile_count'], 0)
+            reference=search(self.database,Criteria(aircraft_types=[code],diversify=False),datetime.now(timezone.utc))
+            self.assertEqual(types[code]['profile_count'],reference['matches'])
+        self.assertEqual(0,types['C152']['profile_count'])
+        self.assertIn('Cessna',types['C172']['name'])
+        self.engine.state['finder_filters']={'airline':'FedEx'}
+        rows=self.engine.handle('finder',{})['results']
+        self.assertTrue(rows)
+        self.assertTrue(all(r['airline']=='FDX' for r in rows))
+
     def test_multiple_aircraft_parity_and_restart(self):
         filters={'origin':'LFPG','aircraft_types':['A20N','B789'],'diversify':False}
         self.engine.state['finder_filters']=filters
