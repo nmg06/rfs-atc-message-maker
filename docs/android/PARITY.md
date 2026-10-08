@@ -138,3 +138,34 @@ Le [workflow du 7 octobre](https://github.com/nmg06/rfs-atc-message-maker/action
 vérifie aussi le redémarrage complet, la reprise des sélecteurs et de l’aperçu
 d’import, sans appliquer une sauvegarde automatiquement. Aucun téléphone physique
 n’a été utilisé pour cette étape ; aucune version iPhone n’est livrée.
+
+## Refonte du 8 octobre 2026
+
+| Fonction | Windows | Android | Site / prototype | Preuve / limite |
+|---|---|---|---|---|
+| Choix multiple d'avions dans Finder | OK | OK | non porté | Même filtre SQL ; liste immédiate et sélection multiple sur WebView installée, retrait et redémarrage testés |
+| Préparation responsive et navigation Outils | Interface Qt existante | OK | partiel | Écrans conservés ; navigateur 320–1366 px et APK installée ; téléphone physique restant |
+| Comparaison de trois résultats | non porté | OK (navigateur/moteur) | non porté | Résultats réels, sauvegarde et export/import ; aucune valeur manquante inventée |
+| Satellite stable pendant le chargement | OK (local) | OK (rendu/natif) | non porté | Cache de parents et rendu contrôlé vérifiés ; services natifs sur APK installée ; Internet facultatif requis pour de nouvelles tuiles |
+| Blague initiale, sans bouton de répétition | OK | OK | Pas de blague | Première apparition conservée ; commande de répétition retirée |
+| Accueil et installation guidée | Guide | Guide | OK | Site bilingue, clavier, thème, brouillon conservé et zéro ressource distante |
+
+La vérification de l'APK installée [est réussie](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37703182410)
+au commit `e71d80f` sur Android 15/API 35 : six tests principaux en mode avion,
+dont la liste et sélection multiple, presse-papiers, base locale et recréation
+de l'activité ; arrêt complet/relance, sauvegardes et services facultatifs.
+Il s'agit d'un émulateur, pas d'un téléphone physique.
+Voir [rapport de revue et limites](../UX_REVIEW_2026-10-07.md).
+
+### Couverture des avions — 8 octobre 2026
+
+| Fonction | Windows | Android |
+| --- | --- | --- |
+| Compteur de profils historiques recherchables dans la liste d’avions, avant les autres filtres | OK | OK |
+| Catalogue complet, avions sans profils indiqués explicitement et toujours sélectionnables | OK | OK |
+| Recherche du nom FedEx / Federal Express, profils et routes récentes | OK | OK |
+| Horaires officiels des compagnies intégrés à côté des observations | non porté | non porté |
+| Profils disponibles pour chacun des appareils du catalogue | partiel | partiel |
+
+La couverture n’est pas un horaire garanti. Les limites et le relevé de la base
+embarquée sont dans [Cargo et petits avions](../finder/CARGO_AND_SMALL_AIRCRAFT.md).

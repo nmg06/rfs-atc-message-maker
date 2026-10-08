@@ -100,7 +100,6 @@ class RFSWindow(QMainWindow):
         self.help_menu = help_menu
         help_menu.addAction(tr('Formulaire en ligne — problème ou suggestion'), self.open_feedback_form)
         help_menu.addAction(tr('Rapport local et pièces jointes…'), self.open_report)
-        help_menu.addAction('Revoir la blague' if language() == 'fr' else 'Replay the joke', self.replay_joke)
         help_button.setMenu(help_menu)
         header.addWidget(help_button)
         self.finder_button = QPushButton(tr('Flight Finder'))

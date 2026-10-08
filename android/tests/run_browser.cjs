@@ -2,7 +2,9 @@
 const {spawn}=require('node:child_process');const path=require('node:path');
 const root=path.resolve(__dirname,'../..');
 (async()=>{
- for(const test of process.argv.slice(2).length?process.argv.slice(2):['ui_browser.cjs','experience_browser.cjs','help_browser.cjs','web_browser.cjs','updates_backup_browser.cjs','finder_exclusions_browser.cjs','compatibility_browser.cjs','route_catalog_browser.cjs','finder_enrichment_browser.cjs']){
+ const renderCode=await new Promise(resolve=>{const child=spawn(process.execPath,[path.join(__dirname,'satellite_render.cjs')],{cwd:root,stdio:'inherit',windowsHide:true});child.on('exit',resolve);});
+ if(renderCode!==0)throw Error('Satellite render regression failed');
+ for(const test of process.argv.slice(2).length?process.argv.slice(2):['ui_browser.cjs','experience_browser.cjs','help_browser.cjs','web_browser.cjs','updates_backup_browser.cjs','finder_exclusions_browser.cjs','compatibility_browser.cjs','route_catalog_browser.cjs','finder_enrichment_browser.cjs','site_browser.cjs','workspace_browser.cjs']){
   const server=spawn(process.env.RFS_TEST_PYTHON||'python',[path.join(__dirname,'ui_server.py')],{cwd:root,windowsHide:true});
   let buffer='';server.stderr.on('data',data=>process.stderr.write(data));
   try{

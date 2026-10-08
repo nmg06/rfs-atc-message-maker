@@ -7,6 +7,7 @@ import math
 import os
 from pathlib import Path
 import re
+import sqlite3
 import tempfile
 import uuid
 from zoneinfo import available_timezones
@@ -16,6 +17,7 @@ from map_geometry import airport_coordinates, great_circle
 from visual_themes import THEMES, theme_colors
 from flight_planning import airport_plan, elapsed_seconds, validate_log
 from finder.database import connect_readonly
+from finder.aircraft_filters import catalogue as aircraft_catalogue, normalize_types
 from finder.duration import parse_minutes, parse_finder_hours
 from finder.mapping import use_this_flight
 from finder.provenance import duration_provenance
@@ -125,6 +127,15 @@ class Engine:
 
     def metadata(self):
         language = self.state['language']
+        finder_aircraft_warning = ''
+        try:
+            finder_aircraft = aircraft_catalogue(self.database)
+        except (OSError, sqlite3.Error, ValueError):
+            finder_aircraft = []
+            finder_aircraft_warning = (
+                'Base Flight Finder indisponible. Les messages, le carburant et les sauvegardes restent utilisables.'
+                if language == 'fr' else
+                'Flight Finder database unavailable. Messages, fuel and backups remain usable.')
         def spec(fields_dict):
             return {key: {**asdict(field), 'label': tr(field.label), 'hint': tr(field.hint),
                           'choice_labels': [tr(c) for c in field.choices]} for key, field in fields_dict.items()}
@@ -135,6 +146,8 @@ class Engine:
             'designs': BUILTIN_DESIGNS, 'emoji_styles': EMOJI_STYLES,
             'operation_modes': list(OPERATION_LABELS), 'countries': COUNTRIES,
             'aircraft': load_json('aircraft_fuel_data.json')['aircraft'],
+            'finder_aircraft': finder_aircraft,
+            'finder_aircraft_warning': finder_aircraft_warning,
             'fuel_catalogue_note': tr(load_json('aircraft_fuel_data.json').get('note', '')),
             'arrivals': sorted(load_json('airport_alternates.json')['destinations']),
             'finder_fields': {f.name: {'default': deepcopy(getattr(Criteria(), f.name)),
@@ -254,6 +267,9 @@ class Engine:
             if key not in known or key == 'offset':
                 continue
             default = known[key]
+            if key == 'aircraft_types':
+                converted[key] = normalize_types(item)
+                continue
             if key in ('origin', 'destination'):
                 try:
                     converted[key] = parse_airport_queries(item)

@@ -14,6 +14,44 @@ import storage
 
 
 class FinderUiTests(unittest.TestCase):
+    def test_aircraft_picker_opens_complete_list_and_combines_checkboxes(self):
+        from PySide6.QtCore import QTimer, Qt
+        from PySide6.QtWidgets import QDialog, QListWidget, QLineEdit
+        with tempfile.TemporaryDirectory() as folder:
+            path=Path(folder)/'aviation.sqlite'
+            fixture(path)
+            dialog=FinderDialog(None,path,'en')
+            try:
+                dialog.fields['aircraft'].setText('Previous single aircraft')
+                failures=[]
+                def choose():
+                    popup=dialog.findChild(QDialog)
+                    try:
+                        listing=popup.findChild(QListWidget)
+                        self.assertEqual(2,listing.count())
+                        self.assertTrue(all('flight profiles' in listing.item(i).text() for i in range(2)))
+                        self.assertIn('cargo',dialog.discovery_hint.text())
+                        self.assertTrue(all(not listing.item(i).isHidden() for i in range(2)))
+                        query=popup.findChild(QLineEdit)
+                        self.assertEqual('',query.text())
+                        for i in range(2):
+                            listing.item(i).setCheckState(Qt.CheckState.Checked)
+                        query.setText('Boeing')
+                        self.assertEqual(1,sum(not listing.item(i).isHidden() for i in range(2)))
+                    except Exception as error:
+                        failures.append(error)
+                    popup.accept()
+                QTimer.singleShot(0,choose)
+                dialog.open_aircraft_picker()
+                if failures:raise failures[0]
+                self.assertEqual({'A20N','B789'},set(dialog.criteria().aircraft_types))
+                self.assertEqual('',dialog.criteria().aircraft)
+                dialog.remove_aircraft_type('A20N')
+                self.assertEqual(['B789'],dialog.criteria().aircraft_types)
+                dialog.language='fr';dialog.translate()
+                self.assertIn('Choisir',dialog.aircraft_picker_button.text())
+            finally:dialog.close()
+
     def test_recent_routes_display_unknown_fields_and_details_in_english(self):
         import sqlite3
         from finder.route_catalog import SCHEMA

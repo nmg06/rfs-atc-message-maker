@@ -35,6 +35,12 @@ dans Fuel, recherches mises en cache et boutons Voir plus/Voir moins.
 Dans le Finder, `10` signifie 10 heures ; les formats explicites restent acceptés.
 [Guide d'installation Windows/Android et état iPhone](../INSTALLATION.md).
 
+Refonte du 8 octobre : navigation Vol/Explorer/Carburant/Messages et menu Outils,
+préparation en étapes lisibles, choix de plusieurs avions dans Finder et
+comparaison de trois résultats sauvegardée. Les avions choisis peuvent correspondre
+à l'un des types cochés ; les autres critères restent actifs. Les informations
+absentes ne sont jamais créées. [Bilan de revue](../UX_REVIEW_2026-10-07.md).
+
 Cette version ajoute la carte vectorielle hors ligne avec les mêmes 242 frontières
 Natural Earth que Windows, trajet orthodromique partagé, glissement/zoom au doigt,
 pincement et cadrage conservé. Choisir les pays puis **Trouver ces vols** transmet
@@ -149,7 +155,8 @@ adb shell am start -n com.nmg06.rfsatc/.MainActivity
 ```
 
 Le premier lancement décompresse la base locale puis initialise Python.
-Onglets : Vol, Carte, Messages, Aperçu, Finder, Fuel, Bibliothèque ; paramètres en haut.
+Navigation : Mon vol, Explorer, Carburant, Messages ; Outils ouvre Carte,
+Aperçu et Bibliothèque. Les paramètres restent en haut.
 Les champs et préférences sont enregistrés après chaque modification.
 La copie utilise le vrai presse-papiers Android ; collez ensuite dans Discord.
 Avec **Vérifier avant copie** activé, les erreurs et limites empêchent la copie.
@@ -298,8 +305,7 @@ receivers internes. Pas de localisation, contacts, compte, photos globales ou st
 
 Accueil : billet fictif affiché avant sa conclusion ; aucune saisie ni paiement.
 Après cette première présentation, la blague ne se rejoue pas toute seule.
-Paramètres > Revoir la blague de bienvenue permet de la revoir volontairement.
-Sur Windows : Aide et suggestions > Revoir la blague.
+La présentation apparaît une seule fois ; il n’y a plus de commande pour la rejouer.
 
 ## Catalogue de routes du 7 octobre 2026
 
@@ -309,3 +315,7 @@ Le moteur et la base sont les mêmes sur PC et Android. Les valeurs absentes
 Voir [sources, utilisation et vérifications](../DATA_ENRICHMENT_2026-10-07.md).
 APK de test reconstruite : `android/app/build/outputs/apk/debug/app-debug.apk`.
 La nouvelle APK doit encore être essayée sur téléphone physique avant publication.
+
+La liste d’avions PC et Android indique les profils historiques disponibles.
+Voir [Cargo, petits avions et sources d’horaires officiels](../finder/CARGO_AND_SMALL_AIRCRAFT.md) pour les
+chiffres vérifiés et les limites de couverture.

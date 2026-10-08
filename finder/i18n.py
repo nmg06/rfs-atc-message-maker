@@ -1,5 +1,7 @@
 """English reference catalogue; fallbacks make incremental translations safe."""
 EN = {
+    'aircraft_types': 'Selected aircraft (any of these types)',
+    'AIRCRAFT_TYPES_FORMAT': 'Choose up to 50 aircraft types using valid ICAO codes.',
     "title": "Flight Finder", "language": "Language", "database": "Choose local database…",
     "search": "Search observed flights", "use": "USE THIS FLIGHT", "close": "Close",
     "airline": "Airline (name / ICAO / IATA)", "aircraft": "Aircraft (e.g. A20N / A320neo)",
@@ -50,6 +52,8 @@ EN = {
     "notice": "Runways, gate, fuel, load and cruise level are not inferred. Existing manual values are preserved.",
 }
 FR = {
+    'aircraft_types': 'Avions sélectionnés (un de ces types)',
+    'AIRCRAFT_TYPES_FORMAT': 'Choisissez jusqu’à 50 types d’avions avec des codes ICAO valides.',
     "title": "Recherche de vols", "minutes": "min", "language": "Langue", "database": "Choisir la base locale…", "search": "Rechercher des vols observés",
     "use": "UTILISER CE VOL", "close": "Fermer", "airline": "Compagnie (nom / ICAO / IATA)",
     "aircraft": "Avion (ex. A20N / A320neo)", "manufacturer": "Constructeur", "family": "Famille d’avion (ex. A320)",

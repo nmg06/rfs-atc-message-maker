@@ -1,0 +1,32 @@
+// Network/decode timing is controlled here; rendering uses the shipped code.
+const fs=require('node:fs'),vm=require('node:vm'),path=require('node:path'),assert=require('node:assert/strict');
+const root=path.resolve(__dirname,'../..'),calls=[],images=[],requests=[],status={textContent:''};
+const context={console,Math,Date,Map,Set,Image:class{constructor(){images.push(this);}},model:{state:{theme:'Sombre',map_settings:{satellite:true}}},meta:{countries:[]},$:()=>status,t:(_fr,en)=>en,esc:v=>v,window:{devicePixelRatio:1},document:{addEventListener:()=>{}},setTimeout:()=>1,clearTimeout:()=>{},setInterval:()=>{},stopMobileMap:()=>{},rpc:async(method,args)=>{requests.push(method);return method==='native.tile'?{data:'controlled-image'}:{};}};
+vm.createContext(context);
+vm.runInContext(fs.readFileSync(path.join(root,'android/app/src/main/assets/www/map.js'),'utf8'),context);
+vm.runInContext(fs.readFileSync(path.join(root,'android/app/src/main/assets/www/online-map.js'),'utf8'),context);
+const ctx={drawImage:(...args)=>calls.push(args),setTransform(){},fillRect(){},save(){},restore(){},translate(){},scale(){},stroke(){},fill(){calls.push('country-fill');},fillText(){},measureText:()=>({width:10})};
+context.testMap={ctx,center:[0,0],canvas:{clientWidth:256,clientHeight:256,width:256,height:256},scale:()=>256/360*2,world:([x,y])=>[(x-128)/(256/360*2),(y-128)/(256/360*2)],data:{route:[],airports:[]},zoom:2,draw:()=>{}};
+vm.runInContext("tileCache.set('0/0/0',{naturalWidth:256,naturalHeight:256});mobileMap=testMap;",context);
+assert.equal(vm.runInContext('onlinePaintTiles(testMap,256,256)',context),true);
+assert.equal(calls.filter(Array.isArray).length,4);
+assert(calls.filter(Array.isArray).every(args=>args[3]===128&&args[4]===128),'Parent image must be cropped for each child, not stretched repeatedly');
+assert.match(status.textContent,/Refining/);
+vm.runInContext("countryGeometry=[{code:'FR',bounds:[-10,-10,10,10],coarse:{},path:{}}];tileCache.clear();OfflineRouteMap.prototype.paint.call(testMap);",context);
+assert(!calls.includes('country-fill'),'Waiting for satellite must never paint opaque country fills');
+vm.runInContext('model.state.map_settings.satellite=false;OfflineRouteMap.prototype.paint.call(testMap);',context);
+assert(calls.includes('country-fill'),'Explicit offline mode must keep the local map');
+const before=calls.length;
+assert.equal(vm.runInContext('onlinePaintTiles(testMap,256,256)',context),false);
+assert.equal(calls.length,before);
+(async()=>{
+ vm.runInContext('model.state.map_settings.satellite=true;',context);
+ await vm.runInContext('fetchOnline()',context);
+ await new Promise(resolve=>setImmediate(resolve));
+ assert(images.length>0);
+ vm.runInContext('onlineEpoch++;model.state.map_settings.satellite=false;',context);
+ for(const image of images)image.onload();
+ assert.equal(vm.runInContext('tileCache.size',context),0,'A late decoded response must not restore an old layer');
+ assert(requests.filter(v=>v==='native.tile').length<=6);
+ console.log(JSON.stringify({pass:true,cached_parent_crop:true,stable_layer:true,stale_decode_ignored:true,bounded_requests:true}));
+})().catch(e=>{console.error(e);process.exit(1);});

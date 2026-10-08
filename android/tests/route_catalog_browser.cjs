@@ -1,3 +1,4 @@
+const {go}=require('./navigation.cjs');
 // Actual shipped UI and bundled route evidence, isolated local profile.
 const {chromium}=require('playwright'),assert=require('node:assert/strict');
 (async()=>{
@@ -15,7 +16,7 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict');
   await page.exposeFunction('testRequest',async(id,method,payload)=>{const envelope=await request(method,JSON.parse(payload));await page.evaluate(({id,envelope})=>window.androidReply(id,envelope),{id,envelope});});
   await page.addInitScript(()=>window.Android={request:(id,method,payload)=>window.testRequest(id,method,payload)});
   await page.goto(base+'/index.html');await page.locator('#flight-callsign').waitFor();
-  await page.locator('[data-screen="finder"]').click();
+  await go(page,'finder');
   await page.locator('#finder-route_catalog').check();await page.locator('#finder-airline').fill('AFR');
   await page.locator('#search').click();await page.waitForFunction(()=>finderResponse&&!finderBusy);
   assert(await page.evaluate(()=>finderRows.length>0&&finderRows.every(r=>r.duration_min===null&&r.aircraft===null)));

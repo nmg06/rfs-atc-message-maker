@@ -92,3 +92,7 @@ variant explicitly before calculating fuel for a selected route.
 Phase 2: better autocomplete/geographical groups, richer route views and aliases,
 manually verified livery compatibility, and the requested mobile/PWA version.
 No online service is part of this build.
+
+La liste d’avions PC et Android indique les profils historiques disponibles.
+Voir [Cargo, petits avions et sources d’horaires officiels](CARGO_AND_SMALL_AIRCRAFT.md) pour les
+chiffres vérifiés et les limites de couverture.

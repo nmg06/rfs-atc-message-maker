@@ -26,9 +26,9 @@ CREATE VIEW v_observed_routes AS SELECT r.*, a.name AS airline_name, a.iata AS a
 
 
 def search_routes(path, criteria, now, *, include_population=False):
-    from .search import parse_airport_codes
+    from .search import parse_airport_codes, airline_query
     # Unknown fields must never pass filters as if known, or silently be ignored.
-    if any(getattr(criteria, key) for key in ('aircraft', 'manufacturer', 'family',
+    if any(getattr(criteria, key) for key in ('aircraft', 'aircraft_types', 'manufacturer', 'family',
             'rfs_only', 'rfs_aircraft_id', 'min_minutes', 'max_minutes', 'target_minutes',
             'departure_time', 'arrival_time')):
         raise ValueError('ROUTE_FILTER_UNAVAILABLE')
@@ -49,7 +49,7 @@ def search_routes(path, criteria, now, *, include_population=False):
                 where.append(f'UPPER({endpoint}_{suffix}) IN ({",".join("?" for _ in values)})')
                 params.extend(v.upper() for v in values)
     if criteria.airline.strip():
-        term = criteria.airline.strip()
+        term = airline_query(criteria.airline)
         where.append('(airline = ? COLLATE NOCASE OR airline_iata = ? COLLATE NOCASE OR instr(lower(airline_name),lower(?)) > 0)')
         params.extend([term] * 3)
     if criteria.callsign.strip():

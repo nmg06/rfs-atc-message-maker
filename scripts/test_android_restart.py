@@ -30,11 +30,12 @@ def run(adb, serial):
         'nativeClipboardUsesEditedPreviewExactly',
         'offlineMapRendersLocalBordersRouteAndCountrySelection',
         'viewportIsOutsideSystemBarsAndCutout',
+        'multipleAircraftListOpensWithoutTypingAndRestoresOffline',
         'recentRoutesKeepUnknownFieldsAndManualFlightOffline'))
     report = command('shell', 'am', 'instrument', '-w', '-e', 'class', core_tests,
                      PACKAGE+'.test/androidx.test.runner.AndroidJUnitRunner', timeout=360)
     print(report)
-    if 'OK (5 tests)' not in report or 'FAILURES' in report:
+    if 'OK (6 tests)' not in report or 'FAILURES' in report:
         raise ValueError('Instrumentation did not pass: ' + report)
     def saved():
         return json.loads(command('shell', 'run-as', PACKAGE, 'cat', 'files/rfs_android.json'))
@@ -46,23 +47,26 @@ def run(adb, serial):
     deadline = time.monotonic() + 90
     callsign = original['state']['flight']['callsign']
     visible = False
+    xml = ''
     while time.monotonic() < deadline:
         try:
             command('shell', 'uiautomator', 'dump', '/sdcard/rfs-test-window.xml')
             xml = command('shell', 'cat', '/sdcard/rfs-test-window.xml')
             texts = [html.unescape(text) for text in re.findall(r' text="([^"]*)"', xml)]
             # Header route is set only after the real JS/native bootstrap succeeds.
-            visible = any(callsign in text for text in texts) and any(text in ('Votre vol','Your flight') for text in texts)
+            visible = any(callsign in text for text in texts) and any(
+                text in ('Préparez votre prochain départ.', 'Prepare your next departure.') for text in texts)
             if visible:
                 break
         except subprocess.CalledProcessError:
             pass
         time.sleep(1)
     if not visible:
+        (ROOT/'build/android-restart-window.xml').write_text(xml, encoding='utf-8')
         raise ValueError('Restored flight UI not visible after process restart')
     if saved() != original:
         raise ValueError('Persistent data changed across process restart')
-    print(json.dumps({'airplane_mode': True, 'instrumentation_tests': 5,
+    print(json.dumps({'airplane_mode': True, 'instrumentation_tests': 6,
         'process_restart_persistent': True, 'restored_webview_rendered': True,
         'callsign': callsign, 'fuel': original['state']['flight']['fuel']}))
 

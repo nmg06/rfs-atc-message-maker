@@ -69,6 +69,7 @@ class Criteria:
     callsign: str = ""
     airline: str = ""
     aircraft: str = ""
+    aircraft_types: list[str] = field(default_factory=list)
     manufacturer: str = ""
     family: str = ""
     origin: list[str] = field(default_factory=list)
@@ -101,6 +102,8 @@ class Criteria:
     route_catalog: bool = False
 
     def validate(self):
+        from .aircraft_filters import normalize_types
+        normalize_types(self.aircraft_types)
         parse_airport_codes(self.excluded_airports, exclusion=True)
         for key, value in vars(self).items():
             if isinstance(value, list) and (len(value) > 50 or any(not isinstance(v, str) or len(v)>100 for v in value)):
@@ -117,6 +120,12 @@ class Criteria:
 
 
 ALIASES = {"a320neo": "A20N", "a321neo": "A21N", "a319neo": "A19N", "b737max8": "B38M"}
+
+
+def airline_query(value):
+    # The reference uses Federal Express; users commonly search for FedEx.
+    term = value.strip()
+    return 'FDX' if term.casefold() == 'fedex' else term
 
 
 def search(path: Path, criteria: Criteria, now_utc: datetime, *, _include_population=False) -> dict:
@@ -192,7 +201,7 @@ def search(path: Path, criteria: Criteria, now_utc: datetime, *, _include_popula
         where.append("(callsign LIKE ? OR callsign = ?)")
         params.extend([f"%{term}%", term])
     if criteria.airline.strip():
-        term = criteria.airline.strip()
+        term = airline_query(criteria.airline)
         if len(term) <= 3 and term.isalnum():
             where.append("airline IN (SELECT icao FROM airlines WHERE icao = ? COLLATE NOCASE OR iata = ? COLLATE NOCASE)")
             params.extend([term] * 2)
@@ -201,6 +210,9 @@ def search(path: Path, criteria: Criteria, now_utc: datetime, *, _include_popula
             params.append(term)
     if criteria.rfs_only:
         in_filter(['aircraft'], SUPPORTED_TYPES)
+    if criteria.aircraft_types:
+        from .aircraft_filters import normalize_types
+        in_filter(['aircraft'], normalize_types(criteria.aircraft_types))
     if criteria.rfs_aircraft_id:
         code = TYPE_BY_ID.get(criteria.rfs_aircraft_id)
         if not code:

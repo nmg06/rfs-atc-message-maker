@@ -62,6 +62,42 @@ public class OfflineAppTest {
         assertTrue(envelope.optString("error"),envelope.getBoolean("ok"));
         return envelope.getJSONObject("result");
     }
+    private void waitForJavascript(MainActivity a,String expression,String message) throws Exception {
+        AtomicReference<String> value=new AtomicReference<>("false");
+        for(int i=0;i<300;i++) {
+            InstrumentationRegistry.getInstrumentation().runOnMainSync(()->a.webForTest().evaluateJavascript(expression,value::set));
+            if("true".equals(value.get()))return;
+            Thread.sleep(100);
+        }
+        assertEquals(message,"true",value.get());
+    }
+    @Test public void multipleAircraftListOpensWithoutTypingAndRestoresOffline() throws Exception {
+        try(ActivityScenario<MainActivity> scenario=ActivityScenario.launch(MainActivity.class)) {
+            MainActivity a=activity(scenario);
+            JSONObject original=call(a,"bootstrap",new JSONObject()).getJSONObject("value");
+            try {
+                JSONObject state=new JSONObject(original.getJSONObject("state").toString());
+                state.put("intro_seen",true).put("joke_seen",true).put("tutorial_seen",true).put("language","en");
+                state.put("finder_filters",new JSONObject().put("aircraft_types",new org.json.JSONArray()).put("rfs_only",true));
+                call(a,"save",new JSONObject().put("state",state));
+                waitForJavascript(a,"typeof model!=='undefined' && Boolean(model)","WebView did not start");
+                InstrumentationRegistry.getInstrumentation().runOnMainSync(()->a.webForTest().evaluateJavascript(
+                    "rpc('bootstrap').then(r=>{setResult(r);screen='finder';paint();document.querySelector('#finder-aircraft-picker').click();})",null));
+                waitForJavascript(a,"Boolean(document.querySelector('#finder-aircraft-dialog[open]') && document.querySelectorAll('[data-workspace-aircraft]').length===meta.finder_aircraft.length && meta.finder_aircraft.length>100 && document.querySelector('#finder-aircraft-query').value==='')","Complete aircraft list did not open");
+                InstrumentationRegistry.getInstrumentation().runOnMainSync(()->a.webForTest().evaluateJavascript(
+                    "(()=>{for(const code of ['A20N','B789']){const el=document.querySelector('[data-workspace-aircraft=\"'+code+'\"]');el.checked=true;el.dispatchEvent(new Event('change',{bubbles:true}));}document.querySelector('[data-workspace=\"aircraft-close\"]').click();flushEdits();})()",null));
+                waitForJavascript(a,"Boolean(!document.querySelector('#finder-aircraft-dialog') && model.state.finder_filters.aircraft_types.length===2 && savedRevision===revision && pending.size===0)","Aircraft selection did not save");
+                assertEquals(2,call(a,"bootstrap",new JSONObject()).getJSONObject("value").getJSONObject("state").getJSONObject("finder_filters").getJSONArray("aircraft_types").length());
+                scenario.recreate();
+                MainActivity restored=activity(scenario);
+                org.json.JSONArray types=call(restored,"bootstrap",new JSONObject()).getJSONObject("value").getJSONObject("state").getJSONObject("finder_filters").getJSONArray("aircraft_types");
+                assertEquals("A20N",types.getString(0));assertEquals("B789",types.getString(1));
+                assertEquals(0,restored.networkRequestsForTest());
+            } finally {
+                call(activity(scenario),"import",new JSONObject().put("text",original.toString()));
+            }
+        }
+    }
     @Test public void offlineMapRendersLocalBordersRouteAndCountrySelection() throws Exception {
         try (ActivityScenario<MainActivity> scenario=ActivityScenario.launch(MainActivity.class)) {
             MainActivity a=activity(scenario);

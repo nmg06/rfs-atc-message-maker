@@ -16,9 +16,16 @@ def verify(apk, aapt, *, require_release=False, apksigner=None, expected_cert_sh
                      'assets/www/map.js', 'assets/www/experience.js', 'assets/www/online-map.js', 'assets/www/world-countries.js',
                      'assets/www/help-content.js', 'assets/www/help-ui.js', 'assets/www/help-ui.css', 'assets/www/help-adapter.js',
                      'assets/www/updates-ui.js', 'assets/www/backup-ui.js',
+                     'assets/www/workspace.js', 'assets/www/workspace.css',
                      'assets/notices/WORLD_MAP_LICENSE.md', 'assets/engine-manifest.json', 'assets/aviation.database'):
             if name not in package.namelist():
                 raise ValueError('Missing APK asset: ' + name)
+        # Verify the delivered UI too: an incremental build must not silently
+        # package an earlier screen while shared engines pass their tests.
+        source_root = Path(__file__).resolve().parents[1] / 'android/app/src/main/assets/www'
+        for source in source_root.iterdir():
+            if source.is_file() and package.read('assets/www/' + source.name) != source.read_bytes():
+                raise ValueError('APK UI differs from source: ' + source.name)
         manifest = json.loads(package.read('assets/database-manifest.json'))
         from help_content import CONTENT
         guide = package.read('assets/www/help-content.js').decode('utf-8')
