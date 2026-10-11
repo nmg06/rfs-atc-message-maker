@@ -96,3 +96,8 @@ No online service is part of this build.
 La liste d’avions PC et Android indique les profils historiques disponibles.
 Voir [Cargo, petits avions et sources d’horaires officiels](CARGO_AND_SMALL_AIRCRAFT.md) pour les
 chiffres vérifiés et les limites de couverture.
+
+
+## Dernier ajout ciblé
+
+[Air India — 11 octobre 2026](AIR_INDIA_2026-10-11.md) : 8 nouveaux couples indicatif/trajet observés, sans remplacer les profils existants.

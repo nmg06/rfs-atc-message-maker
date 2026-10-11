@@ -101,3 +101,12 @@ Source : https://github.com/catchflights/routes/releases/tag/routes-2026-10-07
 ODbL 1.0, contenus DBCL ; attribution CatchFlights, adsb.lol et MrAirspace.
 Le fichier source figé est redistribué dans `finder/source-data/`, avec son
 manifest et sa somme SHA-256. Voir `docs/licenses/CATCHFLIGHTS_NOTICE.txt`.
+
+
+## Air India enrichment — 11 October 2026
+
+Air India (AIC): 854 searchable historical profiles (35–1,044 minutes). Eight additional callsign/route pairs from the pinned CatchFlights 2026-10-11 snapshot are available in **Recent route evidence**. Aircraft and duration are unknown for these additions. They are inferred observed routes, not a complete current timetable. All 203,627 existing profiles and 21,053 prior observed routes were preserved field for field. Of 382 AIC source rows, 335 lacked sufficient evidence, 35 qualified duplicates were retained without overwrite, and 4 contradictory callsign/route candidates were excluded. See docs/finder/AIR_INDIA_2026-10-11.md and JSON report.
+
+Source: https://github.com/catchflights/routes/releases/tag/routes-2026-10-11
+License: ODbL 1.0; contents DBCL. CatchFlights / adsb.lol / MrAirspace.
+Official timetable: https://www.airindia.com/in/en/book/flight-schedule.html

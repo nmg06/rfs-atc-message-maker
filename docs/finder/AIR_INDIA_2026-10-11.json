@@ -1,0 +1,109 @@
+{
+  "input_rows": 131982,
+  "airline_source_rows": 382,
+  "insufficient_evidence": 335,
+  "duplicates_preserved": 35,
+  "added_routes": 8,
+  "conflicting_callsign_routes_excluded": 4,
+  "airline": "AIC",
+  "snapshot": "2026-10-11",
+  "source_sha256": "65e231e61221792747cad828af385a3fc9a6e333b6e0dd3136210d17d8040307",
+  "baseline_sha256": "5df24e6a17b16458ba67c46d24b22f6178644ebdd3619ea0a5a713a351a2a1cb",
+  "preserved": {
+    "airports": 19786,
+    "runways": 18494,
+    "airlines": 5905,
+    "aircraft_types": 2700,
+    "flight_patterns": 203627,
+    "recent_observations": 980921,
+    "sources": 5,
+    "observed_routes": 21053
+  },
+  "lost_or_changed_rows": 0,
+  "integrity": "ok",
+  "routes": [
+    {
+      "callsign": "AIC163",
+      "origin": "VABB",
+      "destination": "EGLL",
+      "confidence": 0.9555,
+      "evidence_days": 4,
+      "observations": 7,
+      "first_seen": "2026-08-27T00:29:36+00:00",
+      "last_seen": "2026-10-08T00:35:17+00:00"
+    },
+    {
+      "callsign": "AIC1EB",
+      "origin": "VIDP",
+      "destination": "VOBL",
+      "confidence": 0.9555,
+      "evidence_days": 5,
+      "observations": 7,
+      "first_seen": "2026-09-04T00:55:31+00:00",
+      "last_seen": "2026-09-27T00:43:15+00:00"
+    },
+    {
+      "callsign": "AIC1ZP",
+      "origin": "VOBL",
+      "destination": "VABB",
+      "confidence": 0.9555,
+      "evidence_days": 5,
+      "observations": 7,
+      "first_seen": "2026-09-05T02:47:33+00:00",
+      "last_seen": "2026-09-28T03:00:53+00:00"
+    },
+    {
+      "callsign": "AIC3305",
+      "origin": "VABB",
+      "destination": "VOBL",
+      "confidence": 0.9889,
+      "evidence_days": 6,
+      "observations": 8,
+      "first_seen": "2026-09-04T19:09:28+00:00",
+      "last_seen": "2026-10-09T01:24:50+00:00"
+    },
+    {
+      "callsign": "AIC3AT",
+      "origin": "VABB",
+      "destination": "VOBL",
+      "confidence": 0.9889,
+      "evidence_days": 9,
+      "observations": 9,
+      "first_seen": "2026-10-02T02:54:45+00:00",
+      "last_seen": "2026-10-10T02:56:54+00:00"
+    },
+    {
+      "callsign": "AIC4250",
+      "origin": "OEDF",
+      "destination": "VABB",
+      "confidence": 0.9555,
+      "evidence_days": 3,
+      "observations": 8,
+      "first_seen": "2026-08-22T04:35:07+00:00",
+      "last_seen": "2026-10-09T04:59:40+00:00"
+    },
+    {
+      "callsign": "AIC7MN",
+      "origin": "EGLL",
+      "destination": "VOHS",
+      "confidence": 0.9555,
+      "evidence_days": 3,
+      "observations": 3,
+      "first_seen": "2026-10-01T21:13:07+00:00",
+      "last_seen": "2026-10-03T20:01:25+00:00"
+    },
+    {
+      "callsign": "AIC9MG",
+      "origin": "VOBL",
+      "destination": "VABB",
+      "confidence": 0.9555,
+      "evidence_days": 5,
+      "observations": 15,
+      "first_seen": "2026-08-22T02:37:18+00:00",
+      "last_seen": "2026-10-08T02:58:26+00:00"
+    }
+  ],
+  "total_observed_routes": 21061,
+  "last_observation": "2026-10-10T02:56:54+00:00",
+  "candidate_sha256": "211c81706bb56c0e6f3536c0a958af3860e17f711806a5b8c2e2c09624074ca9"
+}
