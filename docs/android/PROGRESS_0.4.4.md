@@ -52,3 +52,12 @@ maintenant l'index d'avion plutôt qu'un scan de classement de toute la base.
 Les essais sur téléphone physique et la signature de production restent à faire.
 La synchronisation automatique PC–Android, les gates vérifiés et iOS ne sont pas
 livrés ; export/import manuel et pistes de référence sont disponibles.
+
+
+Vérifications terminées : suite Windows 199 tests réussis, plus le test de fusion
+ajouté ensuite ; 43 tests Finder après optimisation ; 38 tests Android ; 12
+parcours navigateur et le rendu satellite. Sur l'APK réellement installée,
+**7 tests Android API 35** réussissent en mode avion, dont Air India, Finder,
+transfert, carburant, copie, carte, marges et liste d'avions. Arrêt complet/relance :
+données identiques et interface restaurée. Émulateur local isolé ; aucun téléphone
+physique utilisé. La signature durable reste à préparer.

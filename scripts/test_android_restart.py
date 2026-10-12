@@ -67,7 +67,7 @@ def run(adb, serial):
         raise ValueError('Restored flight UI not visible after process restart')
     if saved() != original:
         raise ValueError('Persistent data changed across process restart')
-    print(json.dumps({'airplane_mode': True, 'instrumentation_tests': 6,
+    print(json.dumps({'airplane_mode': True, 'instrumentation_tests': 7,
         'process_restart_persistent': True, 'restored_webview_rendered': True,
         'callsign': callsign, 'fuel': original['state']['flight']['fuel']}))
 

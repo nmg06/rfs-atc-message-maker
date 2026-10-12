@@ -175,7 +175,7 @@ embarquée sont dans [Cargo et petits avions](../finder/CARGO_AND_SMALL_AIRCRAFT
 
 | Fonction | Windows | Android | Preuve / limite |
 |---|---|---|---|
-| Catalogue Air India DGCA 2026 séparé | OK moteur/UI | OK moteur/UI | 785 couples numéro–trajet ; programme daté, escales et familles génériques conservées ; couverture annuelle non garantie |
+| Catalogue Air India DGCA 2026 séparé | OK moteur/UI | OK moteur/UI/APK installée | 785 couples numéro–trajet ; programme daté, escales et familles génériques conservées ; couverture annuelle non garantie |
 | Profils historiques plus que doublés | OK base partagée | OK base partagée | 344 667 clés distinctes ; 203 627 anciennes lignes de profils conservées ; seulement 199 145 clés avec durée recherchable |
 | Affichage facultatif des durées inconnues | OK | OK | Exclusion des filtres de durée/arrivée ; aucune estimation inventée |
 | Regroupement des variantes d'un vol | OK | OK | Même clé airline/callsign/trajet après filtrage ; aucune donnée supprimée |
@@ -183,3 +183,5 @@ embarquée sont dans [Cargo et petits avions](../finder/CARGO_AND_SMALL_AIRCRAFT
 | Mise à jour vers le dépôt renommé | OK moteur | OK moteur/natif | Canal préversion ; premier passage manuel depuis 0.4.3 |
 | Téléphone physique / signature définitive | sans objet | partiel | APK debug signée avec la clé locale précédente ; essais physiques et clé durable restant |
 | Gates et pistes affectés automatiquement | non porté | non porté | Données de portes absentes ; pistes de référence consultables, aucune affectation ATC inventée |
+
+APK 0.4.4 installée sur émulateur API 35 : 7 tests natifs en mode avion, puis arrêt complet et relance avec données conservées. Téléphone physique et signature durable restant.
