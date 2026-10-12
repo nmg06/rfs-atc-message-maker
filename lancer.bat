@@ -5,6 +5,10 @@ if exist "dist\RFSATCMessageMaker-v5\RFSATCMessageMaker.exe" (
     start "" "dist\RFSATCMessageMaker-v5\RFSATCMessageMaker.exe"
     exit /b 0
 )
+if exist "dist\RFSFlightDeck-v5\RFSFlightDeck.exe" (
+    start "" "dist\RFSFlightDeck-v5\RFSFlightDeck.exe"
+    exit /b 0
+)
 if exist "dist\RFSATCMessageMaker-v4\RFSATCMessageMaker.exe" (
     start "" "dist\RFSATCMessageMaker-v4\RFSATCMessageMaker.exe"
     exit /b 0
@@ -19,6 +23,10 @@ if exist "dist\RFSATCMessageMaker-v2\RFSATCMessageMaker.exe" (
 )
 if exist "dist\RFSATCMessageMaker\RFSATCMessageMaker.exe" (
     start "" "dist\RFSATCMessageMaker\RFSATCMessageMaker.exe"
+    exit /b 0
+)
+if exist "dist\RFSFlightDeck\RFSFlightDeck.exe" (
+    start "" "dist\RFSFlightDeck\RFSFlightDeck.exe"
     exit /b 0
 )
 if exist ".venv\Scripts\pythonw.exe" (

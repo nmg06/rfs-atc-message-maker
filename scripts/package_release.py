@@ -28,10 +28,10 @@ def main():
     source_files += [source/'.gitignore']
     for name in ('.github','assets','docs','finder','fuel','scripts','tests'):
         source_files += [p for p in (source/name).rglob('*') if p.is_file()]
-    portable=args.output/'RFS-ATC-Message-Maker-Windows-v5.zip'
-    sources=args.output/'RFS-ATC-Message-Maker-Sources-v5.zip'
-    archive(portable,args.bundle,[p for p in args.bundle.rglob('*') if p.is_file()],'RFSATCMessageMaker')
-    archive(sources,source,source_files,'RFS-ATC-Message-Maker')
+    portable=args.output/'RFS-Flight-Deck-Windows-v5.zip'
+    sources=args.output/'RFS-Flight-Deck-Sources-v5.zip'
+    archive(portable,args.bundle,[p for p in args.bundle.rglob('*') if p.is_file()],'RFSFlightDeck')
+    archive(sources,source,source_files,'RFS-Flight-Deck')
     hashes=[]
     for file in (portable,sources,args.bundle/'RFSATCMessageMaker.exe'):
         with file.open('rb') as stream:

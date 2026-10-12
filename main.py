@@ -1,4 +1,4 @@
-"""Point d'entrée Windows de RFS ATC Message Maker."""
+"""Point d'entrée Windows de RFS Flight Deck."""
 from __future__ import annotations
 from i18n import tr, set_language, language
 import sys
@@ -12,7 +12,7 @@ from app_icon import make_icon
 
 def main() -> int:
     app = QApplication(sys.argv)
-    app.setApplicationName('RFS ATC Message Maker')
+    app.setApplicationName('RFS Flight Deck')
     app.setWindowIcon(make_icon())
 
     def report_exception(exc_type, exc_value, exc_tb) -> None:

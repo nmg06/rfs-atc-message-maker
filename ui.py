@@ -1,4 +1,4 @@
-"""Interface Windows de RFS ATC Message Maker."""
+"""Interface Windows de RFS Flight Deck."""
 from __future__ import annotations
 from i18n import tr, set_language, language
 from copy import deepcopy
@@ -34,7 +34,7 @@ class RFSWindow(QMainWindow):
         self.flight_widgets: dict[str, QWidget] = {}
         self.type_widgets: dict[str, QWidget] = {}
         self.render_error = ''
-        self.setWindowTitle(tr('RFS ATC Message Maker'))
+        self.setWindowTitle(tr('RFS Flight Deck'))
         self.setWindowIcon(make_icon())
         self.resize(1290, 880)
         self.setMinimumSize(1010, 690)
@@ -56,7 +56,7 @@ class RFSWindow(QMainWindow):
         self._apply_theme()
         self.render_preview()
         QShortcut(QKeySequence('Ctrl+Return'), self, activated=self.generate_message)
-        LOGGER.info('RFS ATC Message Maker démarré')
+        LOGGER.info('RFS Flight Deck démarré')
 
     def _card(self) -> tuple[QFrame, QVBoxLayout]:
         frame = QFrame(objectName='card')
@@ -72,7 +72,7 @@ class RFSWindow(QMainWindow):
         outer.setSpacing(16)
         header = QHBoxLayout()
         titles = QVBoxLayout()
-        titles.addWidget(QLabel(tr('RFS ATC MESSAGE MAKER'), objectName='title'))
+        titles.addWidget(QLabel(tr('RFS FLIGHT DECK'), objectName='title'))
         titles.addWidget(QLabel(tr('Discord • Real Flight Simulator • un vol, plusieurs messages'), objectName='muted'))
         header.addLayout(titles)
         header.addStretch()

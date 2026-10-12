@@ -1,7 +1,8 @@
-# RFS ATC Message Maker
+# RFS Flight Deck (ex-RFS ATC Message Maker)
 
-Application Windows personnelle pour préparer des messages Discord de Real
-Flight Simulator. Les huit modèles fonctionnent sans compte, API ou Internet.
+FR — Application Windows personnelle pour préparer des messages Discord de Real Flight Simulator, avec Flight Finder et Fuel Helper hors ligne. Les huit modèles fonctionnent sans compte, API ou Internet.
+
+EN — Personal Windows app to prepare Real Flight Simulator Discord messages, with offline Flight Finder and Fuel Helper. All eight templates work without account, API, or internet access.
 
 ## Utiliser
 
@@ -9,8 +10,9 @@ Ouvrez `lancer.bat`, ou directement
 `dist\RFSATCMessageMaker-v5\RFSATCMessageMaker.exe` après mise à jour, ou
 `RFSATCMessageMaker.exe` dans le paquet téléchargé. Gardez le dossier
 `RFSATCMessageMaker` entier : l'exécutable utilise les fichiers de `_internal`.
-Le paquet est autonome : Python n'est pas nécessaire pour l'utiliser.
+Le nom de l’application affichée est désormais **RFS Flight Deck** (ancien nom : **RFS ATC Message Maker**). Le paquet est autonome : Python n'est pas nécessaire pour l'utiliser.
 Il cible Windows 10/11 64 bits.
+Les archives de release utilisent le nom **RFSFlightDeck-Windows-x64.zip**.
 
 1. Sélectionnez `ATC REQUEST` et renseignez le panneau `Vol actuel`.
 2. Complétez la porte, la piste, le pushback et les autres champs signalés par `*`.
