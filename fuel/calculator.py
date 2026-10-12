@@ -10,7 +10,10 @@ import json
 import math
 from pathlib import Path
 
-DATA_DIR = Path(__file__).resolve().parent / 'data'
+DATA_DIR_CANDIDATES = (
+    Path(__file__).resolve().parent / 'data',
+    Path(__file__).resolve().parents[1] / 'docs' / 'fuel' / 'reference',
+)
 DISCLAIMER = 'Estimation pour RFS / simulation uniquement — ne pas utiliser pour préparer un vol réel.'
 TAXI_BURN_RATE_MULTIPLIER = 1.4
 TAXI_OUT_MINUTES = 6
@@ -23,7 +26,12 @@ ALTERNATE_APPROACH_MINUTES = 15
 
 @lru_cache(maxsize=4)
 def _read_json_text(filename):
-    return (DATA_DIR / filename).read_text(encoding='utf-8')
+    for directory in DATA_DIR_CANDIDATES:
+        path = directory / filename
+        if path.is_file():
+            return path.read_text(encoding='utf-8')
+    searched = ', '.join(str(directory / filename) for directory in DATA_DIR_CANDIDATES)
+    raise FileNotFoundError(f'{filename} introuvable. Emplacements vérifiés : {searched}')
 
 
 def load_json(filename):

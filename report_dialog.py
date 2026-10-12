@@ -134,7 +134,7 @@ class ReportDialog(QDialog):
                             tr('Impossible d’ouvrir le navigateur. Réessayez ou exportez un rapport local.'))
 
     def report(self):
-        return {'application': 'RFS ATC Message Maker v5', 'system': platform.system(),
+        return {'application': 'RFS Flight Deck v5', 'system': platform.system(),
                 'platform_release': platform.release(),
                 'summary': self.title.text(), 'steps': self.steps.toPlainText(),
                 'expected': self.expected.text(), 'observed': self.observed.toPlainText(),
