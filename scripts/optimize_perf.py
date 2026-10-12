@@ -1,4 +1,4 @@
-"""Script applying surgical performance optimizations to RFS ATC Message Maker."""
+"""Script applying surgical performance optimizations to RFS Flight Deck."""
 from pathlib import Path
 
 # --- 1. Optimize finder/search.py (candidate limit) ---

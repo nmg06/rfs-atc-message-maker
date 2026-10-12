@@ -18,7 +18,7 @@ python -m PyInstaller --noconfirm --clean --distpath dist RFSATCMessageMaker.spe
 if errorlevel 1 goto :error
 
 echo.
-echo Construction terminee : dist\RFSATCMessageMaker\RFSATCMessageMaker.exe
+echo Construction terminee (RFS Flight Deck) : dist\RFSATCMessageMaker\RFSATCMessageMaker.exe
 exit /b 0
 
 :error

@@ -12,6 +12,7 @@ Ouvrez `lancer.bat`, ou directement
 `RFSATCMessageMaker` entier : l'exécutable utilise les fichiers de `_internal`.
 Le nom de l’application affichée est désormais **RFS Flight Deck** (ancien nom : **RFS ATC Message Maker**). Le paquet est autonome : Python n'est pas nécessaire pour l'utiliser.
 Il cible Windows 10/11 64 bits.
+Les archives de release utilisent le nom **RFSFlightDeck-Windows-x64.zip**.
 
 1. Sélectionnez `ATC REQUEST` et renseignez le panneau `Vol actuel`.
 2. Complétez la porte, la piste, le pushback et les autres champs signalés par `*`.

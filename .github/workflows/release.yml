@@ -52,15 +52,15 @@ jobs:
           }
           Copy-Item -Path "README.md" -Destination "dist/RFSATCMessageMaker" -Force
           
-          # Create zip
-          Compress-Archive -Path "dist/RFSATCMessageMaker" -DestinationPath "RFSATCMessageMaker-Windows-x64.zip" -Force
-          Write-Host "Archive created: RFSATCMessageMaker-Windows-x64.zip"
+          # Create zip (product name: RFS Flight Deck)
+          Compress-Archive -Path "dist/RFSATCMessageMaker" -DestinationPath "RFSFlightDeck-Windows-x64.zip" -Force
+          Write-Host "Archive created: RFSFlightDeck-Windows-x64.zip"
 
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: RFSATCMessageMaker-Windows-x64.zip
+          files: RFSFlightDeck-Windows-x64.zip
           draft: false
           prerelease: false
           generate_release_notes: true
@@ -68,8 +68,8 @@ jobs:
       - name: Upload Build Artifact (for manual workflow runs)
         uses: actions/upload-artifact@v4
         with:
-          name: RFSATCMessageMaker-Windows-x64
-          path: RFSATCMessageMaker-Windows-x64.zip
+          name: RFSFlightDeck-Windows-x64
+          path: RFSFlightDeck-Windows-x64.zip
           retention-days: 30
 
   deploy-pages:

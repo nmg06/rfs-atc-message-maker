@@ -1,4 +1,4 @@
-"""Champs et groupes visibles de RFS ATC Message Maker."""
+"""Champs et groupes visibles de RFS Flight Deck."""
 
 from __future__ import annotations
 
