@@ -54,6 +54,34 @@ class RouteMapTests(unittest.TestCase):
     def test_offline_land_resource_available(self):
         self.assertGreater(land_path().elementCount(), 1000)
 
+    def test_satellite_requests_coarse_base_and_keeps_cached_parent_while_zooming(self):
+        from unittest.mock import patch
+        from PySide6.QtCore import Qt
+        from PySide6.QtGui import QColor, QImage, QPainter
+        widget=RouteMap()
+        widget.resize(760,330)
+        image=QImage(256,256,QImage.Format.Format_RGB32)
+        image.fill(QColor('#ff00ff'))
+        target=QImage(widget.size(),QImage.Format.Format_RGB32)
+        target.fill(Qt.GlobalColor.black)
+        try:
+            widget._tiles[(0,0,0)]=image
+            widget._zoom=8
+            painter=QPainter(target)
+            with patch.object(widget.online,'request_tile') as request:
+                widget._draw_satellite(painter)
+                self.assertTrue(request.called)
+                self.assertTrue(all(key[0] <= 15 for (key,), _ in request.call_args_list))
+            painter.end()
+            self.assertEqual(QColor('#ff00ff'),target.pixelColor(380,165))
+            widget._tiles.clear()
+            painter=QPainter(target)
+            with patch.object(widget.online,'request_tile') as request:
+                widget._draw_satellite(painter)
+                self.assertIn(((0,0,0),),[call.args for call in request.call_args_list])
+            painter.end()
+        finally:widget.close()
+
 
 if __name__ == '__main__':
     unittest.main()

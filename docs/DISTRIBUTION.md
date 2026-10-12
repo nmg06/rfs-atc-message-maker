@@ -1,14 +1,14 @@
 # Mettre Flightdeck à disposition
 
-Pour l'instant, les boutons du [guide d'installation](INSTALLATION.md) donnent
-accès aux fichiers de test GitHub Actions. Leur téléchargement demande un compte
-GitHub et ils expirent après 30 jours. L'application ne demande aucun compte.
+La [préversion 0.4.4](https://github.com/nmg06/rfs-flightdeck/releases/tag/flightdeck-0.4.4)
+propose des liens directs Windows ZIP et Android APK. Aucun compte GitHub n'est
+nécessaire. Les artefacts Actions restent des builds temporaires distincts.
+Le [guide d'installation](INSTALLATION.md) explique quel fichier choisir.
 
-Pour proposer plus tard des liens publics durables, une release GitHub peut
-contenir un ZIP Windows et une APK Android. Après publication, chaque fichier
-dispose d'un lien direct ; les visiteurs n'ont pas besoin d'utiliser Actions.
-Ne pas publier tant que les fichiers/version et signature ne sont pas approuvés.
-Aucune nouvelle release n'a été publiée automatiquement par ce travail.
+Chaque publication doit passer les tests, la construction réelle, le contrôle du
+contenu des archives et des signatures. `scripts/public_package.py` refuse les
+fichiers de profil personnel et les clés privées dans les archives publiques.
+Le paquet public est construit avant toute copie du profil local du propriétaire.
 
 Avant une APK de distribution, conserver une clé Android privée stable et ses
 mots de passe hors de Git. Le wrapper Gradle est déjà configuré ; les versions

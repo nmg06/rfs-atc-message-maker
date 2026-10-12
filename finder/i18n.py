@@ -1,5 +1,7 @@
 """English reference catalogue; fallbacks make incremental translations safe."""
 EN = {
+    'aircraft_types': 'Selected aircraft (any of these types)',
+    'AIRCRAFT_TYPES_FORMAT': 'Choose up to 50 aircraft types using valid ICAO codes.',
     "title": "Flight Finder", "language": "Language", "database": "Choose local database…",
     "search": "Search observed flights", "use": "USE THIS FLIGHT", "close": "Close",
     "airline": "Airline (name / ICAO / IATA)", "aircraft": "Aircraft (e.g. A20N / A320neo)",
@@ -50,6 +52,8 @@ EN = {
     "notice": "Runways, gate, fuel, load and cruise level are not inferred. Existing manual values are preserved.",
 }
 FR = {
+    'aircraft_types': 'Avions sélectionnés (un de ces types)',
+    'AIRCRAFT_TYPES_FORMAT': 'Choisissez jusqu’à 50 types d’avions avec des codes ICAO valides.',
     "title": "Recherche de vols", "minutes": "min", "language": "Langue", "database": "Choisir la base locale…", "search": "Rechercher des vols observés",
     "use": "UTILISER CE VOL", "close": "Fermer", "airline": "Compagnie (nom / ICAO / IATA)",
     "aircraft": "Avion (ex. A20N / A320neo)", "manufacturer": "Constructeur", "family": "Famille d’avion (ex. A320)",
@@ -217,3 +221,12 @@ FR.update({
  'ROUTE_CATALOG_UNAVAILABLE': 'Cette ancienne base locale ne contient pas le catalogue des routes récentes. Choisissez la base embarquée enrichie pour utiliser cette option.',
  'route_unknown': 'Non renseigné',
 })
+
+EN.update({"published_catalog":"Air India: approved 2026 timetable", "PUBLISHED_SCHEDULE_NOTICE":"Published seasonal schedule, not proof of actual operation. Times are airport-local. Generic B777/B787 families do not identify an exact variant. Choose the departure date to select the valid programme; verify changes in RFS.", "PUBLISHED_CATALOG_UNAVAILABLE":"This database has no published Air India timetable. Choose the updated bundled database.", "duration_published":"Duration derived from published local times (includes scheduled ground time)", "duration_published_short":"Published", "publication":"Published timetable", "published_validity":"Validity / operating days"})
+FR.update({"published_catalog":"Air India : programme officiel 2026", "PUBLISHED_SCHEDULE_NOTICE":"Programme saisonnier publié, pas une preuve de vol effectué. Heures locales des aéroports. Les familles B777/B787 ne désignent pas une variante précise. Choisissez la date de départ pour sélectionner le programme valable ; vérifiez les changements dans RFS.", "PUBLISHED_CATALOG_UNAVAILABLE":"Cette base ne contient pas le programme publié Air India. Choisissez la nouvelle base embarquée.", "duration_published":"Durée déduite des heures locales publiées (temps au sol programmé inclus)", "duration_published_short":"Publiée", "publication":"Programme publié", "published_validity":"Validité / jours de fonctionnement"})
+
+EN["CATALOG_CONFLICT"]="Choose one data catalogue."
+FR["CATALOG_CONFLICT"]="Choisissez un seul catalogue de données."
+
+EN.update({"include_unknown_duration":"Include observed profiles with unknown duration", "unique_flights":"One result per callsign / route"})
+FR.update({"include_unknown_duration":"Inclure les profils observés de durée inconnue", "unique_flights":"Un seul résultat par indicatif / trajet"})

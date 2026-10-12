@@ -15,34 +15,30 @@ Python n'est pas nécessaire pour installer les fichiers proposés ici.
 | Android 7 ou plus, ARM64 | APK Android | Version de test installable |
 | iPhone / iPad | Aucun pour l'instant | Version iOS non disponible |
 
-**Téléchargements 0.4.3 du 7 octobre vérifiés : [Android](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37626682395/artifacts/11484870149) · [Windows](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37626682163/artifacts/11484747125).**
-Connectez-vous à GitHub, cliquez sur votre lien puis décompressez le ZIP reçu.
-Ces fichiers de test expirent le 6 novembre 2026 ; les instructions ci-dessous
-permettent de retrouver un build plus récent.
+**Version proposée : Flightdeck 0.4.4, préversion.**
 
-Les fichiers de test sont dans **GitHub Actions**, sur la branche
-**feat/flightdeck-map-performance**. Le [bilan du 7 octobre](DATA_ENRICHMENT_2026-10-07.md)
-donne les liens des builds vérifiés et les limites connues.
+- **[Télécharger pour Windows](https://github.com/nmg06/rfs-flightdeck/releases/download/flightdeck-0.4.4/RFSFlightdeck-Windows-0.4.4-x64.zip)**
+- **[Télécharger pour Android](https://github.com/nmg06/rfs-flightdeck/releases/download/flightdeck-0.4.4/RFSFlightdeck-Android-0.4.4-debug.apk)**
+- [Voir les nouveautés et tous les fichiers](https://github.com/nmg06/rfs-flightdeck/releases/tag/flightdeck-0.4.4).
 
-1. Ouvrez [les téléchargements Windows](https://github.com/nmg06/rfs-atc-message-maker/actions/workflows/flightdeck.yml) ou [Android](https://github.com/nmg06/rfs-atc-message-maker/actions/workflows/android.yml).
-2. Choisissez une exécution **verte**, sur la branche **feat/flightdeck-map-performance**.
-3. Descendez jusqu'à **Artifacts**. Touchez **RFSFlightdeck-Windows-x64-test** pour Windows, ou **RFS-ATC-Android-debug** pour Android.
-4. Décompressez le ZIP téléchargé : il contient le paquet Windows ou **app-debug.apk**.
+Aucun compte GitHub n'est nécessaire pour ces téléchargements. Choisissez le ZIP
+Windows ou l'APK Android, pas « Source code ». La préversion reste destinée aux
+essais : les tests automatisés ne remplacent pas les essais sur votre téléphone.
 
-**GitHub demande un compte pour télécharger ces artefacts. L'application n'en
-demande aucun.** Les fichiers expirent après 30 jours. Utilisez un build plus
-récent vérifié, ou demandez au propriétaire de relancer le build.
-Évitez les exécutions rouges : leurs tests ont échoué.
+Le ZIP public ne contient aucun profil personnel : le pseudo, l'historique et
+les vols sauvegardés sont vides, et l'introduction apparaît au premier lancement.
+Une connexion à GitHub n'importe jamais les réglages d'un autre utilisateur.
+Les paquets extraits dans un ancien dossier **data** retrouvent les données de
+ce dossier ; choisissez un nouveau dossier pour tester une installation vierge.
 
-Une future release GitHub pourra proposer des liens permanents, sans compte.
-Aucune nouvelle release publique n'est publiée automatiquement.
-Voir [préparer une distribution](DISTRIBUTION.md).
-Pour les mises à jour facultatives et le transfert des données PC ↔ Android,
-consultez [ce guide](UPDATES_AND_TRANSFER.md).
+Les [builds supplémentaires Actions](https://github.com/nmg06/rfs-flightdeck/actions)
+restent disponibles pour les développeurs ; leurs artefacts nécessitent un compte
+et expirent. Ils ne sont pas nécessaires pour utiliser les liens ci-dessus.
+Voir aussi [les mises à jour et le transfert PC ↔ Android](UPDATES_AND_TRANSFER.md).
 
 ## Installer sur Windows
 
-1. Décompressez le ZIP GitHub, puis le ZIP Windows qu'il contient, dans **un nouveau dossier**.
+1. Décompressez le ZIP Windows, dans **un nouveau dossier**.
 2. Ouvrez **RFSFlightdeck**, puis **RFSATCMessageMaker.exe**. L'ancien nom du fichier est conservé.
 3. Gardez **_internal**, **finder-data** et les autres fichiers à côté de l'EXE.
 4. Pour un accès rapide, créez un raccourci de cet EXE sur le Bureau.
@@ -58,8 +54,8 @@ dans le nouveau dossier **data**. Gardez l'ancien paquet pour revenir en arrièr
 
 ## Installer sur Android
 
-Vous pouvez télécharger le ZIP GitHub sur le téléphone, le décompresser dans
-**Fichiers** et ouvrir **app-debug.apk**. Depuis le PC :
+Téléchargez directement l’APK ci-dessus depuis le navigateur du téléphone,
+puis ouvrez **Fichiers > Téléchargements** et touchez le fichier. Depuis le PC :
 
 1. Branchez le téléphone en USB et choisissez **Transfert de fichiers** dans sa notification USB.
 2. Dans l'Explorateur, copiez l'APK dans **Stockage interne > Download / Téléchargements** du téléphone.
@@ -67,8 +63,8 @@ Vous pouvez télécharger le ZIP GitHub sur le téléphone, le décompresser dan
 4. Autorisez **Installer depuis cette source** si demandé, puis **Installer** et **Ouvrir**.
 5. Ensuite, retrouvez **RFS Flightdeck** dans la liste des applications. Vous pouvez placer l'icône sur l'écran d'accueil.
 
-La copie locale 0.4.2 s'appelle **RFSFlightdeck-Android-0.4.2-debug.apk**.
-Prévoir environ 250 Mo libres. Le premier lancement prépare la base embarquée :
+Une APK transmise directement peut porter un nom plus long ; elle s'installe de la même façon.
+Prévoir au moins 1 Go libre. Le premier lancement prépare la base embarquée :
 laissez cette étape se terminer. Aucun téléchargement de base n'est nécessaire.
 Essayez en mode avion : Finder, carburant, messages, copie et carte locale restent disponibles.
 
@@ -76,16 +72,23 @@ Essayez en mode avion : Finder, carburant, messages, copie et carte locale reste
 Exportez une sauvegarde dans les Paramètres avant toute désinstallation :
 désinstaller efface les données privées. Deux environnements de build peuvent
 avoir des signatures debug différentes. Si Android refuse la mise à jour pour
-cette raison, sauvegardez avant de désinstaller. Les APK locales 0.3 et 0.4
-de cette livraison utilisent la même clé.
+cette raison, sauvegardez avant de désinstaller. Cette APK 0.4.4 conserve la signature de la précédente APK locale 0.4.3.
+La signature reste une clé de test ; une distribution Android définitive exige
+une clé durable sauvegardée. En cas de refus, exportez vos données avant toute
+désinstallation et consultez [le guide de signature](android/SIGNING.md).
 
 ## Préparer son premier vol
 
-1. Ouvrez **Finder**, choisissez compagnie, aéroports ou pays, puis recherchez. Dans la durée minimum, **10 signifie 10 heures**.
+1. Sur Android, ouvrez **Explorer** ; sur PC, **Trouver un vol**. Choisissez compagnie, aéroports ou pays, puis recherchez. Dans la durée minimum, **10 signifie 10 heures**. **Air India : programme officiel 2026** ouvre le catalogue saisonnier, valable jusqu’au 24 octobre 2026. **Inclure les vols sans durée** élargit les recherches sans filtre de durée ; **Un seul résultat par vol** masque les variantes du même numéro et trajet. **Choisir un ou plusieurs avions** ouvre la liste complète : cochez les types voulus, cherchez un nom ou retirez une sélection.
 2. Touchez **Détails**, puis **Utiliser ce vol**. Les informations inconnues ne remplacent pas inutilement vos champs manuels.
-3. Ouvrez **Fuel**, vérifiez avion, durée et arrivée. Une variante unique est reprise automatiquement ; un type ambigu demande un choix. Calculez, puis **Appliquer avion + carburant**.
+3. Ouvrez **Carburant**, ou utilisez le raccourci à côté du champ carburant. Vérifiez avion, durée et arrivée. Une variante unique est reprise automatiquement ; un type ambigu demande un choix. Calculez, puis **Appliquer avion + carburant**.
 4. Dans **Vol**, vérifiez vos informations. **Préparation au sol** montre les pistes présentes dans la base. Choisissez les pistes et portes disponibles dans RFS : aucune affectation n'est inventée.
-5. Pour l'ATC, ouvrez **Texte**, choisissez le message, puis **Aperçu > Copier**. Collez ensuite dans Discord ou RFS.
+5. Pour l'ATC, ouvrez **Messages**, choisissez le message, puis **Outils > Aperçu > Copier** sur Android. Collez ensuite dans Discord ou RFS.
+
+Sur Android, quatre rubriques restent accessibles en bas : **Mon vol, Explorer,
+Carburant, Messages**. **Outils** ouvre la carte, l'aperçu et la bibliothèque.
+Dans les résultats, **Comparer** garde jusqu'à trois vols côte à côte ;
+**Voir ma comparaison** y mène. Les valeurs inconnues restent indiquées.
 
 Dans **ARRIVAL BOARD**, **ETE restante = 5 min** signifie une arrivée prévue
 dans environ cinq minutes. Ce champ est distinct de la **durée estimée du vol**,
@@ -107,8 +110,8 @@ Son horaire est approximatif selon Android et l'économie d'énergie.
 Il n'effectue aucune recherche ou météo en arrière-plan.
 Après un arrêt forcé Android, reprogrammez le rappel dans les Paramètres.
 
-Pour revoir la blague manquée : Android **Paramètres > Revoir la blague de bienvenue** ;
-Windows **Aide et suggestions > Revoir la blague**. Aucun paiement ni saisie bancaire.
+La blague de bienvenue apparaît une seule fois. Le tutoriel et les questions
+fréquentes restent accessibles dans l'aide.
 
 ## Carte, satellite et vents
 

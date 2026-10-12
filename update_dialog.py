@@ -42,7 +42,7 @@ def result_text(result):
     if status == 'up_to_date':
         return tx('Aucune version compatible plus récente n’est publiée.', 'No newer compatible version has been published.')
     if status == 'no_release':
-        return tx('Aucune version publique compatible n’est publiée pour cet appareil. Les versions de test ne sont pas annoncées ici.', 'No compatible public release has been published for this device. Test builds are not announced here.')
+        return tx('Aucune version publique compatible n’est publiée pour cet appareil. Les artefacts temporaires Actions ne sont pas annoncés ici.', 'No compatible public release has been published for this device. Temporary Actions artifacts are not announced here.')
     if status == 'unavailable':
         if result.get('reason') == 'invalid_cache':
             return tx('La dernière vérification enregistrée est illisible. Appuyez sur Vérifier maintenant pour réessayer.', 'The saved check result could not be read. Press Check now to try again.')

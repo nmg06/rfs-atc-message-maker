@@ -73,3 +73,4 @@ jobs:
           path: |
             android/app/build/reports/androidTests/connected/
             build/android-test-logcat.txt
+            build/android-restart-window.xml

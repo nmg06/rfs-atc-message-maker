@@ -1,9 +1,9 @@
 name: Flightdeck Windows test package
 on:
   push:
-    branches: ['feat/flightdeck-map-performance']
+    branches: ['feat/flightdeck-*']
   pull_request:
-    paths: ['route_map.py', 'map_online.py', 'flightdeck.py', 'aircraft_picker.py', 'assets/world_countries.json', 'scripts/package_windows.py', '.github/workflows/flightdeck.yml']
+    paths: ['route_map.py', 'map_online.py', 'flightdeck.py', 'aircraft_picker.py', 'finder/**', 'backup_bundle.py', 'ui.py', 'assets/world_countries.json', 'scripts/package_windows.py', '.github/workflows/flightdeck.yml']
   workflow_dispatch:
 permissions:
   contents: read

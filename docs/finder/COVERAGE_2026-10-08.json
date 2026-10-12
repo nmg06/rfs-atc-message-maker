@@ -1,0 +1,127 @@
+{
+  "database_sha256": "5df24e6a17b16458ba67c46d24b22f6178644ebdd3619ea0a5a713a351a2a1cb",
+  "totals": {
+    "historical_profiles": 203627,
+    "observed_types": 212,
+    "first_observation": "2026-01-01T00:00:01+00:00",
+    "last_observation": "2026-06-30T23:59:59+00:00"
+  },
+  "reference_types": 2700,
+  "types_with_searchable_profiles": 207,
+  "searchable_historical_profiles": 166165,
+  "example_operators": [
+    {
+      "code": "FDX",
+      "name": "Federal Express",
+      "searchable_profiles": 1057
+    },
+    {
+      "code": "UPS",
+      "name": "United Parcel Service",
+      "searchable_profiles": 1034
+    },
+    {
+      "code": "GTI",
+      "name": "Atlas Air",
+      "searchable_profiles": 281
+    },
+    {
+      "code": "BOX",
+      "name": "Aerologic",
+      "searchable_profiles": 154
+    },
+    {
+      "code": "DHK",
+      "name": "DHL Air UK",
+      "searchable_profiles": 128
+    },
+    {
+      "code": "CLX",
+      "name": "Cargolux",
+      "searchable_profiles": 97
+    },
+    {
+      "code": "MTN",
+      "name": "Mountain Air Cargo",
+      "searchable_profiles": 54
+    },
+    {
+      "code": "GEC",
+      "name": "Lufthansa Cargo",
+      "searchable_profiles": 45
+    }
+  ],
+  "example_aircraft": [
+    {
+      "code": "C172",
+      "name": "Cessna 172",
+      "manufacturer": "Aviones Colombia",
+      "profile_count": 72
+    },
+    {
+      "code": "B350",
+      "name": "Beech 300 (B300) Super King Air 350",
+      "manufacturer": "Beech",
+      "profile_count": 66
+    },
+    {
+      "code": "C208",
+      "name": "Cessna 208 Caravan",
+      "manufacturer": "Cessna",
+      "profile_count": 430
+    },
+    {
+      "code": "C510",
+      "name": "Cessna 510 Citation Mustang",
+      "manufacturer": "Cessna",
+      "profile_count": 4
+    },
+    {
+      "code": "SR22",
+      "name": "Cirrus SR22",
+      "manufacturer": "Cirrus",
+      "profile_count": 8
+    },
+    {
+      "code": "DHC6",
+      "name": "DHC-6 Twin Otter",
+      "manufacturer": "De Havilland Canada",
+      "profile_count": 20
+    },
+    {
+      "code": "LJ35",
+      "name": "Learjet 35",
+      "manufacturer": "Gates Learjet",
+      "profile_count": 9
+    },
+    {
+      "code": "PC12",
+      "name": "Pilatus PC-12",
+      "manufacturer": "Pilatus",
+      "profile_count": 68
+    },
+    {
+      "code": "C152",
+      "name": "Aviones Colombia 152",
+      "manufacturer": "Aviones Colombia",
+      "profile_count": 0
+    },
+    {
+      "code": "TBM9",
+      "name": "Daher TBM-700N (TBM-910)",
+      "manufacturer": "Daher",
+      "profile_count": 0
+    }
+  ],
+  "recent_route_evidence": {
+    "routes": 21053,
+    "last_observation": "2026-10-07T07:16:33+00:00"
+  },
+  "count_definition": "Historical route/callsign/aircraft profiles, before other user filters, diversification and result limits. Not individual flights or current published schedules.",
+  "limits": [
+    "Aircraft reference entries do not guarantee flight evidence.",
+    "Recent route evidence has no aircraft or duration and is excluded from aircraft counts.",
+    "Cargo/passenger subvariants sharing an ICAO type remain unknown.",
+    "Historical importer requires a known operator, different endpoint airports, 15-1200 minute tracks and repeated evidence; general aviation and circuits are underrepresented."
+  ]
+}

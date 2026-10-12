@@ -7,6 +7,10 @@ from pathlib import Path
 import shutil
 import zipfile
 
+import sys
+sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
+from scripts.public_package import verify_directory, verify_archive
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -31,11 +35,13 @@ def package(dist, archive):
     # Only this newly built public package is archived, never a user's data folder.
     if (dist/'data').exists():
         raise ValueError('Refusing to archive a package containing a user profile')
+    verify_directory(dist)
     archive.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED, compresslevel=6) as output:
         for source in sorted(dist.rglob('*')):
             if source.is_file():
                 output.write(source, Path('RFSFlightdeck')/source.relative_to(dist))
+    verify_archive(archive)
     print(json.dumps({'archive':str(archive),'bytes':archive.stat().st_size,
                       'database_sha256':manifest['database_sha256']}))
 

@@ -5,7 +5,8 @@ FlightdeckHelp.init({language:()=>model?.state.language, hasSeen:()=>!!model?.st
 });
 function focusHelpTarget(key) {
   if(!key)return;
-  const el=document.querySelector(`[data-key="${CSS.escape(key)}"]`);
+  const attr=`[data-key="${CSS.escape(key)}"]`;
+  const el=document.querySelector(`input${attr},select${attr},textarea${attr}`);
   if(!el)return;
   for(let parent=el.parentElement;parent;parent=parent.parentElement)if(parent.tagName==='DETAILS')parent.open=true;
   el.scrollIntoView({block:'center',behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'});

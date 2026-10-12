@@ -69,6 +69,7 @@ class Criteria:
     callsign: str = ""
     airline: str = ""
     aircraft: str = ""
+    aircraft_types: list[str] = field(default_factory=list)
     manufacturer: str = ""
     family: str = ""
     origin: list[str] = field(default_factory=list)
@@ -99,8 +100,15 @@ class Criteria:
     rfs_only: bool = False
     rfs_aircraft_id: str = ""
     route_catalog: bool = False
+    published_catalog: bool = False
+    include_unknown_duration: bool = False
+    unique_flights: bool = False
 
     def validate(self):
+        from .aircraft_filters import normalize_types
+        if self.route_catalog and self.published_catalog:
+            raise ValueError("CATALOG_CONFLICT")
+        normalize_types(self.aircraft_types)
         parse_airport_codes(self.excluded_airports, exclusion=True)
         for key, value in vars(self).items():
             if isinstance(value, list) and (len(value) > 50 or any(not isinstance(v, str) or len(v)>100 for v in value)):
@@ -119,6 +127,12 @@ class Criteria:
 ALIASES = {"a320neo": "A20N", "a321neo": "A21N", "a319neo": "A19N", "b737max8": "B38M"}
 
 
+def airline_query(value):
+    # The reference uses Federal Express; users commonly search for FedEx.
+    term = value.strip()
+    return 'FDX' if term.casefold() == 'fedex' else term
+
+
 def search(path: Path, criteria: Criteria, now_utc: datetime, *, _include_population=False) -> dict:
     criteria.validate()
     if now_utc.tzinfo is None:
@@ -127,7 +141,8 @@ def search(path: Path, criteria: Criteria, now_utc: datetime, *, _include_popula
     if criteria.route_catalog:
         from .route_catalog import search_routes
         return search_routes(path, criteria, now_utc, include_population=_include_population)
-    warnings = ["DURATION_PROVENANCE_NOTICE", "HISTORICAL_NOT_SCHEDULED"]
+    published = criteria.published_catalog
+    warnings = ["PUBLISHED_SCHEDULE_NOTICE"] if published else ["DURATION_PROVENANCE_NOTICE", "HISTORICAL_NOT_SCHEDULED"]
     departure = arrival = None
     for endpoint in ("departure", "arrival"):
         if getattr(criteria, endpoint + "_time"):
@@ -149,15 +164,28 @@ def search(path: Path, criteria: Criteria, now_utc: datetime, *, _include_popula
             raise ValueError("TIME_INCONSISTENT")
         if target is None:
             target = implied
-    where = ["n_obs >= 3", "duration_min IS NOT NULL"]
+    where = ["n_obs >= 3"]
+    if not criteria.include_unknown_duration:
+        where.append("duration_min IS NOT NULL")
     params = []
+    view = "v_pattern_search"
+    if published:
+        from zoneinfo import ZoneInfo
+        instant, _ = resolve_local(criteria.departure_date, "12:00", criteria.departure_tz, now_utc)
+        day = instant.astimezone(ZoneInfo(criteria.departure_tz)).date()
+        view = "v_published_search"
+        where = ["valid_from <= ?", "valid_to >= ?", "instr(schedule_days, ?) > 0"]
+        params = [day.isoformat(), day.isoformat(), str(day.isoweekday())]
 
     def in_filter(columns, values, negate=False):
         if not values:
             return
         pieces = []
         for column in columns:
-            pieces.append(f"COALESCE(UPPER({column}), '') IN ({','.join('?' for _ in values)})")
+            if column == "aircraft" and not negate:
+                pieces.append(f"aircraft IN ({','.join('?' for _ in values)})")
+            else:
+                pieces.append(f"COALESCE(UPPER({column}), '') IN ({','.join('?' for _ in values)})")
             params.extend(v.strip().upper() for v in values)
         where.append(("NOT " if negate else "") + "(" + " OR ".join(pieces) + ")")
 
@@ -192,7 +220,7 @@ def search(path: Path, criteria: Criteria, now_utc: datetime, *, _include_popula
         where.append("(callsign LIKE ? OR callsign = ?)")
         params.extend([f"%{term}%", term])
     if criteria.airline.strip():
-        term = criteria.airline.strip()
+        term = airline_query(criteria.airline)
         if len(term) <= 3 and term.isalnum():
             where.append("airline IN (SELECT icao FROM airlines WHERE icao = ? COLLATE NOCASE OR iata = ? COLLATE NOCASE)")
             params.extend([term] * 2)
@@ -201,6 +229,9 @@ def search(path: Path, criteria: Criteria, now_utc: datetime, *, _include_popula
             params.append(term)
     if criteria.rfs_only:
         in_filter(['aircraft'], SUPPORTED_TYPES)
+    if criteria.aircraft_types:
+        from .aircraft_filters import normalize_types
+        in_filter(['aircraft'], normalize_types(criteria.aircraft_types))
     if criteria.rfs_aircraft_id:
         code = TYPE_BY_ID.get(criteria.rfs_aircraft_id)
         if not code:
@@ -231,11 +262,13 @@ def search(path: Path, criteria: Criteria, now_utc: datetime, *, _include_popula
     # For a duration target SQLite can otherwise scan the ranking index until
     # exhaustion to preserve ORDER BY, ignoring the selective duration index.
     # Unary + keeps the same value/order while requiring the small set to sort.
-    selective = target is not None or bool(criteria.airline.strip()) or any(
+    selective = target is not None or bool(criteria.airline.strip()) or bool(criteria.aircraft_types or criteria.aircraft.strip() or criteria.manufacturer.strip() or criteria.family.strip() or criteria.rfs_aircraft_id or criteria.origin or criteria.destination or criteria.rfs_only) or any(
         getattr(criteria, endpoint+'_'+suffix) for endpoint in ('origin', 'destination')
         for suffix in ('country', 'continent', 'region'))
     order = "+n_obs DESC,last_seen DESC,pattern_id ASC" if selective else "n_obs DESC,last_seen DESC,pattern_id ASC"
     with connect_readonly(path) as db:
+        if published and not db.execute("SELECT 1 FROM sqlite_master WHERE name='v_published_search' AND type='view'").fetchone():
+            raise ValueError("PUBLISHED_CATALOG_UNAVAILABLE")
         if ex_codes:
             markers = ','.join('?' for _ in ex_codes)
             known = {code for row in db.execute(
@@ -244,7 +277,7 @@ def search(path: Path, criteria: Criteria, now_utc: datetime, *, _include_popula
             unknown = [code for code in ex_codes if code not in known]
             if unknown:
                 raise ValueError('EXCLUDED_AIRPORT_UNKNOWN: ' + ', '.join(unknown))
-        candidates = [dict(row) for row in db.execute("SELECT * FROM v_pattern_search WHERE " + " AND ".join(where) +  # nosec B608 - SQL fragments/columns are fixed; all filter values bound
+        candidates = [dict(row) for row in db.execute("SELECT * FROM " + view + " WHERE " + " AND ".join(where) +  # nosec B608 - SQL fragments/columns are fixed; all filter values bound
                       " ORDER BY " + order + " LIMIT 20001", params)]
         sources = [dict(r) for r in db.execute("SELECT * FROM sources ORDER BY source_id")]
         build = dict(db.execute("SELECT key,value FROM build_info"))
@@ -254,11 +287,15 @@ def search(path: Path, criteria: Criteria, now_utc: datetime, *, _include_popula
     results = []
     for row in candidates:
         duration = row["duration_min"]
+        if duration is None and (departure or arrival):
+            continue
         last_seen = datetime.fromisoformat(row["last_seen"]).astimezone(timezone.utc)
         age_days = max(0, (now_utc-last_seen).total_seconds()/86400)
         parts = {"frequency": (10, min(1, math.log1p(row["n_obs"])/math.log1p(60))),
                  "recency": (5, .5 ** (age_days/30)),
-                 "confidence": (5, row["n_complete"]/row["n_obs"])}
+                 "confidence": (5, row["n_complete"]/max(1,row["n_obs"]))}
+        if published:
+            parts = {"publication": (5, .5)}
         if target is not None:
             tolerance = max(criteria.tolerance_minutes, .15 * target)
             fit = max(0, 1-abs(duration-target)/tolerance)
@@ -270,7 +307,7 @@ def search(path: Path, criteria: Criteria, now_utc: datetime, *, _include_popula
         elif criteria.min_minutes is not None:
             parts["duration"] = (30, 1)
         proposed_departure = departure
-        proposed_arrival = departure + timedelta(minutes=duration) if departure else None
+        proposed_arrival = departure + timedelta(minutes=duration) if departure and duration is not None else None
         if arrival and not departure:
             proposed_arrival = arrival
             proposed_departure = arrival - timedelta(minutes=duration)
@@ -286,7 +323,7 @@ def search(path: Path, criteria: Criteria, now_utc: datetime, *, _include_popula
         row["subscores"] = {k: round(v[1], 4) for k,v in parts.items()}
         row["warnings"] = []
         row['duration_provenance'] = duration_provenance(row)
-        if row["n_obs"] < 5:
+        if row["n_obs"] < 5 and not published:
             row["warnings"].append("LOW_OBSERVATIONS")
         last_obs_str = build.get("last_observation")
         if last_obs_str:
@@ -297,7 +334,7 @@ def search(path: Path, criteria: Criteria, now_utc: datetime, *, _include_popula
                 season_age_days = age_days
         else:
             season_age_days = age_days
-        if season_age_days > 90:
+        if season_age_days > 90 and not published:
             row["warnings"].append("STALE_DATA")
         if row['duration_provenance'] == 'ESTIMATED_DISTANCE_HEURISTIC':
             row['warnings'].append('DURATION_ESTIMATED_HEURISTIC')
@@ -314,6 +351,11 @@ def search(path: Path, criteria: Criteria, now_utc: datetime, *, _include_popula
         results.append(row)
     results.sort(key=lambda r: (-r["score"], -r["n_obs"], -datetime.fromisoformat(r["last_seen"]).timestamp(),
                                r.get("callsign") or "", r.get("origin") or "", r.get("destination") or "", r.get("pattern_id") or 0))
+    if published or criteria.unique_flights:
+        unique = {}
+        for row in results:
+            unique.setdefault((row["airline"],row["callsign"],row["origin"],row["destination"]),row)
+        results = list(unique.values())
     diversified, counts = [], {}
     max_per_route = 10 if criteria.airline else 3
     for row in results:

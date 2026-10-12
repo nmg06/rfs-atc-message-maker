@@ -1,3 +1,4 @@
+const {go}=require('./navigation.cjs');
 // Test language switcher and Finder enrichment (cities, callsign, swap, hubs, return/next leg)
 const {chromium} = require('playwright');
 const assert = require('node:assert/strict');
@@ -55,7 +56,7 @@ const assert = require('node:assert/strict');
     await page.locator('#flight-callsign').waitFor();
 
     // 3. Navigate to Finder
-    await page.locator('[data-screen="finder"]').click();
+    await go(page,'finder');
     await page.locator('#finder-origin').waitFor();
 
     // 4. Callsign filter field exists
@@ -84,6 +85,7 @@ const assert = require('node:assert/strict');
 
     const firstCard = page.locator('#result-0');
     assert(await firstCard.isVisible(), 'Search results should appear');
+    await firstCard.locator('.result-extra summary').click();
     const returnBtn = firstCard.locator('[data-action="finder-return"]');
     const nextLegBtn = firstCard.locator('[data-action="finder-next-leg"]');
     assert(await returnBtn.isVisible(), 'Return flight button should be visible on result');

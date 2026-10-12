@@ -1,19 +1,22 @@
 """Optional local Finder dialog. Search runs off the GUI thread."""
 from datetime import datetime, timezone
 from pathlib import Path
+import json
 import sqlite3
 from zoneinfo import ZoneInfo
 
 from PySide6.QtCore import QDate, QThread, Signal, Qt, QTimeZone, QTimer
 from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QComboBox,
     QFormLayout, QLineEdit, QCheckBox, QDateEdit, QSplitter, QScrollArea, QWidget, QTableWidget,
-    QTableWidgetItem, QAbstractItemView, QHeaderView, QPlainTextEdit, QFileDialog, QGroupBox, QCompleter)
+    QTableWidgetItem, QAbstractItemView, QHeaderView, QPlainTextEdit, QFileDialog, QGroupBox, QCompleter,
+    QListWidget, QListWidgetItem, QDialogButtonBox)
 
 from .database import connect_readonly
 from .i18n import tr, error_text
 from .search import Criteria, search, SearchSession, parse_airport_codes, parse_airport_queries
 from .duration import parse_minutes, parse_finder_hours
 from .rfs_catalogue import records, TYPE_BY_ID
+from .aircraft_filters import catalogue as aircraft_catalogue, normalize_types
 from .provenance import duration_provenance
 from country_search import country_rows, resolve_country
 from ux import install_wheel_guard, smooth_scroll
@@ -87,6 +90,7 @@ class FinderDialog(QDialog):
         self._persist_timer.timeout.connect(self.persist_filters)
         self.finished.connect(self.persist_filters)
         self.results = []
+        self.selected_aircraft = []
         self.session = SearchSession()
         self.visible_count = 0
         self._runway_cache = {}
@@ -118,6 +122,9 @@ class FinderDialog(QDialog):
         self.hint = QLabel()
         self.hint.setWordWrap(True)
         self.outer.addWidget(self.hint)
+        self.discovery_hint = QLabel()
+        self.discovery_hint.setWordWrap(True)
+        self.outer.addWidget(self.discovery_hint)
         split = QSplitter()
         split.setChildrenCollapsible(False)
         split.setHandleWidth(16)
@@ -164,9 +171,20 @@ class FinderDialog(QDialog):
         self.rfs_only = QCheckBox(self.t('rfs_only'))
         self.rfs_only.setChecked(True)
         self.form.addRow(self.rfs_only)
+        self.include_unknown_duration = QCheckBox(self.t('include_unknown_duration'))
+        self.include_unknown_duration.setChecked(True)
+        self.form.addRow(self.include_unknown_duration)
+        self.unique_flights = QCheckBox(self.t('unique_flights'))
+        self.unique_flights.setChecked(True)
+        self.form.addRow(self.unique_flights)
         self.route_catalog = QCheckBox(self.t('route_catalog'))
         self.form.addRow(self.route_catalog)
         self.route_catalog.setToolTip(self.t('ROUTE_EVIDENCE_NOTICE'))
+        self.published_catalog = QCheckBox(self.t('published_catalog'))
+        self.form.addRow(self.published_catalog)
+        self.published_catalog.setToolTip(self.t('PUBLISHED_SCHEDULE_NOTICE'))
+        self.published_catalog.toggled.connect(lambda enabled: (self.route_catalog.setChecked(False), self.rfs_only.setChecked(False)) if enabled else None)
+        self.route_catalog.toggled.connect(lambda enabled: self.published_catalog.setChecked(False) if enabled else None)
         self.route_catalog.toggled.connect(lambda enabled: self.rfs_only.setChecked(False) if enabled else None)
         self.rfs_labels = {r['name']:r['id'] for r in records()}
         self.timezones = {}
@@ -230,6 +248,13 @@ class FinderDialog(QDialog):
                 field.setPlaceholderText('07:00')
             if key == 'aircraft':
                 self.add_completer(field, list(self.rfs_labels))
+                self.aircraft_picker_button = QPushButton('Choisir plusieurs avions…' if language == 'fr' else 'Choose multiple aircraft…')
+                self.aircraft_picker_button.clicked.connect(self.open_aircraft_picker)
+                self.form.addRow(self.aircraft_picker_button)
+                self.aircraft_chips = QWidget()
+                self.aircraft_chips_layout = QVBoxLayout(self.aircraft_chips)
+                self.aircraft_chips_layout.setContentsMargins(0, 0, 0, 0)
+                self.form.addRow(self.aircraft_chips)
             if key.endswith('_country'):
                 self.add_completer(field, [f'{fr} / {en} ({code})' for code, fr, en in country_rows()])
             if key == 'airline':
@@ -313,7 +338,7 @@ class FinderDialog(QDialog):
                 field.currentTextChanged.connect(self.invalidate)
             else:
                 field.textChanged.connect(self.invalidate)
-        for check in (self.international, self.rfs_only, self.diversify, self.route_catalog):
+        for check in (self.international, self.rfs_only, self.diversify, self.route_catalog, self.published_catalog, self.include_unknown_duration, self.unique_flights):
             check.toggled.connect(self.invalidate)
         self.load_suggestions()
         self.restore_filters()
@@ -323,15 +348,80 @@ class FinderDialog(QDialog):
     def t(self, key):
         return tr(key, self.language)
 
+    def refresh_aircraft_chips(self):
+        while self.aircraft_chips_layout.count():
+            item = self.aircraft_chips_layout.takeAt(0)
+            item.widget().deleteLater()
+        for code in self.selected_aircraft:
+            button = QPushButton(code + ' ×')
+            button.setAccessibleName(('Retirer ' if self.language == 'fr' else 'Remove ') + code)
+            button.clicked.connect(lambda checked=False, code=code: self.remove_aircraft_type(code))
+            self.aircraft_chips_layout.addWidget(button)
+
+    def remove_aircraft_type(self, code):
+        self.selected_aircraft.remove(code)
+        self.refresh_aircraft_chips()
+        self.invalidate()
+
+    def open_aircraft_picker(self):
+        dialog = QDialog(self)
+        dialog.setWindowTitle('Choisir les avions' if self.language == 'fr' else 'Choose aircraft')
+        dialog.resize(560, 650)
+        layout = QVBoxLayout(dialog)
+        hint = QLabel('Le compteur indique les profils historiques recherchables avant vos autres filtres. Un avion du catalogue peut n’avoir aucun profil. Les variantes cargo/passagers partageant un code ICAO restent regroupées.' if self.language == 'fr' else 'Counts show searchable historical profiles before your other filters. A catalogue aircraft may have no profile. Cargo/passenger variants sharing an ICAO code remain grouped.')
+        hint.setWordWrap(True)
+        layout.addWidget(hint)
+        query = QLineEdit()
+        query.setPlaceholderText('Airbus, Boeing, A320…')
+        query.setAccessibleName('Rechercher un avion' if self.language == 'fr' else 'Search aircraft')
+        layout.addWidget(query)
+        listing = QListWidget()
+        layout.addWidget(listing)
+        try:
+            rows = aircraft_catalogue(self.path)
+        except (OSError, sqlite3.Error, ValueError):
+            self.status.setText(self.t('DATA_UNAVAILABLE'))
+            return
+        for row in rows:
+            name = row['name']
+            count = row['profile_count']
+            coverage = (f'{count} profils avec durée' if count else 'Aucun profil avec durée') if self.language == 'fr' else (f'{count} profiles with duration' if count else 'No profile with duration')
+            item = QListWidgetItem(f"{name} · {row['code']} · {coverage}")
+            item.setData(Qt.ItemDataRole.UserRole, row['code'])
+            item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+            item.setCheckState(Qt.CheckState.Checked if row['code'] in self.selected_aircraft else Qt.CheckState.Unchecked)
+            listing.addItem(item)
+        query.textChanged.connect(lambda value: [listing.item(i).setHidden(value.casefold() not in listing.item(i).text().casefold()) for i in range(listing.count())])
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+        buttons.accepted.connect(dialog.accept)
+        buttons.rejected.connect(dialog.reject)
+        layout.addWidget(buttons)
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            values = [listing.item(i).data(Qt.ItemDataRole.UserRole) for i in range(listing.count()) if listing.item(i).checkState() == Qt.CheckState.Checked]
+            try:
+                self.selected_aircraft = normalize_types(values)
+            except ValueError:
+                self.status.setText(self.t('AIRCRAFT_TYPES_FORMAT'))
+                return
+            if self.selected_aircraft:
+                self.fields['aircraft'].clear()
+            self.refresh_aircraft_chips()
+            self.invalidate()
+
     def translate(self):
+        self.aircraft_picker_button.setText('Choisir plusieurs avions…' if self.language == 'fr' else 'Choose multiple aircraft…')
         self.less_button.setText('Voir moins' if self.language == 'fr' else 'Show less')
         self.database_button.setText(self.t("database"))
         self.search_button.setText(self.t("search"))
         self.use_button.setText(self.t("use"))
         self.close_button.setText(self.t("close"))
         self.hint.setText(self.t("optional"))
+        self.discovery_hint.setText('Envie de cargo ? Recherchez une compagnie comme FedEx (FDX), UPS ou Cargolux (CLX). Pour les petits avions, choisissez Cessna, Cirrus ou Twin Otter dans la liste. La couverture varie selon l’appareil ; le compteur indique les profils disponibles.' if self.language == 'fr' else 'Looking for cargo? Search an airline such as FedEx (FDX), UPS or Cargolux (CLX). For smaller aircraft, choose Cessna, Cirrus or Twin Otter from the list. Coverage varies by aircraft; counts show available profiles.')
         self.international.setText(self.t("international"))
         self.route_catalog.setText(self.t('route_catalog'))
+        self.published_catalog.setText(self.t('published_catalog'))
+        self.include_unknown_duration.setText(self.t('include_unknown_duration'))
+        self.unique_flights.setText(self.t('unique_flights'))
         self.real.setText(self.t("real"))
         for key, label in self.labels.items():
             label.setText(self.t(key))
@@ -353,6 +443,8 @@ class FinderDialog(QDialog):
             return
         self._restoring = True
         try:
+            self.selected_aircraft = normalize_types(saved.get('aircraft_types', []))
+            self.refresh_aircraft_chips()
             for key, widget in self.fields.items():
                 if key not in saved:
                     continue
@@ -366,7 +458,7 @@ class FinderDialog(QDialog):
                     widget.setCurrentIndex(index) if index >= 0 else widget.setCurrentText(str(value))
                 else:
                     widget.setText(', '.join(value) if isinstance(value, list) else str(value))
-            for key, widget in (('international_only', self.international), ('rfs_only', self.rfs_only), ('diversify', self.diversify), ('route_catalog', self.route_catalog)):
+            for key, widget in (('international_only', self.international), ('rfs_only', self.rfs_only), ('diversify', self.diversify), ('route_catalog', self.route_catalog), ('published_catalog', self.published_catalog), ('include_unknown_duration',self.include_unknown_duration),('unique_flights',self.unique_flights)):
                 if type(saved.get(key)) is bool:
                     widget.setChecked(saved[key])
         finally:
@@ -385,7 +477,8 @@ class FinderDialog(QDialog):
             else:
                 value = widget.text()
             values[key] = value
-        values.update(international_only=self.international.isChecked(), rfs_only=self.rfs_only.isChecked(), diversify=self.diversify.isChecked(), route_catalog=self.route_catalog.isChecked())
+        values.update(international_only=self.international.isChecked(), rfs_only=self.rfs_only.isChecked(), diversify=self.diversify.isChecked(), route_catalog=self.route_catalog.isChecked(), published_catalog=self.published_catalog.isChecked(),include_unknown_duration=self.include_unknown_duration.isChecked(),unique_flights=self.unique_flights.isChecked())
+        values['aircraft_types'] = list(self.selected_aircraft)
         self._profile_store.state['finder_filters'] = values
         try:
             self._profile_store.save_state()
@@ -462,6 +555,7 @@ class FinderDialog(QDialog):
 
     def criteria(self):
         values = {}
+        values['aircraft_types'] = list(self.selected_aircraft)
         for key, widget in self.fields.items():
             if isinstance(widget, QDateEdit):
                 values[key] = widget.date().toString('yyyy-MM-dd')
@@ -503,6 +597,9 @@ class FinderDialog(QDialog):
         values['international_only'] = self.international.isChecked()
         values['rfs_only'] = self.rfs_only.isChecked()
         values['route_catalog'] = self.route_catalog.isChecked()
+        values['published_catalog'] = self.published_catalog.isChecked()
+        values['include_unknown_duration'] = self.include_unknown_duration.isChecked()
+        values['unique_flights'] = self.unique_flights.isChecked()
         values['diversify'] = self.diversify.isChecked()
         return Criteria(**values)
 
@@ -581,7 +678,7 @@ class FinderDialog(QDialog):
             row = self.results[index]
             minutes = round(row["duration_min"]) if row["duration_min"] is not None else None
             origin = duration_provenance(row)
-            label = self.t('duration_observed_short' if origin == 'AGGREGATED_COMPLETE_TRACKS'
+            label = self.t('duration_published_short' if origin == 'DERIVED_PUBLISHED_TIMES' else 'duration_observed_short' if origin == 'AGGREGATED_COMPLETE_TRACKS'
                            else 'duration_estimated_short' if origin == 'ESTIMATED_DISTANCE_HEURISTIC'
                            else 'duration_unknown_short')
             values = (f"{row['airline_name']} / {row['callsign']}", f"{row['origin']} → {row['destination']}",
@@ -643,7 +740,7 @@ class FinderDialog(QDialog):
         row = self.results[index]
         origin = duration_provenance(row)
         observed = origin == 'AGGREGATED_COMPLETE_TRACKS'
-        duration_label = ('duration_observed' if observed else 'duration_estimated'
+        duration_label = ('duration_published' if origin == 'DERIVED_PUBLISHED_TIMES' else 'duration_observed' if observed else 'duration_estimated'
                           if origin == 'ESTIMATED_DISTANCE_HEURISTIC' else 'duration_unverified')
         duration_line = (f"{self.t(duration_label)}: {row['duration_min']:.0f} min" if row["duration_min"] is not None else self.t("route_unknown"))
         if observed and row.get('duration_p10') is not None and row.get('duration_p90') is not None:
@@ -654,9 +751,16 @@ class FinderDialog(QDialog):
             f"{self.t('distance')}: {row['distance_nm']:.0f} NM" if row['distance_nm'] is not None else self.t('unknown'),
             f"{row['n_obs']} {self.t('observations')} • {row['n_complete']} {self.t('coverage')}",
             f"{self.t('times')}: {row['first_seen']} → {row['last_seen']}" if row.get("record_kind") == "OBSERVED_ROUTE" else f"{self.t('times')}: {row['latest_departure']} → {row['latest_arrival']}"]
+        if row.get("record_kind") == "PUBLISHED_SCHEDULE":
+            lines = [self.t("publication"), lines[1], lines[2], lines[3], duration_line,
+                self.t("published_validity")+f": {row['valid_from']} → {row['valid_to']} · {row['schedule_days']} (1–7)",
+                f"{row['aircraft_as_published']} · {row['departure_local'] or '?'} → {row['arrival_local'] or '?'} · local",
+                self.t("PUBLISHED_SCHEDULE_NOTICE")]
+            via = json.loads(row.get('via_json') or '[]')
+            if via: lines.append('Via: ' + ' → '.join(via))
         if origin == 'ESTIMATED_DISTANCE_HEURISTIC':
             lines += [self.t('duration_formula'), self.t('duration_formula_limits')]
-        elif not observed and row["duration_min"] is not None:
+        elif not observed and row["duration_min"] is not None and row.get("record_kind") != "PUBLISHED_SCHEDULE":
             lines.append(self.t('DURATION_POST_IMPORT_UNVERIFIED'))
         if row.get("sim_departure_utc"):
             dep = datetime.fromisoformat(row["sim_departure_utc"])

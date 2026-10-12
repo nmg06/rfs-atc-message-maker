@@ -41,7 +41,7 @@ DESIGNS_FILE = DATA_DIR / "rfs_designs.json"
 LOG_FILE = DATA_DIR / "app.log"
 
 DEFAULT_STATE: dict[str, Any] = {
-    "pilot_name": "n1chita",
+    "pilot_name": "",
     "pilot_library": [],
     "server": "",
     "theme": "Sombre",

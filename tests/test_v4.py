@@ -92,6 +92,7 @@ class V4Tests(unittest.TestCase):
         window.render_preview()
         self.assertFalse(window.flight_widgets['airline'].property('invalid'))
         window.store.state.update(flight=sample_flight(),per_type=sample_data())
+        window.pilot_name.setCurrentText("TEST PILOT")
         window._rebuild_forms()
         window.copy_message()
         self.assertTrue(window.can_copy,window.issues.text())

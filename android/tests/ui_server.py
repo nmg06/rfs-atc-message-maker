@@ -8,7 +8,7 @@ import sys
 import tempfile
 import threading
 ROOT = Path(__file__).resolve().parents[2]
-sys.path[:0] = [str(ROOT/'android/app/src/main/python'), str(ROOT/'android/app/build/generated/python')]
+sys.path[:0] = [str(ROOT/'android/app/src/main/python'), str(ROOT/'android/app/build/generated/python'), str(ROOT)]
 from android_engine import Engine
 
 temp = tempfile.TemporaryDirectory()
@@ -27,6 +27,16 @@ class Handler(SimpleHTTPRequestHandler):
         super().__init__(*args,directory=str(ROOT/'android/app/src/main/assets/www'),**kwargs)
     def log_message(self,*args):pass
     def do_GET(self):
+        if self.path.startswith('/site/'):
+            from urllib.parse import urlsplit
+            from scripts.prepare_site import PUBLIC_FILES
+            path = urlsplit(self.path).path.removeprefix('/site/')
+            if path not in PUBLIC_FILES:
+                self.send_error(404)
+                return
+            self.path = '/' + path
+            self.directory = str(ROOT)
+            return super().do_GET()
         if self.path.startswith('/prototype/'):
             self.path = self.path.removeprefix('/prototype')
             self.directory = str(ROOT/'mobile')

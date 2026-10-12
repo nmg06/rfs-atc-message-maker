@@ -105,6 +105,7 @@ class UiV2Tests(unittest.TestCase):
             paths = {key: Path(folder) / (key + ".json") for key in ("STATE_FILE", "HISTORY_FILE", "PRESETS_FILE", "DESIGNS_FILE")}
             with patch.multiple(storage, **paths):
                 window = RFSWindow()
+                window.pilot_name.setCurrentText("TEST PILOT")
                 window.store.state["flight"] = sample_flight()
                 window.store.state["per_type"] = sample_data()
                 window._rebuild_forms()

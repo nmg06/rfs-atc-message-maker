@@ -7,6 +7,7 @@ import math
 import os
 from pathlib import Path
 import re
+import sqlite3
 import tempfile
 import uuid
 from zoneinfo import available_timezones
@@ -16,6 +17,7 @@ from map_geometry import airport_coordinates, great_circle
 from visual_themes import THEMES, theme_colors
 from flight_planning import airport_plan, elapsed_seconds, validate_log
 from finder.database import connect_readonly
+from finder.aircraft_filters import catalogue as aircraft_catalogue, normalize_types
 from finder.duration import parse_minutes, parse_finder_hours
 from finder.mapping import use_this_flight
 from finder.provenance import duration_provenance
@@ -125,6 +127,15 @@ class Engine:
 
     def metadata(self):
         language = self.state['language']
+        finder_aircraft_warning = ''
+        try:
+            finder_aircraft = aircraft_catalogue(self.database)
+        except (OSError, sqlite3.Error, ValueError):
+            finder_aircraft = []
+            finder_aircraft_warning = (
+                'Base Flight Finder indisponible. Les messages, le carburant et les sauvegardes restent utilisables.'
+                if language == 'fr' else
+                'Flight Finder database unavailable. Messages, fuel and backups remain usable.')
         def spec(fields_dict):
             return {key: {**asdict(field), 'label': tr(field.label), 'hint': tr(field.hint),
                           'choice_labels': [tr(c) for c in field.choices]} for key, field in fields_dict.items()}
@@ -135,9 +146,11 @@ class Engine:
             'designs': BUILTIN_DESIGNS, 'emoji_styles': EMOJI_STYLES,
             'operation_modes': list(OPERATION_LABELS), 'countries': COUNTRIES,
             'aircraft': load_json('aircraft_fuel_data.json')['aircraft'],
+            'finder_aircraft': finder_aircraft,
+            'finder_aircraft_warning': finder_aircraft_warning,
             'fuel_catalogue_note': tr(load_json('aircraft_fuel_data.json').get('note', '')),
             'arrivals': sorted(load_json('airport_alternates.json')['destinations']),
-            'finder_fields': {f.name: {'default': deepcopy(getattr(Criteria(), f.name)),
+            'finder_fields': {f.name: {'default': True if f.name in ('include_unknown_duration','unique_flights') else deepcopy(getattr(Criteria(), f.name)),
                 'label': finder_tr(f.name, language)} for f in fields(Criteria)},
             'finder_error_labels': {code: finder_tr(code, language) for code in ('EXCLUDED_AIRPORT_FORMAT', 'EXCLUDED_AIRPORT_UNKNOWN')},
             'finder_excluded_hint': finder_tr('excluded_hint', language),
@@ -249,11 +262,14 @@ class Engine:
 
     def criteria(self, values):
         known = {f.name: getattr(Criteria(), f.name) for f in fields(Criteria)}
-        converted = {}
+        converted = {'include_unknown_duration':True,'unique_flights':True}
         for key, item in values.items():
             if key not in known or key == 'offset':
                 continue
             default = known[key]
+            if key == 'aircraft_types':
+                converted[key] = normalize_types(item)
+                continue
             if key in ('origin', 'destination'):
                 try:
                     converted[key] = parse_airport_queries(item)
@@ -281,10 +297,20 @@ class Engine:
         return Criteria(**converted)
 
     def duration_details(self, row):
+        if row.get("record_kind") == "PUBLISHED_SCHEDULE":
+            label=finder_tr("duration_published" if row.get("duration_min") is not None else "route_unknown",self.state["language"])
+            note=finder_tr("PUBLISHED_SCHEDULE_NOTICE",self.state["language"])+f" · {row['valid_from']} → {row['valid_to']} · {row['schedule_days']} · {row['aircraft_as_published']} · {row['departure_local'] or '?'} → {row['arrival_local'] or '?'} (local)"
+            via=json.loads(row.get("via_json") or "[]")
+            if via: note += " · Via: " + " → ".join(via)
+            return {"origin":"DERIVED_PUBLISHED_TIMES" if row.get("duration_min") is not None else "UNKNOWN","label":label,"note":note,"bounds_kind":"unknown","bounds":[None,None]}
         origin = duration_provenance(row)
         if row.get('record_kind') == 'OBSERVED_ROUTE':
             return {'origin': 'UNKNOWN', 'label': finder_tr('route_unknown', self.state['language']),
                     'note': finder_tr('ROUTE_EVIDENCE_NOTICE', self.state['language']), 'bounds_kind': 'unknown', 'bounds': [None, None]}
+        if origin == 'UNKNOWN':
+            return {'origin':'UNKNOWN', 'label':finder_tr('route_unknown',self.state['language']),
+                    'note': ('Durée inconnue : aucune durée vérifiée dans la source. Renseignez celle de votre simulation.' if self.state['language']=='fr' else 'Unknown duration: the source provides no verified duration. Enter the duration for your simulation.'),
+                    'bounds_kind':'unknown','bounds':[None,None]}
         observed = origin == 'AGGREGATED_COMPLETE_TRACKS'
         estimated = origin == 'ESTIMATED_DISTANCE_HEURISTIC'
         label = finder_tr('duration_observed' if observed else 'duration_estimated' if estimated else 'duration_unverified', self.state['language'])

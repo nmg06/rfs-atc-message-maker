@@ -63,10 +63,19 @@ Une version publique stable doit contenir des fichiers portant sa version :
 **RFSFlightdeck-Android-0.4.2.apk** et
 **RFSFlightdeck-Windows-0.4.2-x64.zip**, par exemple pour le tag **v0.4.2**.
 Les versions doivent augmenter et la signature Android doit rester identique.
-Les anciens ZIP historiques, brouillons et préversions sont ignorés.
-Aucune nouvelle release n’est publiée automatiquement par ce travail.
+Les anciens ZIP historiques et les brouillons sont ignorés. Les builds 0.4.4 du canal préversion incluent les préversions publiées avec des fichiers compatibles ; une future édition stable les ignorera.
+La publication se fait à la demande du propriétaire, après les vérifications.
 
 Sur Windows, les copies de récupération et le journal d’import se trouvent
 dans le dossier **data**. Un import interrompu est restauré à l’ouverture
 suivante. Sur Android, la sauvegarde privée précédant l’import est conservée
 et le fichier principal est remplacé de façon atomique.
+
+
+## Premier passage au nouveau dépôt
+
+Le dépôt s'appelle désormais **nmg06/rfs-flightdeck**. Les anciens clients 0.4.3
+utilisent l'ancien endpoint et refusent les redirections. Pour cette première mise
+à jour, utilisez les liens directs du [guide d'installation](INSTALLATION.md).
+La 0.4.4 interroge le nouveau dépôt. La recherche automatique reste facultative,
+au plus une fois par jour ; les données locales ne sont jamais envoyées.

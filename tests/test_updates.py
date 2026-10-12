@@ -39,6 +39,14 @@ class UpdateTests(unittest.TestCase):
         candidate['assets'][0]['browser_download_url'] = candidate['assets'][0]['browser_download_url'].replace(old_tag, candidate['tag_name'])
         self.assertEqual('available', self.select([candidate])['status'])
 
+    def test_preview_requires_explicit_channel_and_exact_new_repository(self):
+        value=release('0.4.4');value['prerelease']=True
+        self.assertEqual('no_release',self.select([value])['status'])
+        self.assertEqual('available',updates.select_release([value],'android','0.4.3',now=1800000000,include_prereleases=True)['status'])
+        self.assertEqual('available',updates.select_channel_release([value],'android','0.4.3')['status'])
+        self.assertEqual('nmg06/rfs-flightdeck',updates.REPOSITORY)
+        self.assertFalse(updates.trusted_release_url('https://github.com/nmg06/rfs-atc-message-maker/releases/tag/v0.4.4'))
+
     def test_no_release_is_distinct_from_up_to_date_or_downgrade(self):
         self.assertEqual('no_release', self.select([])['status'])
         self.assertEqual('up_to_date', self.select([release('0.4.1')])['status'])

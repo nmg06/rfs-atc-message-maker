@@ -309,6 +309,13 @@ class RouteMap(QWidget):
                         crop = QRectF((x % factor)*256/factor, (y % factor)*256/factor, 256/factor, 256/factor)
                         painter.drawImage(rect, self._tiles[parent_key], crop)
                         break
+                # Request a coarse base first, so panning/zooming can retain
+                # satellite imagery while more detailed images arrive.
+                for parent_z in dict.fromkeys((0, max(0, z-2), max(0, z-1))):
+                    factor = 2**(z-parent_z)
+                    parent_key = (parent_z, (x % n)//factor, y//factor)
+                    if parent_key not in self._tiles:
+                        self.online.request_tile(parent_key)
                 self.online.request_tile(key)
 
     def _wind_changed(self):
@@ -472,8 +479,9 @@ class RouteMap(QWidget):
                           for shift in (-720, -360, 0, 360, 720)]
             base.setPen(QPen(QColor(coast), 0.7))
             base.setBrush(QColor(land))
-            for transform in transforms:
-                base.drawPath(transform.map(land_path()))
+            if self.layer.currentData() != 'satellite':
+                for transform in transforms:
+                    base.drawPath(transform.map(land_path()))
             if self.layer.currentData() == 'satellite':
                 self._draw_satellite(base)
             base.setBrush(Qt.BrushStyle.NoBrush)

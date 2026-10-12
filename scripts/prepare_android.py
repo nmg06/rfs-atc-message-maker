@@ -12,8 +12,8 @@ ANDROID = ROOT / 'android'
 MODULES = ['app_version.py', 'updates.py', 'backup_bundle.py', 'map_geometry.py', 'visual_themes.py', 'flight_planning.py', 'map_services.py', 'rfs_schema.py', 'templates.py', 'validation.py', 'message_builder.py',
            'emoji_tokens.py', 'finder/provenance.py', 'fuel/selection.py', 'fuel/duration.py',
            'history_utils.py', 'country_data.py', 'ui_translations.py',
-           'finder/__init__.py', 'finder/database.py', 'finder/search.py', 'finder/route_catalog.py',
-           'finder/mapping.py', 'finder/time_utils.py', 'finder/duration.py',
+           'finder/__init__.py', 'finder/database.py', 'finder/search.py', 'finder/route_catalog.py', 'finder/aircraft_filters.py',
+           'finder/mapping.py', 'finder/published_catalog.py', 'finder/time_utils.py', 'finder/duration.py',
            'finder/rfs_catalogue.py', 'finder/i18n.py', 'fuel/__init__.py', 'fuel/calculator.py']
 
 
@@ -37,7 +37,7 @@ def prepare(database=None):
         manifest = {'schema_version': 1, 'database_sha256': digest(database),
                     'database_bytes': database.stat().st_size,
                     'gzip_sha256': digest(bundled / 'aviation.sqlite.gz')}
-        (bundled / 'database-manifest.json').write_text(json.dumps(manifest, indent=2), encoding='utf-8')
+        (bundled / 'database-manifest.json').write_text(json.dumps(manifest, indent=2)+'\n', encoding='utf-8', newline='\n')
         for name in ['README.md', 'LICENSE-ODbL.txt', 'aviation.report.json']:
             if (database.parent / name).exists():
                 shutil.copy2(database.parent / name, bundled / name)
@@ -83,7 +83,7 @@ def prepare(database=None):
     notices = assets / 'notices'
     shutil.copytree(ROOT / 'docs/licenses', notices, dirs_exist_ok=True)
     shutil.copy2(ROOT / 'assets/WORLD_MAP_LICENSE.md', notices / 'WORLD_MAP_LICENSE.md')
-    (assets / 'engine-manifest.json').write_text(json.dumps(hashes, indent=2), encoding='utf-8')
+    (assets / 'engine-manifest.json').write_text(json.dumps(hashes, indent=2)+'\n', encoding='utf-8', newline='\n')
     print(f'Android engines staged from {len(hashes)} existing source/data files; database bundled.')
 
 

@@ -94,6 +94,7 @@ class UiRegression(unittest.TestCase):
         self.temp=tempfile.TemporaryDirectory(); self.root=Path(self.temp.name)
         self.paths=patch.multiple(storage,**{k:self.root/(k+'.json') for k in ('STATE_FILE','HISTORY_FILE','PRESETS_FILE','DESIGNS_FILE')})
         self.paths.start(); self.window=RFSWindow()
+        self.window.pilot_name.setCurrentText("TEST PILOT")
     def tearDown(self):
         self.window.close(); self.app.processEvents(); self.paths.stop(); self.temp.cleanup()
     def test_save_flight_failure_does_not_announce_success(self):

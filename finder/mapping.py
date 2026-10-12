@@ -1,5 +1,6 @@
 """The sole bridge into the existing current-flight state."""
 from copy import deepcopy
+import json
 import re
 from .provenance import duration_provenance
 
@@ -52,11 +53,22 @@ def use_this_flight(current: dict, result: dict) -> dict:
     if suffix and result.get("airline_iata"):
         flight["flight_number"] = safe_text(result["airline_iata"] + suffix[1])
         known["flight_number"] = "DERIVED_FROM_CALLSIGN"
+    published = result.get("record_kind") == "PUBLISHED_SCHEDULE"
+    if published:
+        known["callsign"] = "DERIVED_FROM_PUBLISHED_FLIGHT_NUMBER"
+        if "aircraft" in known:
+            known["aircraft"] = "PUBLISHED_AIRCRAFT_TYPE"
+        if result.get("flight_number"):
+            flight["flight_number"] = safe_text(result["flight_number"])
+            known["flight_number"] = "PUBLISHED_TIMETABLE"
     flight["selected_flight"] = {"schema_version": 1, "pattern_id": result.get("pattern_id"),
         "aircraft_icao": result.get('aircraft'),
         "source_id": result.get("source_id"), "last_seen": result.get("last_seen"), "fields": known,
-        "status": "OBSERVED_ROUTE" if result.get('record_kind') == 'OBSERVED_ROUTE' else "HISTORICAL_OBSERVED",
+        "status": "PUBLISHED_SCHEDULE" if published else "OBSERVED_ROUTE" if result.get('record_kind') == 'OBSERVED_ROUTE' else "HISTORICAL_OBSERVED",
         "route_id": result.get('route_id'), "n_obs": result.get("n_obs"),
         "duration_provenance": duration_provenance(result), "n_complete": result.get('n_complete'),
         "sim_departure_utc": result.get("sim_departure_utc"), "sim_arrival_utc": result.get("sim_arrival_utc")}
+    if published:
+        flight["selected_flight"]["via_airports"] = json.loads(result.get("via_json") or "[]")
+        flight["selected_flight"]["publication"] = {key: result.get(key) for key in ("publication_id", "flight_number", "valid_from", "valid_to", "schedule_days", "departure_local", "arrival_local", "published_on", "aircraft_as_published")}
     return flight

@@ -62,6 +62,72 @@ public class OfflineAppTest {
         assertTrue(envelope.optString("error"),envelope.getBoolean("ok"));
         return envelope.getJSONObject("result");
     }
+    private void waitForJavascript(MainActivity a,String expression,String message) throws Exception {
+        AtomicReference<String> value=new AtomicReference<>("false");
+        for(int i=0;i<300;i++) {
+            InstrumentationRegistry.getInstrumentation().runOnMainSync(()->a.webForTest().evaluateJavascript(expression,value::set));
+            if("true".equals(value.get()))return;
+            Thread.sleep(100);
+        }
+        assertEquals(message,"true",value.get());
+    }
+    @Test public void publishedAirIndiaScheduleAndMappingWorkOffline() throws Exception {
+        try(ActivityScenario<MainActivity> scenario=ActivityScenario.launch(MainActivity.class)) {
+            MainActivity a=activity(scenario);
+            JSONObject original=call(a,"bootstrap",new JSONObject()).getJSONObject("value");
+            try {
+                JSONObject state=new JSONObject(original.getJSONObject("state").toString());
+                JSONObject previous=new JSONObject(state.getJSONObject("flight").toString());
+                state.put("finder_filters",new JSONObject().put("published_catalog",true)
+                    .put("airline","AIC").put("callsign","AIC187").put("departure_date","2026-10-13").put("diversify",false));
+                call(a,"save",new JSONObject().put("state",state));
+                org.json.JSONArray rows=call(a,"finder",new JSONObject()).getJSONArray("results");
+                int chosen=-1;
+                for(int i=0;i<rows.length();i++) {
+                    JSONObject row=rows.getJSONObject(i);
+                    if("AIC187".equals(row.optString("callsign")) && "VIDP".equals(row.optString("origin")) && "CYYZ".equals(row.optString("destination"))) { chosen=i;break; }
+                }
+                assertTrue("Published AI187 route missing",chosen>=0);
+                JSONObject row=rows.getJSONObject(chosen);
+                assertEquals("PUBLISHED_SCHEDULE",row.getString("record_kind"));
+                assertEquals(0,row.getInt("n_obs"));assertTrue(row.isNull("duration_min"));assertTrue(row.isNull("aircraft"));
+                assertTrue(row.getString("via_json").contains("LOWW"));
+                JSONObject flight=call(a,"finder_use",new JSONObject().put("index",chosen)).getJSONObject("value").getJSONObject("state").getJSONObject("flight");
+                assertEquals("AI187",flight.getString("flight_number"));
+                assertEquals(previous.getString("fuel"),flight.getString("fuel"));
+                assertEquals(previous.getString("estimated_flight_time"),flight.getString("estimated_flight_time"));
+                assertEquals("PUBLISHED_SCHEDULE",flight.getJSONObject("selected_flight").getString("status"));
+                assertEquals(0,a.networkRequestsForTest());
+            } finally { call(a,"save",new JSONObject().put("state",original.getJSONObject("state"))); }
+        }
+    }
+    @Test public void multipleAircraftListOpensWithoutTypingAndRestoresOffline() throws Exception {
+        try(ActivityScenario<MainActivity> scenario=ActivityScenario.launch(MainActivity.class)) {
+            MainActivity a=activity(scenario);
+            JSONObject original=call(a,"bootstrap",new JSONObject()).getJSONObject("value");
+            try {
+                JSONObject state=new JSONObject(original.getJSONObject("state").toString());
+                state.put("intro_seen",true).put("joke_seen",true).put("tutorial_seen",true).put("language","en");
+                state.put("finder_filters",new JSONObject().put("aircraft_types",new org.json.JSONArray()).put("rfs_only",true));
+                call(a,"save",new JSONObject().put("state",state));
+                waitForJavascript(a,"typeof model!=='undefined' && Boolean(model)","WebView did not start");
+                InstrumentationRegistry.getInstrumentation().runOnMainSync(()->a.webForTest().evaluateJavascript(
+                    "rpc('bootstrap').then(r=>{setResult(r);screen='finder';paint();document.querySelector('#finder-aircraft-picker').click();})",null));
+                waitForJavascript(a,"Boolean(document.querySelector('#finder-aircraft-dialog[open]') && document.querySelectorAll('[data-workspace-aircraft]').length===meta.finder_aircraft.length && meta.finder_aircraft.length>100 && document.querySelector('#finder-aircraft-query').value==='')","Complete aircraft list did not open");
+                InstrumentationRegistry.getInstrumentation().runOnMainSync(()->a.webForTest().evaluateJavascript(
+                    "(()=>{for(const code of ['A20N','B789']){const el=document.querySelector('[data-workspace-aircraft=\"'+code+'\"]');el.checked=true;el.dispatchEvent(new Event('change',{bubbles:true}));}document.querySelector('[data-workspace=\"aircraft-close\"]').click();flushEdits();})()",null));
+                waitForJavascript(a,"Boolean(!document.querySelector('#finder-aircraft-dialog') && model.state.finder_filters.aircraft_types.length===2 && savedRevision===revision && pending.size===0)","Aircraft selection did not save");
+                assertEquals(2,call(a,"bootstrap",new JSONObject()).getJSONObject("value").getJSONObject("state").getJSONObject("finder_filters").getJSONArray("aircraft_types").length());
+                scenario.recreate();
+                MainActivity restored=activity(scenario);
+                org.json.JSONArray types=call(restored,"bootstrap",new JSONObject()).getJSONObject("value").getJSONObject("state").getJSONObject("finder_filters").getJSONArray("aircraft_types");
+                assertEquals("A20N",types.getString(0));assertEquals("B789",types.getString(1));
+                assertEquals(0,restored.networkRequestsForTest());
+            } finally {
+                call(activity(scenario),"import",new JSONObject().put("text",original.toString()));
+            }
+        }
+    }
     @Test public void offlineMapRendersLocalBordersRouteAndCountrySelection() throws Exception {
         try (ActivityScenario<MainActivity> scenario=ActivityScenario.launch(MainActivity.class)) {
             MainActivity a=activity(scenario);
@@ -130,7 +196,7 @@ public class OfflineAppTest {
             JSONObject found=call(a,"finder",new JSONObject());
             try (android.database.sqlite.SQLiteDatabase db=android.database.sqlite.SQLiteDatabase.openDatabase(
                     new java.io.File(context.getFilesDir(),"aviation.sqlite").getAbsolutePath(),null,android.database.sqlite.SQLiteDatabase.OPEN_READONLY);
-                 android.database.Cursor count=db.rawQuery("SELECT count(*) FROM v_pattern_search WHERE origin=? AND n_obs>=3 AND duration_min<=?",new String[]{"LFPG","120"})) {
+                 android.database.Cursor count=db.rawQuery("SELECT count(*) FROM (SELECT DISTINCT airline,callsign,origin_id,destination_id FROM v_pattern_search WHERE origin=? AND n_obs>=3 AND duration_min<=?)",new String[]{"LFPG","120"})) {
                 assertTrue(count.moveToFirst());
                 assertTrue("Bundled historical coverage unexpectedly missing",count.getInt(0)>=200);
                 assertEquals("Finder count differs from independent SQLite query",count.getInt(0),found.getInt("matches"));
