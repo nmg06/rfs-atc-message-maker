@@ -31,11 +31,14 @@ SOURCES = [
 ]
 
 
-def inspect_schema(connection, parquet: Path):
+def inspect_schema(connection, parquet: Path, *, legacy_2024=False):
     schema = connection.execute("DESCRIBE SELECT * FROM read_parquet(?)", [str(parquet)]).fetchall()
     columns = {row[0]: row[1] for row in schema}
-    missing = set(REQUIRED) - columns.keys()
-    unexpected = {key: columns[key] for key in REQUIRED if key in columns and columns[key] != "VARCHAR"}
+    required = tuple(key for key in REQUIRED if key not in ('ICAO_Hex','Track_Origin_FL_Ft','Track_Destination_FL_Ft')) + ('Reg',) if legacy_2024 else REQUIRED
+    if legacy_2024 and not re.fullmatch(r'2024_Q[1-4]_github\.parquet',parquet.name):
+        raise ValueError('Legacy adapter is only for inspected 2024 source files')
+    missing = set(required) - columns.keys()
+    unexpected = {key: columns[key] for key in required if key in columns and columns[key] != "VARCHAR"}
     if missing or unexpected:
         raise ValueError(f"Unsupported Parquet schema; missing={sorted(missing)}, types={unexpected}")
     return columns
@@ -67,7 +70,7 @@ def distance_nm(lat1, lon1, lat2, lon2):
 
 def build(input_dir: Path, output: Path, *, window_days: int = 90,
           parquet_files: list[Path] | None = None, source_manifest: Path | None = None,
-          memory_mb: int = 1024, threads: int = 2):
+          memory_mb: int = 1024, threads: int = 2, legacy_2024: bool = False):
     if isinstance(window_days, bool) or not isinstance(window_days, int) or not 1 <= window_days <= 3660:
         raise ValueError("window_days must be an integer between 1 and 3660")
     if isinstance(memory_mb, bool) or not isinstance(memory_mb, int) or not 64 <= memory_mb <= 8192:
@@ -92,9 +95,9 @@ def build(input_dir: Path, output: Path, *, window_days: int = 90,
     work.execute(f"SET threads={threads}")
     work.execute("SET preserve_insertion_order=false")
     work.execute("SET TimeZone='UTC'")
-    schema = {p.name: inspect_schema(work, p) for p in parquets}
+    schema = {p.name: inspect_schema(work, p, legacy_2024=legacy_2024) for p in parquets}
     report = {"schema": schema, "versions": {name: importlib.metadata.version(name) for name in
-               ("duckdb", "timezonefinder", "timezonefinder-data", "tzdata")}, "sources": []}
+               ("duckdb", "timezonefinder", "timezonefinder-data", "tzdata")}, "sources": [], "identity_basis": "published_registration" if legacy_2024 else "ICAO_transponder_hex", "missing_ground_evidence": legacy_2024}
     manifest = source_manifest if source_manifest is not None else input_dir / "manifest.json"
     if manifest.is_file():
         report["sources"] = json.loads(manifest.read_text(encoding="utf-8"))
@@ -152,11 +155,19 @@ def build(input_dir: Path, output: Path, *, window_days: int = 90,
         start = datetime(year, 3*q-2, 1)
         end = datetime(year+1, 1, 1) if q == 4 else datetime(year, 3*q+1, 1)
         source_count += work.execute("SELECT count(*) FROM read_parquet(?)", [str(parquet)]).fetchone()[0]
-        projection = ",".join('"'+name+'"' for name in REQUIRED)
+        # The 2024 dataset identifies an aircraft by its actual registration.
+        # Missing ground states remain NULL: no complete airborne duration can
+        # be inferred from an endpoint timestamp alone.
+        names = [name for name in REQUIRED if name != 'ICAO_Hex' and
+                 (not legacy_2024 or name not in ('Track_Origin_FL_Ft','Track_Destination_FL_Ft'))]
+        projection = ",".join('"'+name+'"' for name in names)
+        projection += ',"Reg" AS aircraft_identity' if legacy_2024 else ',"ICAO_Hex" AS aircraft_identity'
+        if legacy_2024:
+            projection += ',NULL::VARCHAR AS Track_Origin_FL_Ft,NULL::VARCHAR AS Track_Destination_FL_Ft'
         # All interpolation is developer-owned column names. Paths/dates use bound parameters.
         work.execute(f"""INSERT INTO clean
         WITH raw AS (SELECT {projection} FROM read_parquet(?)),
-        parsed AS (SELECT ICAO_Hex AS hex, Airline AS airline, Callsign AS callsign,
+        parsed AS (SELECT aircraft_identity AS hex, Airline AS airline, Callsign AS callsign,
           AC_Type AS aircraft, AC_Type_Description AS description,
           TRY_CAST(Track_Origin_DateTime_UTC AS TIMESTAMP) AS dep,
           TRY_CAST(Track_Destination_DateTime_UTC AS TIMESTAMP) AS arr,
@@ -289,7 +300,8 @@ if __name__ == "__main__":
                         help="DuckDB memory limit for build only (default: 1024)")
     parser.add_argument("--threads", type=int, default=2,
                         help="DuckDB threads for build only (default: 2)")
+    parser.add_argument("--legacy-2024", action="store_true", help="Use inspected registration identity; missing ground evidence never yields a duration")
     args = parser.parse_args()
     build(args.input, args.output, window_days=args.window_days,
           parquet_files=args.parquet_files, source_manifest=args.source_manifest,
-          memory_mb=args.memory_mb, threads=args.threads)
+          memory_mb=args.memory_mb, threads=args.threads, legacy_2024=args.legacy_2024)

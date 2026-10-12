@@ -23,6 +23,7 @@ class UiWorkflowTests(unittest.TestCase):
             storage.PRESETS_FILE = Path(folder) / "presets.json"
             try:
                 window = RFSWindow()
+                window.pilot_name.setCurrentText("TEST PILOT")
                 values = {
                     "airline": "Air India", "aircraft": "A330-900neo", "callsign": "AIC186",
                     "departure_icao": "CYVR", "arrival_icao": "RJAA", "departure_gate": "5",

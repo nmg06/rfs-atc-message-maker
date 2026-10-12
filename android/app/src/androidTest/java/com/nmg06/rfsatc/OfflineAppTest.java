@@ -71,6 +71,36 @@ public class OfflineAppTest {
         }
         assertEquals(message,"true",value.get());
     }
+    @Test public void publishedAirIndiaScheduleAndMappingWorkOffline() throws Exception {
+        try(ActivityScenario<MainActivity> scenario=ActivityScenario.launch(MainActivity.class)) {
+            MainActivity a=activity(scenario);
+            JSONObject original=call(a,"bootstrap",new JSONObject()).getJSONObject("value");
+            try {
+                JSONObject state=new JSONObject(original.getJSONObject("state").toString());
+                JSONObject previous=new JSONObject(state.getJSONObject("flight").toString());
+                state.put("finder_filters",new JSONObject().put("published_catalog",true)
+                    .put("airline","AIC").put("callsign","AIC187").put("departure_date","2026-10-13").put("diversify",false));
+                call(a,"save",new JSONObject().put("state",state));
+                org.json.JSONArray rows=call(a,"finder",new JSONObject()).getJSONArray("results");
+                int chosen=-1;
+                for(int i=0;i<rows.length();i++) {
+                    JSONObject row=rows.getJSONObject(i);
+                    if("AIC187".equals(row.optString("callsign")) && "VIDP".equals(row.optString("origin")) && "CYYZ".equals(row.optString("destination"))) { chosen=i;break; }
+                }
+                assertTrue("Published AI187 route missing",chosen>=0);
+                JSONObject row=rows.getJSONObject(chosen);
+                assertEquals("PUBLISHED_SCHEDULE",row.getString("record_kind"));
+                assertEquals(0,row.getInt("n_obs"));assertTrue(row.isNull("duration_min"));assertTrue(row.isNull("aircraft"));
+                assertTrue(row.getString("via_json").contains("LOWW"));
+                JSONObject flight=call(a,"finder_use",new JSONObject().put("index",chosen)).getJSONObject("value").getJSONObject("state").getJSONObject("flight");
+                assertEquals("AI187",flight.getString("flight_number"));
+                assertEquals(previous.getString("fuel"),flight.getString("fuel"));
+                assertEquals(previous.getString("estimated_flight_time"),flight.getString("estimated_flight_time"));
+                assertEquals("PUBLISHED_SCHEDULE",flight.getJSONObject("selected_flight").getString("status"));
+                assertEquals(0,a.networkRequestsForTest());
+            } finally { call(a,"save",new JSONObject().put("state",original.getJSONObject("state"))); }
+        }
+    }
     @Test public void multipleAircraftListOpensWithoutTypingAndRestoresOffline() throws Exception {
         try(ActivityScenario<MainActivity> scenario=ActivityScenario.launch(MainActivity.class)) {
             MainActivity a=activity(scenario);
@@ -166,7 +196,7 @@ public class OfflineAppTest {
             JSONObject found=call(a,"finder",new JSONObject());
             try (android.database.sqlite.SQLiteDatabase db=android.database.sqlite.SQLiteDatabase.openDatabase(
                     new java.io.File(context.getFilesDir(),"aviation.sqlite").getAbsolutePath(),null,android.database.sqlite.SQLiteDatabase.OPEN_READONLY);
-                 android.database.Cursor count=db.rawQuery("SELECT count(*) FROM v_pattern_search WHERE origin=? AND n_obs>=3 AND duration_min<=?",new String[]{"LFPG","120"})) {
+                 android.database.Cursor count=db.rawQuery("SELECT count(*) FROM (SELECT DISTINCT airline,callsign,origin_id,destination_id FROM v_pattern_search WHERE origin=? AND n_obs>=3 AND duration_min<=?)",new String[]{"LFPG","120"})) {
                 assertTrue(count.moveToFirst());
                 assertTrue("Bundled historical coverage unexpectedly missing",count.getInt(0)>=200);
                 assertEquals("Finder count differs from independent SQLite query",count.getInt(0),found.getInt("matches"));

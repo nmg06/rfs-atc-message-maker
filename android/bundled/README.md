@@ -1,112 +1,37 @@
-# Local Flight Finder — Phase 1
+# Offline flight catalogue — 13 October 2026
 
-Open **Flight Finder** from the desktop header. The optional aviation database is
-`finder-data/aviation.sqlite` beside the executable. **Choose local database** can
-select another compatible file. No Internet, API key or account is needed to search.
-Without the database, the message generator still works.
+Historical ADS-B profiles are not current scheduled flights. Airline/callsign/route
+keys grew from 167,381 to 344,667 (2.059 times).
+All 203,627 existing profile rows and 21,061 recent observed-route rows are preserved.
+199,145 historical keys have a searchable duration. Other added keys
+have unknown duration: never use partial timestamp spans as airborne flight times.
 
-## Search
+| Added quarter | New distinct keys |
+|---|---:|
+| 2025_Q4 | 50638 |
+| 2025_Q3 | 30365 |
+| 2025_Q2 | 19253 |
+| 2025_Q1 | 31074 |
+| 2024_Q4 | 29075 |
+| 2024_Q3 | 16881 |
 
-All filters are optional. Airport codes accept ICAO or IATA, multiple values comma-separated.
-Countries use ISO-2 codes; continents use AF/AN/AS/EU/NA/OC/SA; regions use OurAirports
-ISO-subdivision identifiers. Airline name/ICAO/IATA, aircraft code/model, manufacturer
-and known aircraft families are supported. `A320neo` resolves to `A20N` and `A321neo`
-to `A21N`. Minimum/maximum durations are hard limits. Maximum alone prefers flights
-that use the available time. A desired duration has a tolerance of max(30 min, 15%).
+The separate DGCA Air India summer 2026 programme contains 1,573 seasonal variants,
+785 distinct flight-number/route pairs, 770 flight numbers, and 1,988 published
+movements from 37 pages. Validity ends on 24 October 2026. Local times, intermediate
+stops and generic aircraft families are retained. 399 variants have a duration
+from unambiguous paired domestic published times (scheduled block time, not an
+observed airborne median). No foreign or overnight duration has been guessed.
 
-Dates are explicit, times optional, zones are IANA names (`Europe/Paris`,
-`Asia/Kolkata`). Arrival-only means a simulator departure is calculated backwards
-from typical duration. This is never displayed as a scheduled service. Departure
-and arrival together are checked against duration constraints. DST anomalies are
-reported. Airport-local display uses coordinates-derived IANA zones.
+Sources:
+https://github.com/MrAirspace/aircraft-flight-schedules (ODbL 1.0, adsb.lol)
+https://ourairports.com/data/ (public domain)
+https://github.com/vradarserver/standing-data (CC0)
+https://github.com/evansiroky/timezone-boundary-builder (ODbL 1.0)
+https://public-prd-dgca.s3.ap-south-1.amazonaws.com/InventoryList/airOperation/certification/scheduled/domestic/AirIndiaLtd_SS_2026.pdf
+https://public-prd-dgca.s3.ap-south-1.amazonaws.com/InventoryList/airOperation/certification/scheduled/domestic/AirIndiaflightSchedule-INT.pdf
 
-Results show historical callsign/route/type, duration median and P10–P90, sample
-count, freshness, source attribution, and available runways. Runways are **not**
-the runways actually used by the observed flight. Distance is great-circle, not
-the length of an airway route. Durations exclude taxi/preparation. Aircraft may
-have varied across observations; the displayed type is the modal observed type.
-
-**USE THIS FLIGHT** patches the existing common flight fields. Unknowns do not
-erase manual values. Check old runway/gate/fuel fields and other pilots when
-changing routes. The named saved flight is not changed; save the new flight when
-you want it in your list. The `selected_flight` metadata travels with saved flights.
-
-## Rebuild the real database
-
-Use Python 3.13 and a separate environment if desired:
-
-```powershell
-python -m pip install -r requirements-etl.txt
-python -m finder.fetch_data --directory ../finder-inputs
-python -m finder.importer --input ../finder-inputs --output finder-data/aviation.sqlite
-python -m unittest discover -s tests -v
-```
-
-The explicit download command fetches the newest Parquet release plus public
-reference CSVs. It does not run at application startup. The full source file is
-around 912 MB for 2026 Q2; allow extra build disk/RAM. The app only needs the much
-smaller resulting SQLite, **not** the Parquet or ETL dependencies.
-The importer validates schema before projection, owns flights by source quarter,
-uses a 90-day window relative to the latest accepted observation, deduplicates
-minute/aircraft/route keys, conservatively resolves endpoints, and excludes
-incomplete tracks from duration statistics. At least 3 observations retain a
-pattern; at least 3 complete tracks make it searchable by duration.
-
-Sources and hashes are in `manifest.json` and `aviation.report.json`. The report
-also records actual schema, dependency versions, counts and database integrity.
-Build output is staged as `.building`; a failed build does not replace the old DB.
-
-## Limits and deviations
-
-This phase uses a compact version-1 desktop schema, not every future normalized
-table in the planning document: source versions/manifests are stored in build_info;
-country/region codes are attached directly to airports. Callsign patterns and the
-last five observations are retained; no separate route_stats/FTS/livery database.
-Only observed-flight mode is exposed; no live or real-schedule projection.
-Required filters are deterministic and never silently relaxed. Code/name aircraft
-filtering and common explicit families replace a broad fuzzy alias engine.
-The score renormalizes frequency (10), recency (5), completeness (5), duration
-(30 when requested), arrival (25 only when not duplicating implied duration).
-Airline/aircraft criteria are hard filters in this UI, not soft preferences.
-Tie-breaking is stable; at most two results per airline/route; candidate cap 20,000
-is reported so the user can refine a broad search.
-
-## Data licences
-
-- OurAirports airport/runway/country/region references: public domain.
-- MrAirspace/aircraft-flight-schedules, derived from adsb.lol: ODbL 1.0.
-- Virtual Radar Server airline/model references and source route validation: CC0.
-- timezone-boundary-builder / OpenStreetMap boundary data: ODbL 1.0.
-
-The derived aviation database is distributed under ODbL 1.0. Keep this notice,
-source attributions, the licence text and rebuild instructions with a public
-database release. This does not automatically assign the application code the
-same licence. `AC_Type_Detailed` (adsbdb-enriched) is excluded. No RFS assets are
-extracted or distributed. No guarantee of coverage or current operations is made.
-
-Phase 2: better autocomplete/geographical groups, richer route views and aliases,
-manually verified livery compatibility, separate fuel adapter, mobile/PWA only
-when explicitly requested. No fuel model or online service is part of this build.
-
-## Complément de routes du 7 octobre 2026
-
-21 053 routes directes CatchFlights retenues, dont 3 195 combinaisons
-callsign/départ/arrivée supplémentaires. Les 203 627 profils existants sont
-conservés à l’identique. Catalogue séparé : avion et durée inconnus,
-compagnie déduite du préfixe du callsign. Seuils : confiance source ≥0,95,
-un seul candidat, au moins trois jours et trois observations, aéroports et
-préfixe compagnie connus. Ce n’est pas un horaire actuel garanti.
-
-Source : https://github.com/catchflights/routes/releases/tag/routes-2026-10-07
-ODbL 1.0, contenus DBCL ; attribution CatchFlights, adsb.lol et MrAirspace.
-Le fichier source figé est redistribué dans `finder/source-data/`, avec son
-manifest et sa somme SHA-256. Voir `docs/licenses/CATCHFLIGHTS_NOTICE.txt`.
-
-
-## Air India enrichment — 11 October 2026
-
-Air India (AIC): 854 searchable historical profiles (35–1,044 minutes). Eight additional callsign/route pairs from the pinned CatchFlights 2026-10-11 snapshot are available in **Recent route evidence**. Aircraft and duration are unknown for these additions. They are inferred observed routes, not a complete current timetable. All 203,627 existing profiles and 21,053 prior observed routes were preserved field for field. Of 382 AIC source rows, 335 lacked sufficient evidence, 35 qualified duplicates were retained without overwrite, and 4 contradictory callsign/route candidates were excluded. See docs/finder/AIR_INDIA_2026-10-11.md and JSON report.
-
-Source: https://github.com/catchflights/routes/releases/tag/routes-2026-10-11
-License: ODbL 1.0; contents DBCL. CatchFlights / adsb.lol / MrAirspace.
-Official timetable: https://www.airindia.com/in/en/book/flight-schedule.html
+DGCA facts: attribution to Directorate General of Civil Aviation, Government of
+India. Public approved schedules do not prove actual operation. No licence grant
+for the original PDFs is asserted; only normalised timetable facts are included.
+Full build evidence, preserved-row checks and input hashes: aviation.report.json.
+No account, network call or downloaded data is needed to search the bundled base.

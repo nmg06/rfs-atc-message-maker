@@ -164,8 +164,22 @@ Voir [rapport de revue et limites](../UX_REVIEW_2026-10-07.md).
 | Compteur de profils historiques recherchables dans la liste d’avions, avant les autres filtres | OK | OK |
 | Catalogue complet, avions sans profils indiqués explicitement et toujours sélectionnables | OK | OK |
 | Recherche du nom FedEx / Federal Express, profils et routes récentes | OK | OK |
-| Horaires officiels des compagnies intégrés à côté des observations | non porté | non porté |
+| Horaires officiels des compagnies intégrés à côté des observations | partiel (Air India été 2026) | partiel (Air India été 2026) |
 | Profils disponibles pour chacun des appareils du catalogue | partiel | partiel |
 
 La couverture n’est pas un horaire garanti. Les limites et le relevé de la base
 embarquée sont dans [Cargo et petits avions](../finder/CARGO_AND_SMALL_AIRCRAFT.md).
+
+
+## Préversion 0.4.4 — 13 octobre 2026
+
+| Fonction | Windows | Android | Preuve / limite |
+|---|---|---|---|
+| Catalogue Air India DGCA 2026 séparé | OK moteur/UI | OK moteur/UI | 785 couples numéro–trajet ; programme daté, escales et familles génériques conservées ; couverture annuelle non garantie |
+| Profils historiques plus que doublés | OK base partagée | OK base partagée | 344 667 clés distinctes ; 203 627 anciennes lignes de profils conservées ; seulement 199 145 clés avec durée recherchable |
+| Affichage facultatif des durées inconnues | OK | OK | Exclusion des filtres de durée/arrivée ; aucune estimation inventée |
+| Regroupement des variantes d'un vol | OK | OK | Même clé airline/callsign/trajet après filtrage ; aucune donnée supprimée |
+| Paquet sans profil personnel / premier accueil | OK garde archive + defaults | OK moteur + garde APK | Données préexistantes conservées ; nouvel utilisateur vierge |
+| Mise à jour vers le dépôt renommé | OK moteur | OK moteur/natif | Canal préversion ; premier passage manuel depuis 0.4.3 |
+| Téléphone physique / signature définitive | sans objet | partiel | APK debug signée avec la clé locale précédente ; essais physiques et clé durable restant |
+| Gates et pistes affectés automatiquement | non porté | non porté | Données de portes absentes ; pistes de référence consultables, aucune affectation ATC inventée |

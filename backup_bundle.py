@@ -32,7 +32,7 @@ def defaults():
     per_type = empty_per_type()
     per_type.update({kind: {key: False if field.kind == 'bool' else '' for key, field in spec.items()}
                      for kind, spec in EXTENSIONS.items()})
-    return {'pilot_name': 'n1chita', 'pilot_library': [], 'server': '', 'theme': 'Sombre',
+    return {'pilot_name': '', 'pilot_library': [], 'server': '', 'theme': 'Sombre',
         'message_type': 'ATC REQUEST', 'current_flight_id': '', 'flight': empty_flight(),
         'per_type': per_type, 'saved_flights': [], 'preview_edits': {},
         'presentation': deepcopy(DEFAULT_PRESENTATION), 'compact_history': True,

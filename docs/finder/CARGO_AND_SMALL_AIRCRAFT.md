@@ -95,3 +95,24 @@ python -m unittest discover -s android/tests -v
 Les régressions vérifient les compteurs face au moteur, les modèles sans profils,
 le nom Cessna, l’alias FedEx dans les deux modes, les libellés anglais et
 l’affichage Android. La base reste en lecture seule.
+
+
+## Relevé du 13 octobre 2026
+
+La nouvelle base conserve les observations précédentes et dépasse le double des
+clés historiques. Le compteur du sélecteur est maintenant intitulé **profils avec
+durée** : les données inconnues restent disponibles avec l'option dédiée. Les
+chiffres ci-dessous regroupent les variantes d'un même callsign et trajet ; ils
+ne sont pas directement comparables aux nombres de profils du relevé du 8 octobre.
+
+| Filtre | Vols distincts | Avec une durée recherchable |
+|---|---:|---:|
+| FDX | 1803 | 1287 |
+| UPS | 2074 | 1222 |
+| CLX | 272 | 224 |
+| C172 | 158 | 158 |
+| C208 | 792 | 476 |
+| SR22 | 4 | 4 |
+| C152 | 0 | 0 |
+
+[COVERAGE_2026-10-13.json](COVERAGE_2026-10-13.json) contient le SHA-256 de la base et les critères du relevé. Aucune valeur de vol n’a été inventée pour les avions sans couverture.

@@ -10,9 +10,9 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import unquote, urlsplit
 from urllib.request import HTTPRedirectHandler, Request, build_opener
 
-from app_version import VERSION
+from app_version import VERSION, CHANNEL
 
-REPOSITORY = 'nmg06/rfs-atc-message-maker'
+REPOSITORY = 'nmg06/rfs-flightdeck'
 RELEASES_URL = f'https://github.com/{REPOSITORY}/releases'
 ENDPOINT = f'https://api.github.com/repos/{REPOSITORY}/releases?per_page=100'
 MAX_BYTES = 2 * 1024 * 1024
@@ -47,8 +47,8 @@ def trusted_release_url(value, *, download=False):
         return False
 
 
-def select_release(releases, platform='windows', current_version=VERSION, *, now=None):
-    """Select the newest eligible stable platform asset from public metadata."""
+def select_release(releases, platform='windows', current_version=VERSION, *, now=None, include_prereleases=False):
+    """Select the newest eligible platform asset from public metadata."""
     current = version_tuple(current_version)
     if platform not in ('windows', 'android') or current is None:
         raise ValueError('Unsupported platform or current version')
@@ -57,7 +57,9 @@ def select_release(releases, platform='windows', current_version=VERSION, *, now
     now = time.time() if now is None else float(now)
     candidates = []
     for release in releases:
-        if not isinstance(release, dict) or release.get('draft') is not False or release.get('prerelease') is not False:
+        if not isinstance(release, dict) or release.get('draft') is not False or release.get('prerelease') not in (False, True):
+            continue
+        if release['prerelease'] and not include_prereleases:
             continue
         version = version_tuple(release.get('tag_name'))
         if version is None or not trusted_release_url(release.get('html_url')):
@@ -109,6 +111,9 @@ def select_release(releases, platform='windows', current_version=VERSION, *, now
     return {'status': 'available' if version > current else 'up_to_date', **chosen}
 
 
+def select_channel_release(releases, platform='windows', current_version=VERSION):
+    return select_release(releases, platform, current_version, include_prereleases=CHANNEL == 'preview')
+
 class _NoRedirect(HTTPRedirectHandler):
     def redirect_request(self, req, fp, code, msg, headers, newurl):
         return None
@@ -129,7 +134,7 @@ def check_for_update(platform='windows', current_version=VERSION, *, opener=None
             data = response.read(MAX_BYTES + 1)
             if len(data) > MAX_BYTES:
                 return {'status': 'unavailable', 'reason': 'response_too_large'}
-        return select_release(json.loads(data), platform, current_version)
+        return select_channel_release(json.loads(data), platform, current_version)
     except HTTPError as error:
         return {'status': 'unavailable', 'reason': 'rate_limited' if error.code in (403, 429) else 'http_error'}
     except (URLError, OSError, TimeoutError):

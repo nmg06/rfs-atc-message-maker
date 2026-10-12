@@ -29,7 +29,7 @@ class FinderUiTests(unittest.TestCase):
                     try:
                         listing=popup.findChild(QListWidget)
                         self.assertEqual(2,listing.count())
-                        self.assertTrue(all('flight profiles' in listing.item(i).text() for i in range(2)))
+                        self.assertTrue(all('profiles with duration' in listing.item(i).text() for i in range(2)))
                         self.assertIn('cargo',dialog.discovery_hint.text())
                         self.assertTrue(all(not listing.item(i).isHidden() for i in range(2)))
                         query=popup.findChild(QLineEdit)

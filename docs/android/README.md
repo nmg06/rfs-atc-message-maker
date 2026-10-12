@@ -29,7 +29,7 @@ L'APK debug universelle contient les deux architectures, environ
 106 Mo pour le build local du 7 octobre, avec la base enrichie de 138 Mo
 décompressée. Prévoir au moins 500 Mo libres pour l'installation et la base privée.
 
-Candidate Flightdeck `0.4.3-flightdeck`, identifiant `com.nmg06.rfsatc` conservé.
+Candidate Flightdeck `0.4.4-flightdeck`, identifiant `com.nmg06.rfsatc` conservé.
 Catalogue d'avions recherchable dans le vol, variante unique Finder préremplie
 dans Fuel, recherches mises en cache et boutons Voir plus/Voir moins.
 Dans le Finder, `10` signifie 10 heures ; les formats explicites restent acceptés.
@@ -132,12 +132,12 @@ exportez vos données avant de désinstaller pour changer de provenance.
 Build et installation vérifiés le 3 octobre 2026 sur émulateur API 35 en mode
 avion : moteurs, Finder/Fuel, carte locale/frontières, presse-papiers, arrêt complet/relance du processus
 et affichage du vol restauré passent.
-[Exécution Flightdeck 0.3 et artefacts](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37151621335),
+[Exécution Flightdeck 0.3 et artefacts](https://github.com/nmg06/rfs-flightdeck/actions/runs/37151621335),
 commit `6bdc5a8`, trois tests natifs ; [bilan de livraison](PROGRESS_0.3.md).
 La version 0.4 est également installée et testée le 4 octobre 2026 : quatre
 tests principaux en mode avion, arrêt complet/reprise, puis services réels
 facultatifs et notification/icône séparément. Toutes ces vérifications passent.
-[Exécution 0.4 et artefacts](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37202466420),
+[Exécution 0.4 et artefacts](https://github.com/nmg06/rfs-flightdeck/actions/runs/37202466420),
 code testé `e217bb3` ; [preuves et limites physiques](PROGRESS_0.4.md).
 La base gzip est embarquée sous `assets/aviation.database` pour éviter que AAPT
 décompresse/renomme automatiquement les fichiers portant l'extension `.gz`.
@@ -319,3 +319,17 @@ La nouvelle APK doit encore être essayée sur téléphone physique avant public
 La liste d’avions PC et Android indique les profils historiques disponibles.
 Voir [Cargo, petits avions et sources d’horaires officiels](../finder/CARGO_AND_SMALL_AIRCRAFT.md) pour les
 chiffres vérifiés et les limites de couverture.
+
+
+## Préversion 0.4.4 — 13 octobre 2026
+
+Les téléchargements directs Windows et Android sont dans le [guide d'installation](../INSTALLATION.md).
+Cette version conserve la base existante et ajoute des profils historiques distincts,
+ainsi qu'un catalogue Air India officiel séparé (785 couples numéro–trajet, programme
+été 2026 se terminant le 24 octobre). Les dates, jours et escales restent visibles.
+Les données absentes ne sont pas inventées. Les recherches peuvent inclure les vols
+sans durée et regrouper les variantes d'un même vol. [Détail des sources et comptages](../finder/ENRICHMENT_2026-10-13.md).
+
+Le contrôle de mise à jour utilise **nmg06/rfs-flightdeck** et accepte les préversions
+publiées pour ce canal. L'APK conserve la clé debug locale ; aucune clé de production
+ni publication Google Play. Les essais sur téléphone physique restent nécessaires.

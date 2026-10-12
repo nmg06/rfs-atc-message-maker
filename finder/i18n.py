@@ -221,3 +221,12 @@ FR.update({
  'ROUTE_CATALOG_UNAVAILABLE': 'Cette ancienne base locale ne contient pas le catalogue des routes récentes. Choisissez la base embarquée enrichie pour utiliser cette option.',
  'route_unknown': 'Non renseigné',
 })
+
+EN.update({"published_catalog":"Air India: approved 2026 timetable", "PUBLISHED_SCHEDULE_NOTICE":"Published seasonal schedule, not proof of actual operation. Times are airport-local. Generic B777/B787 families do not identify an exact variant. Choose the departure date to select the valid programme; verify changes in RFS.", "PUBLISHED_CATALOG_UNAVAILABLE":"This database has no published Air India timetable. Choose the updated bundled database.", "duration_published":"Duration derived from published local times (includes scheduled ground time)", "duration_published_short":"Published", "publication":"Published timetable", "published_validity":"Validity / operating days"})
+FR.update({"published_catalog":"Air India : programme officiel 2026", "PUBLISHED_SCHEDULE_NOTICE":"Programme saisonnier publié, pas une preuve de vol effectué. Heures locales des aéroports. Les familles B777/B787 ne désignent pas une variante précise. Choisissez la date de départ pour sélectionner le programme valable ; vérifiez les changements dans RFS.", "PUBLISHED_CATALOG_UNAVAILABLE":"Cette base ne contient pas le programme publié Air India. Choisissez la nouvelle base embarquée.", "duration_published":"Durée déduite des heures locales publiées (temps au sol programmé inclus)", "duration_published_short":"Publiée", "publication":"Programme publié", "published_validity":"Validité / jours de fonctionnement"})
+
+EN["CATALOG_CONFLICT"]="Choose one data catalogue."
+FR["CATALOG_CONFLICT"]="Choisissez un seul catalogue de données."
+
+EN.update({"include_unknown_duration":"Include observed profiles with unknown duration", "unique_flights":"One result per callsign / route"})
+FR.update({"include_unknown_duration":"Inclure les profils observés de durée inconnue", "unique_flights":"Un seul résultat par indicatif / trajet"})

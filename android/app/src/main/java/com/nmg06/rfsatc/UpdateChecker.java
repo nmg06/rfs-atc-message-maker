@@ -12,7 +12,7 @@ import java.nio.charset.StandardCharsets;
 
 /** Optional public release metadata only. Never downloads or installs an APK. */
 final class UpdateChecker {
-    private static final String ENDPOINT="https://api.github.com/repos/nmg06/rfs-atc-message-maker/releases?per_page=100";
+    private static final String ENDPOINT="https://api.github.com/repos/nmg06/rfs-flightdeck/releases?per_page=100";
     private static final long DAY=86400000L;
     private static final int LIMIT=2*1024*1024;
     private final SharedPreferences prefs;
@@ -68,7 +68,7 @@ final class UpdateChecker {
             }
             Python python=Python.getInstance();
             com.chaquo.python.PyObject releases=python.getModule("json").callAttr("loads",new String(raw,StandardCharsets.UTF_8));
-            com.chaquo.python.PyObject selected=python.getModule("updates").callAttr("select_release",releases,"android");
+            com.chaquo.python.PyObject selected=python.getModule("updates").callAttr("select_channel_release",releases,"android",BuildConfig.VERSION_NAME);
             result=new JSONObject(python.getModule("json").callAttr("dumps",selected).toString());
         } catch(Exception error) {
             result=new JSONObject().put("status","unavailable").put("reason","network");
@@ -82,7 +82,7 @@ final class UpdateChecker {
             throw new IllegalArgumentException("No checked download available");
         URL url=new URL(location);
         if(!"https".equals(url.getProtocol()) || !"github.com".equals(url.getHost()) || url.getUserInfo()!=null
-            || url.getPort()!=-1 || !url.getPath().startsWith("/nmg06/rfs-atc-message-maker/releases/download/"))
+            || url.getPort()!=-1 || !url.getPath().startsWith("/nmg06/rfs-flightdeck/releases/download/"))
             throw new IllegalArgumentException("Unsupported download source");
         return location;
     }

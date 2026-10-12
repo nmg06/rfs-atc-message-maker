@@ -8,6 +8,8 @@ def duration_provenance(row: dict) -> str:
     Their original transformation is not documented, so do not call them
     observed airborne medians or interpret their bounds as percentiles.
     """
+    if row.get('record_kind') == 'PUBLISHED_SCHEDULE' and row.get('duration_min') is not None:
+        return 'DERIVED_PUBLISHED_TIMES'
     if row.get('duration_min') is None:
         return 'UNKNOWN'
     complete = row.get('n_complete')

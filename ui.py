@@ -134,7 +134,6 @@ class RFSWindow(QMainWindow):
         quick.addWidget(QLabel(tr('Pseudo RFS')))
         self.pilot_name = QComboBox()
         self.pilot_name.setEditable(True)
-        self.pilot_name.addItems(['n1chita', 'NIKA'])
         self.pilot_name.setMinimumWidth(140)
         self.pilot_name.currentTextChanged.connect(self._pilot_changed)
         quick.addWidget(self.pilot_name)
@@ -329,7 +328,7 @@ class RFSWindow(QMainWindow):
     def _load_top_state(self) -> None:
         self._building = True
         self.message_type.setCurrentText(self.store.state.get('message_type', 'ATC REQUEST'))
-        self.pilot_name.setCurrentText(self.store.state.get('pilot_name', 'n1chita'))
+        self.pilot_name.setCurrentText(self.store.state.get('pilot_name', ''))
         self.strict_validation.setChecked(self.store.state.get('strict_validation', True) is not False)
         self._load_presentation()
         self._refresh_pilot_names()
@@ -927,7 +926,7 @@ class RFSWindow(QMainWindow):
         self.store.state['current_flight_id'] = ''
         self.store.state['preview_edits'] = {}
         self.store.state['per_type'][message_type] = {**empty_per_type()[message_type], **deepcopy(preset.get('data', {}))}
-        self.pilot_name.setCurrentText(preset.get('pilot_name', 'n1chita'))
+        self.pilot_name.setCurrentText(preset.get('pilot_name', ''))
         self.message_type.setCurrentText(message_type)
         self._refresh_saved_flights()
         self._rebuild_forms()
@@ -985,7 +984,7 @@ class RFSWindow(QMainWindow):
             self.store.state['current_flight_id'] = ''
             self.store.state['preview_edits'] = {}
             self.store.state['per_type'][message_type] = {**empty_per_type()[message_type], **deepcopy(item.get('data', {}))}
-            self.pilot_name.setCurrentText(item.get('pilot_name', 'n1chita'))
+            self.pilot_name.setCurrentText(item.get('pilot_name', ''))
             self.message_type.setCurrentText(message_type)
             self._refresh_saved_flights()
             self._rebuild_forms()

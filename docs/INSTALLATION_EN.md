@@ -10,19 +10,18 @@ You do not need Python to install the packaged apps.
 | Android 7+, ARM64 | Android APK | Installable test version |
 | iPhone / iPad | No native package | iOS app not currently available |
 
-Verified 0.4.3 test downloads from 8 October: [Android APK](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37703182410/artifacts/11518127678) · [Windows ZIP](https://github.com/nmg06/rfs-atc-message-maker/actions/runs/37703176770/artifacts/11518846272). GitHub sign-in required; these artifacts expire on 6 November 2026. The offline Finder includes a separate observed-route catalogue; missing aircraft and durations remain unknown.
+**Flightdeck 0.4.4 preview downloads — no GitHub account required:**
 
-## Download from GitHub
+- [Windows ZIP](https://github.com/nmg06/rfs-flightdeck/releases/download/flightdeck-0.4.4/RFSFlightdeck-Windows-0.4.4-x64.zip)
+- [Android APK](https://github.com/nmg06/rfs-flightdeck/releases/download/flightdeck-0.4.4/RFSFlightdeck-Android-0.4.4-debug.apk)
+- [Release notes and all files](https://github.com/nmg06/rfs-flightdeck/releases/tag/flightdeck-0.4.4)
 
-Open the [Windows builds](https://github.com/nmg06/rfs-atc-message-maker/actions/workflows/flightdeck.yml)
-or [Android builds](https://github.com/nmg06/rfs-atc-message-maker/actions/workflows/android.yml).
-Choose a successful green run for **feat/flightdeck-user-experience**, then scroll
-to **Artifacts**. Download **RFSFlightdeck-Windows-x64-test** or
-**RFS-ATC-Android-debug** and extract the downloaded ZIP.
-
-GitHub requires sign-in to download these test artifacts; Flightdeck itself
-does not require an account. Artifacts expire after 30 days. A future approved
-public release can provide permanent download links. Do not use a failed red run.
+Choose the application download, not “Source code”. The public ZIP contains no
+personal profile: your nickname, history and saved flights start empty, and the
+welcome screen appears on first launch. Extract into a new folder to avoid loading
+an existing **data** directory. GitHub sign-in never imports someone else's settings.
+This is a preview: physical-phone verification and permanent Android signing are
+still outstanding. [Updates and transferring data](UPDATES_AND_TRANSFER.md).
 
 ## Windows
 
@@ -48,7 +47,7 @@ Install an update over the previous app when the signing key matches. If Android
 reports an incompatible update, export your data before uninstalling. Local test
 APKs and GitHub builds may use different debug keys. Uninstalling removes private data.
 The first launch unpacks the included Finder database locally; it downloads nothing.
-Allow at least 500 MB of free space for installation and the local database.
+Allow at least 1 GB of free space for installation and the local database.
 
 ## Prepare your first flight
 
@@ -87,3 +86,16 @@ Android reminders are optional and approximate. After Force stop, schedule again
 The web prototype has the same bilingual help and PC-derived fuel calculation,
 but remains incomplete and has no offline SQLite Finder. An APK cannot run on iPhone.
 Physical-phone keyboard, landscape, file/photo selection and sharing still need testing.
+
+## The new flight catalogues
+
+The Air India approved 2026 timetable is a separate Finder option. It has dated
+validity (ending 24 October 2026), operating days and documented intermediate stops.
+It is a published schedule, not proof that a flight operated. Generic B777/B787/A350
+families do not determine an exact aircraft variant. Some durations are unavailable.
+
+“Include flights without duration” allows these observed routes in unconstrained
+searches; they cannot match a requested duration. “One result per flight” groups
+historical variants by airline, callsign and route without deleting stored evidence.
+Install the new APK over the old one to preserve data. This APK uses the same local
+debug signature as the previous 0.4.3 APK. Export a backup before any uninstall.

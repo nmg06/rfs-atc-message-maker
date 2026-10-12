@@ -31,11 +31,12 @@ def run(adb, serial):
         'offlineMapRendersLocalBordersRouteAndCountrySelection',
         'viewportIsOutsideSystemBarsAndCutout',
         'multipleAircraftListOpensWithoutTypingAndRestoresOffline',
-        'recentRoutesKeepUnknownFieldsAndManualFlightOffline'))
+        'recentRoutesKeepUnknownFieldsAndManualFlightOffline',
+        'publishedAirIndiaScheduleAndMappingWorkOffline'))
     report = command('shell', 'am', 'instrument', '-w', '-e', 'class', core_tests,
                      PACKAGE+'.test/androidx.test.runner.AndroidJUnitRunner', timeout=360)
     print(report)
-    if 'OK (6 tests)' not in report or 'FAILURES' in report:
+    if 'OK (7 tests)' not in report or 'FAILURES' in report:
         raise ValueError('Instrumentation did not pass: ' + report)
     def saved():
         return json.loads(command('shell', 'run-as', PACKAGE, 'cat', 'files/rfs_android.json'))

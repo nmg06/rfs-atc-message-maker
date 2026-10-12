@@ -1,3 +1,3 @@
-"""Release version shared by desktop and Android update checks."""
-
-VERSION = '0.4.3'
+"""Release version and channel shared by desktop and Android."""
+VERSION = '0.4.4'
+CHANNEL = 'preview'

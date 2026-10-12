@@ -14,10 +14,11 @@ solutions aux problèmes fréquents. Aucune version iPhone installable actuellem
 **[Tutoriel, 30 questions fréquentes et copie libre](docs/HELP.md)** — aide
 consultable dans l’application, que l’on peut passer et retrouver ensuite.
 
-La refonte et les derniers paquets sont sur `feat/flightdeck-user-experience`.
-Le [rapport de revue](docs/UX_REVIEW_2026-10-07.md) détaille les améliorations,
-les tests et les limites. Les workflows produisent des artefacts de test,
-sans publier automatiquement une nouvelle release.
+La préversion **0.4.4** est disponible dans les [téléchargements](https://github.com/nmg06/rfs-flightdeck/releases/tag/flightdeck-0.4.4),
+avec un ZIP Windows et une APK Android, sans compte GitHub nécessaire.
+Les essais sur téléphone physique et la signature Android définitive restent à
+terminer. Le [guide d'installation](docs/INSTALLATION.md) indique comment mettre à
+jour en conservant vos données. Aucune version iPhone n'est livrée.
 
 Le Finder PC/Android permet de choisir plusieurs avions dès l'ouverture de la
 liste. Android propose une préparation par étapes, quatre rubriques principales
@@ -26,13 +27,18 @@ localement. L'accueil web explique l'installation ; son prototype reste limité.
 
 ## Base de vols enrichie
 
-La base locale conserve les 203 627 profils historiques et ajoute un catalogue
-de 21 053 routes observées, dont 3 195 nouveaux trajets par callsign. Dans
-Flight Finder, cochez **Routes récentes observées** pour consulter ce complément.
-L’avion et la durée n’y sont pas renseignés : choisissez-les vous-même.
-Les filtres par durée ou avion restent disponibles dans la recherche habituelle.
-Les observations ne garantissent pas qu’un vol existe aujourd’hui.
-[Sources, dates et vérifications](docs/DATA_ENRICHMENT_2026-10-07.md).
+La base locale contient **344 667 vols historiques distincts**,
+contre 167 381 auparavant : **plus du double**, sans modifier les anciennes lignes.
+Elle conserve les 21 061 routes récentes observées et propose aussi le
+**programme officiel Air India été 2026** : 785 couples numéro–trajet issus des
+37 pages DGCA, avec dates de validité, jours et escales. Il est valable jusqu'au
+24 octobre 2026 et ne garantit pas l'exploitation réelle d'un vol.
+
+Dans Finder, choisissez le catalogue voulu. **Inclure les vols sans durée**
+élargit les recherches sans contrainte de durée ; **Un seul résultat par vol**
+regroupe les variantes du même callsign et trajet. 199 145 clés historiques
+ont une durée recherchable. Les valeurs absentes ne sont jamais inventées.
+[Sources, dates, comptages et conservation des données](docs/finder/ENRICHMENT_2026-10-13.md).
 
 ## Utiliser
 
@@ -54,7 +60,8 @@ explique aussi le carnet Android, les palettes et les rappels.
 L'aperçu se met à jour pendant la saisie et reste modifiable. `Générer` recrée
 le texte à partir des champs. `Effacer` vide le vol courant et les informations
 des messages, en conservant pilotes, préférences et vols sauvegardés.
-Le pseudo RFS `n1chita` est proposé par défaut ; `NIKA` est disponible.
+Sur une installation neuve, saisissez votre propre pseudo RFS : aucun pilote,
+vol ou historique personnel ne se trouve dans le paquet public.
 
 Les données et journaux locaux sont dans `data/`, à côté du script ou du fichier
 exécutable. Les fichiers JSON de l'ancienne application restent intacts.

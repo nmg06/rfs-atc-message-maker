@@ -3,6 +3,9 @@ import argparse
 import hashlib
 from pathlib import Path
 import zipfile
+import sys
+sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
+from scripts.public_package import verify_directory, verify_archive
 
 
 def archive(target, root, files, prefix):
@@ -12,6 +15,7 @@ def archive(target, root, files, prefix):
             if '__pycache__' in relative.parts or file.suffix in ('.pyc','.parquet','.bak'):
                 continue
             out.write(file, str(Path(prefix)/relative))
+    verify_archive(target)
 
 
 def main():
@@ -21,6 +25,7 @@ def main():
     args=parser.parse_args()
     source=Path(__file__).resolve().parents[1]
     args.output.mkdir(parents=True,exist_ok=True)
+    verify_directory(args.bundle)
     if (args.bundle/'data').exists():
         raise ValueError('Private data directory detected in release bundle; refusing to distribute it')
     source_files=[p for p in source.iterdir() if p.is_file() and p.suffix in ('.py','.md','.txt','.bat','.spec')
