@@ -1,0 +1,461 @@
+{
+  "schema_version": 1,
+  "export_date": "2026-10-01",
+  "source": "Catalogue aligned to the complete aircraft list and cruise fuel burn values supplied by the user. No additional aircraft or fuel burn values were invented.",
+  "note": "63 aircraft entries aligned with the user list. All entries now have a cruise fuel burn. Airbus A330-700L uses 5500 kg/h as an explicitly labelled estimate from a recovered conversation, not an official or independently verified figure. A340-300 fuel burn is user-provided; its other specifications remain null because the recovered JSON only contained A340-200.",
+  "units": {
+    "cruise_burn": "kilograms_per_hour"
+  },
+  "aircraft_count": 63,
+  "aircraft": [
+    {
+      "id": "airbus_a220_300",
+      "name": "Airbus A220-300",
+      "cruise_burn_kg_h": 1950,
+      "max_endurance": "9:13",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "airbus_a310_300",
+      "name": "Airbus A310-300",
+      "cruise_burn_kg_h": 4500,
+      "max_endurance": "14:05",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "airbus_a318",
+      "name": "Airbus A318",
+      "cruise_burn_kg_h": 2350,
+      "max_endurance": "7:00",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "airbus_a319ceo",
+      "name": "Airbus A319ceo",
+      "cruise_burn_kg_h": 2300,
+      "max_endurance": "9:39",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "airbus_a320_200",
+      "name": "Airbus A320-200",
+      "cruise_burn_kg_h": 2400,
+      "max_endurance": "11:05",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "airbus_a320neo",
+      "name": "Airbus A320neo",
+      "cruise_burn_kg_h": 2100,
+      "max_endurance": "11:30",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "airbus_a321_200",
+      "name": "Airbus A321-200",
+      "cruise_burn_kg_h": 2700,
+      "max_endurance": "9:00",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "airbus_a321neo",
+      "name": "Airbus A321neo",
+      "cruise_burn_kg_h": 2400,
+      "max_endurance": "11:46",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "airbus_a330_200",
+      "name": "Airbus A330-200",
+      "cruise_burn_kg_h": 5800,
+      "max_endurance": "24:41",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "airbus_a330_200f",
+      "name": "Airbus A330-200F",
+      "cruise_burn_kg_h": 5950,
+      "max_endurance": "20:00",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "airbus_a330_300",
+      "name": "Airbus A330-300",
+      "cruise_burn_kg_h": 6000,
+      "max_endurance": "25:32",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "airbus_belugaxl_a330_700l",
+      "name": "Airbus BelugaXL (A330-700L)",
+      "cruise_burn_kg_h": 5500,
+      "max_endurance": "8:07",
+      "burn_confidence": "estimated_from_recovered_conversation",
+      "burn_note": "Approximate cruise value recovered from an earlier conversation and accepted by the user after a plausibility check. No official public hourly fuel-burn figure was found; this is not a certified Airbus or RFS value."
+    },
+    {
+      "id": "airbus_a330_900neo",
+      "name": "Airbus A330-900neo",
+      "cruise_burn_kg_h": 5400,
+      "max_endurance": "25:34",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "airbus_a340_300",
+      "name": "Airbus A340-300",
+      "cruise_burn_kg_h": 6600,
+      "max_endurance": null,
+      "burn_confidence": "user_provided",
+      "data_note": "Fuel burn supplied by the user. The recovered JSON contained an A340-200 instead, so the other A340-300 specifications are left null rather than copied or invented."
+    },
+    {
+      "id": "airbus_a340_600",
+      "name": "Airbus A340-600",
+      "cruise_burn_kg_h": 8200,
+      "max_endurance": "19:43",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "airbus_a350_1000",
+      "name": "Airbus A350-1000",
+      "cruise_burn_kg_h": 6300,
+      "max_endurance": "21:17",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "airbus_a350_900",
+      "name": "Airbus A350-900",
+      "cruise_burn_kg_h": 5800,
+      "max_endurance": "21:37",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "airbus_a380_800",
+      "name": "Airbus A380-800",
+      "cruise_burn_kg_h": 12000,
+      "max_endurance": "26:02",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "antonov_an_225_mriya",
+      "name": "Antonov AN-225 Mriya",
+      "cruise_burn_kg_h": 16000,
+      "max_endurance": "18:06",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "atr_72_600",
+      "name": "ATR 72-600",
+      "cruise_burn_kg_h": 660,
+      "max_endurance": "8:32",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "bae_systems_146_300",
+      "name": "BAE Systems 146-300",
+      "cruise_burn_kg_h": 1900,
+      "max_endurance": "4:35",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "boeing_707_320c",
+      "name": "Boeing 707-320C",
+      "cruise_burn_kg_h": 7000,
+      "max_endurance": "12:15",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "boeing_727_200",
+      "name": "Boeing 727-200",
+      "cruise_burn_kg_h": 4500,
+      "max_endurance": "8:56",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "boeing_737_max_8",
+      "name": "Boeing 737 MAX 8",
+      "cruise_burn_kg_h": 2200,
+      "max_endurance": "10:36",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "boeing_737_100",
+      "name": "Boeing 737-100",
+      "cruise_burn_kg_h": 2900,
+      "max_endurance": "8:01",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "boeing_737_200",
+      "name": "Boeing 737-200",
+      "cruise_burn_kg_h": 2800,
+      "max_endurance": "7:09",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "boeing_737_800",
+      "name": "Boeing 737-800",
+      "cruise_burn_kg_h": 2500,
+      "max_endurance": "9:47",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "boeing_737_800bcf",
+      "name": "Boeing 737-800BCF",
+      "cruise_burn_kg_h": 2500,
+      "max_endurance": "9:47",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "boeing_747_200b",
+      "name": "Boeing 747-200B",
+      "cruise_burn_kg_h": 11500,
+      "max_endurance": "17:42",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "boeing_747_400",
+      "name": "Boeing 747-400",
+      "cruise_burn_kg_h": 10800,
+      "max_endurance": "20:33",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "boeing_747_400f",
+      "name": "Boeing 747-400F",
+      "cruise_burn_kg_h": 10900,
+      "max_endurance": "18:31",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "boeing_747_8f",
+      "name": "Boeing 747-8F",
+      "cruise_burn_kg_h": 9600,
+      "max_endurance": "23:44",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "boeing_747_8i",
+      "name": "Boeing 747-8I",
+      "cruise_burn_kg_h": 9600,
+      "max_endurance": "24:10",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "boeing_757_200f",
+      "name": "Boeing 757-200F",
+      "cruise_burn_kg_h": 3400,
+      "max_endurance": "13:11",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "boeing_757_200wl",
+      "name": "Boeing 757-200WL",
+      "cruise_burn_kg_h": 3400,
+      "max_endurance": "13:26",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "boeing_767_300",
+      "name": "Boeing 767-300",
+      "cruise_burn_kg_h": 5000,
+      "max_endurance": "18:29",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "boeing_767_300f",
+      "name": "Boeing 767-300F",
+      "cruise_burn_kg_h": 5000,
+      "max_endurance": "18:29",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "boeing_767_400er",
+      "name": "Boeing 767-400ER",
+      "cruise_burn_kg_h": 5900,
+      "max_endurance": "17:11",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "boeing_777_200",
+      "name": "Boeing 777-200",
+      "cruise_burn_kg_h": 6400,
+      "max_endurance": "25:39",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "boeing_777_200lr",
+      "name": "Boeing 777-200LR",
+      "cruise_burn_kg_h": 6800,
+      "max_endurance": "29:50",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "boeing_777_300er",
+      "name": "Boeing 777-300ER",
+      "cruise_burn_kg_h": 7500,
+      "max_endurance": "23:44",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "boeing_777f",
+      "name": "Boeing 777F",
+      "cruise_burn_kg_h": 7200,
+      "max_endurance": "23:30",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "boeing_787_10_dreamliner",
+      "name": "Boeing 787-10 Dreamliner",
+      "cruise_burn_kg_h": 5800,
+      "max_endurance": "24:51",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "boeing_787_8_dreamliner",
+      "name": "Boeing 787-8 Dreamliner",
+      "cruise_burn_kg_h": 4900,
+      "max_endurance": "18:56",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "boeing_787_9_dreamliner",
+      "name": "Boeing 787-9 Dreamliner",
+      "cruise_burn_kg_h": 5600,
+      "max_endurance": "19:29",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "bombardier_crj900",
+      "name": "Bombardier CRJ900",
+      "cruise_burn_kg_h": 1600,
+      "max_endurance": "3:50",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "cessna_172",
+      "name": "Cessna 172",
+      "cruise_burn_kg_h": 27,
+      "max_endurance": "6:57",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "cessna_208_caravan",
+      "name": "Cessna 208 Caravan",
+      "cruise_burn_kg_h": 150,
+      "max_endurance": "8:37",
+      "burn_confidence": "user_provided_range",
+      "cruise_burn_kg_h_min": 120,
+      "cruise_burn_kg_h_max": 160,
+      "burn_note": "Valeur d’origine conservée car dans la fourchette fournie. Fourchette fournie : 120–160 kg/h."
+    },
+    {
+      "id": "cirrus_sr22",
+      "name": "Cirrus SR22",
+      "cruise_burn_kg_h": 80,
+      "max_endurance": "2:27",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "concorde",
+      "name": "Concorde",
+      "cruise_burn_kg_h": 20000,
+      "max_endurance": "4:13",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "dhc_dash_8_q400",
+      "name": "DHC Dash 8 Q400",
+      "cruise_burn_kg_h": 900,
+      "max_endurance": "9:04",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "dhc_6_twin_otter_300",
+      "name": "DHC-6 Twin Otter 300",
+      "cruise_burn_kg_h": 220,
+      "max_endurance": "6:20",
+      "burn_confidence": "user_provided_range",
+      "cruise_burn_kg_h_min": 205,
+      "cruise_burn_kg_h_max": 220,
+      "burn_note": "Borne haute de la fourchette fournie, choisie explicitement pour le champ numérique du bot. Fourchette fournie : 205–220 kg/h."
+    },
+    {
+      "id": "douglas_dc_8_61",
+      "name": "Douglas DC-8-61",
+      "cruise_burn_kg_h": 6400,
+      "max_endurance": "14:37",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "embraer_190",
+      "name": "Embraer 190",
+      "cruise_burn_kg_h": 1900,
+      "max_endurance": "6:17",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "embraer_190_e2",
+      "name": "Embraer 190-E2",
+      "cruise_burn_kg_h": 1800,
+      "max_endurance": "7:33",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "embraer_erj145",
+      "name": "Embraer ERJ145",
+      "cruise_burn_kg_h": 1100,
+      "max_endurance": "7:57",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "learjet_35a",
+      "name": "Learjet 35A",
+      "cruise_burn_kg_h": 620,
+      "max_endurance": "4:32",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "lockheed_c_5b_galaxy",
+      "name": "Lockheed C-5B Galaxy",
+      "cruise_burn_kg_h": 16000,
+      "max_endurance": "23:30",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "mcdonnell_douglas_md_11",
+      "name": "McDonnell Douglas MD-11",
+      "cruise_burn_kg_h": 7800,
+      "max_endurance": "10:54",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "mcdonnell_douglas_md_11f",
+      "name": "McDonnell Douglas MD-11F",
+      "cruise_burn_kg_h": 7800,
+      "max_endurance": "14:07",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "mcdonnell_douglas_md_81",
+      "name": "McDonnell Douglas MD-81",
+      "cruise_burn_kg_h": 3200,
+      "max_endurance": "6:18",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "saab_340b",
+      "name": "Saab 340B",
+      "cruise_burn_kg_h": 430,
+      "max_endurance": "6:15",
+      "burn_confidence": "user_provided"
+    },
+    {
+      "id": "tupolev_tu_154m",
+      "name": "Tupolev Tu-154M",
+      "cruise_burn_kg_h": 5300,
+      "max_endurance": "7:07",
+      "burn_confidence": "user_provided"
+    }
+  ]
+}

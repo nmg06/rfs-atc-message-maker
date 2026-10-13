@@ -1,0 +1,38 @@
+[
+  {
+    "url": "https://github.com/MrAirspace/aircraft-flight-schedules/releases/download/aircraft_flight_schedules_2025_quarter4/2025_Q4_detailed_github.parquet",
+    "file": "2025_Q4_detailed_github.parquet",
+    "bytes": 871154403,
+    "sha256": "f540e9264292a0476b35302da2249d54c5f4833046258a0d75b7a979c7f884de"
+  },
+  {
+    "url": "https://github.com/MrAirspace/aircraft-flight-schedules/releases/download/aircraft_flight_schedules_2025_quarter3/2025_Q3_detailed_github.parquet",
+    "file": "2025_Q3_detailed_github.parquet",
+    "bytes": 970997726,
+    "sha256": "aa9936affcd07b3ad60b7d166484e4fdf71b52eb4d4085e8b53401f8e3ff889b"
+  },
+  {
+    "url": "https://github.com/MrAirspace/aircraft-flight-schedules/releases/download/aircraft_flight_schedules_2025_quarter2/2025_Q2_detailed_github.parquet",
+    "file": "2025_Q2_detailed_github.parquet",
+    "bytes": 794652635,
+    "sha256": "c3cf91d74a3be6d9b194142637486558d5649989bec9c984f9b238d5898e1213"
+  },
+  {
+    "url": "https://github.com/MrAirspace/aircraft-flight-schedules/releases/download/aircraft_flight_schedules_2025_quarter1/2025_Q1_detailed_github.parquet",
+    "file": "2025_Q1_detailed_github.parquet",
+    "bytes": 683450495,
+    "sha256": "21e43b9982bb252c92a412cadba7f78af3658a36ac0b8380b8786644f50199bd"
+  },
+  {
+    "url": "https://github.com/MrAirspace/aircraft-flight-schedules/releases/download/aircraft_flight_logs_2024_quarter4/2024_Q4_github.parquet",
+    "file": "2024_Q4_github.parquet",
+    "bytes": 331728647,
+    "sha256": "82c19484f9cdacd87fb341102c289e8819a6a6eeb9aba3dff9bbc2a11cee0baf"
+  },
+  {
+    "url": "https://github.com/MrAirspace/aircraft-flight-schedules/releases/download/aircraft_flight_logs_2024_quarter3/2024_Q3_github.parquet",
+    "file": "2024_Q3_github.parquet",
+    "bytes": 354257916,
+    "sha256": "54dc88ca9cc2243876e4052f5d76bf5a1746752af034a03ad42640c6b3923e5e"
+  }
+]

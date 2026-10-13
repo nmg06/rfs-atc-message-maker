@@ -1,0 +1,40 @@
+{
+  "columns": [
+    "callsign",
+    "origin_icao",
+    "destination_icao",
+    "via_icaos",
+    "airline_icao",
+    "flight_number",
+    "confidence",
+    "candidate_count",
+    "evidence_recency",
+    "evidence_days",
+    "observation_count",
+    "first_observed_at",
+    "last_observed_at"
+  ],
+  "dataset": "catchflights-observed-routes",
+  "description": "One row per callsign whose origin and destination were derived from observed ADS-B flight tracks. The evidence columns say how the answer was reached: candidate_count how many airport pairs it was chosen from, evidence_recency and evidence_days how recent and how repeated that evidence was, confidence the measured hit rate of the bucket those three name.",
+  "file": "routes-observed-2026-10-07.csv.gz",
+  "generated_on": "2026-10-07",
+  "license": {
+    "name": "Open Database License (ODbL) v1.0",
+    "url": "https://opendatacommons.org/licenses/odbl/1-0/"
+  },
+  "rows": 128173,
+  "sha256": "ac314dfbee338f3b6bc5331ac4c85dbf1d9158d771d9694a304e2bb05313960c",
+  "sources": [
+    {
+      "license": "ODbL v1.0",
+      "name": "adsb.lol globe_history",
+      "url": "https://github.com/adsblol/globe_history_2026"
+    },
+    {
+      "license": "ODbL v1.0",
+      "name": "MrAirspace aircraft-flight-schedules",
+      "url": "https://github.com/MrAirspace/aircraft-flight-schedules"
+    }
+  ],
+  "via_icaos_separator": "-"
+}

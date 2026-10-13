@@ -1,35 +1,13 @@
 from i18n import tr, set_language, language
 """Fuel calculator view; explicit variant selection and explicit current-flight update."""
 from copy import deepcopy
-import re
 from PySide6.QtCore import Qt, Signal, QEvent, QTimer, QObject
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QFormLayout, QLabel, QComboBox, QLineEdit, QPushButton, QTableWidget, QTableWidgetItem, QHeaderView, QAbstractItemView, QCompleter, QPlainTextEdit
+from aircraft_picker import AircraftPicker
 from .calculator import calculate_fuel, find_aircraft, load_json, DISCLAIMER
+from .selection import resolve_aircraft
+from .duration import duration_hours
 COMPONENTS = (('taxi_out_kg', 'Taxi départ · 6 min × 1,4'), ('trip_kg', 'Trajet'), ('contingency_kg', 'Contingence · 5 % du trajet'), ('alternate_kg', 'Alternate · distance / 450 kt + 15 min'), ('final_reserve_kg', 'Réserve finale · 30 min'), ('taxi_in_kg', 'Taxi arrivée · 4 min × 1,4'))
-
-def duration_hours(text):
-    text = str(text or '').strip().lower()
-    match = re.fullmatch('(\\d+)\\s*(?:h|:)\\s*(\\d{1,2})\\s*m?', text)
-    if match:
-        hours, minutes = map(int, match.groups())
-        return hours + minutes / 60 if minutes < 60 else None
-    try:
-        return float(text.rstrip('h').replace(',', '.')) if text else None
-    except ValueError:
-        return None
-
-class AircraftComboFilter(QObject):
-    """Shows the full list of aircraft immediately when clicking or focusing the field."""
-    def __init__(self, combo):
-        super().__init__(combo)
-        self.combo = combo
-
-    def eventFilter(self, obj, event):
-        if event.type() in (QEvent.Type.MouseButtonRelease, QEvent.Type.FocusIn):
-            if self.combo.currentIndex() == 0:
-                self.combo.lineEdit().selectAll()
-            QTimer.singleShot(0, self.combo.showPopup)
-        return False
 
 class FuelDialog(QDialog):
     selected = Signal(dict)
@@ -45,6 +23,10 @@ class FuelDialog(QDialog):
         self.alternate_data = load_json('airport_alternates.json')
         outer = QVBoxLayout(self)
         outer.addWidget(QLabel(tr('RFS FUEL HELPER'), objectName='title'))
+        from help_dialog import FlightdeckHelpDialog
+        self.help_button = QPushButton(tr('Comprendre cet écran'))
+        self.help_button.clicked.connect(lambda: FlightdeckHelpDialog(self, 'fuel').exec())
+        outer.addWidget(self.help_button)
         disclaimer = QLabel(tr(DISCLAIMER), objectName='danger')
         disclaimer.setWordWrap(True)
         outer.addWidget(disclaimer)
@@ -52,27 +34,15 @@ class FuelDialog(QDialog):
         advice.setWordWrap(True)
         outer.addWidget(advice)
         form = QFormLayout()
-        self.aircraft = QComboBox()
-        self.aircraft.setEditable(True)
-        self.aircraft.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
+        self.aircraft = AircraftPicker()
         self.aircraft.addItem(tr('Choisir un avion / variante…'), None)
         self.labels = {}
         for record in self.aircraft_data['aircraft']:
             label = record['name']
             self.labels[label] = record['id']
             self.aircraft.addItem(label, record['id'])
-        completer = QCompleter(list(self.labels), self)
-        completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
-        completer.setFilterMode(Qt.MatchFlag.MatchContains)
-        completer.setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
-        self.aircraft.setCompleter(completer)
-        self.aircraft.lineEdit().setPlaceholderText(tr('Tapez ou cliquez pour chercher un avion…'))
-        self._aircraft_filter = AircraftComboFilter(self.aircraft)
-        self.aircraft.lineEdit().installEventFilter(self._aircraft_filter)
-        self.aircraft.lineEdit().returnPressed.connect(lambda: self.aircraft.showPopup())
-        provenance = flight.get('selected_flight', {}).get('fields', {}).get('aircraft', '')
-        observed = bool(flight.get('selected_flight')) and provenance not in ('USER_INPUT', 'USER_INPUT_FUEL_VARIANT')
-        current = None if observed else find_aircraft(flight.get('fuel_aircraft_id') or flight.get('aircraft', ''), self.aircraft_data['aircraft'])
+        resolution = resolve_aircraft(flight, self.aircraft_data['aircraft'])
+        current = resolution['record']
         if current:
             self.aircraft.setCurrentIndex(self.aircraft.findData(current['id']))
         self.hours = QLineEdit()
@@ -101,6 +71,8 @@ class FuelDialog(QDialog):
         self.table.setMinimumHeight(285)
         outer.addWidget(self.table)
         self.status = QLabel(tr('Sélectionnez un avion puis calculez. Aucun carburant ne sera appliqué automatiquement.'))
+        if resolution['source'] == 'AMBIGUOUS_TYPE':
+            self.status.setText('Plusieurs variantes RFS correspondent au type observé : choisissez la vôtre.' if language() == 'fr' else 'Several RFS variants match the observed type: choose your variant.')
         self.status.setWordWrap(True)
         outer.addWidget(self.status)
         self.provenance = QPlainTextEdit()

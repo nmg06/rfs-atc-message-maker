@@ -61,6 +61,17 @@ class SearchTests(unittest.TestCase):
         rows = self.results(max_minutes=120)
         self.assertEqual([110,90,60],[r['duration_min'] for r in rows])
 
+    def test_city_and_callsign_queries(self):
+        paris_results = self.results(origin=['Paris'])
+        self.assertTrue(len(paris_results) > 0)
+        self.assertTrue(all(r['origin'] == 'LFPG' for r in paris_results))
+        nice_results = self.results(destination=['Nice'])
+        self.assertEqual([3], [r['pattern_id'] for r in nice_results])
+        afr103 = self.results(callsign='AFR103')
+        self.assertEqual([3], [r['pattern_id'] for r in afr103])
+        afr_all = self.results(callsign='AFR')
+        self.assertEqual({1, 2, 3}, {r['pattern_id'] for r in afr_all})
+
     def test_airport_iata_icao_and_exclusions(self):
         self.assertTrue(all(r['origin']=='LFPG' for r in self.results(origin=['cdg'])))
         self.assertTrue(all(r['destination']=='EGLL' for r in self.results(destination=['LHR'])))

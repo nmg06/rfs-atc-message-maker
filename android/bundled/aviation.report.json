@@ -1,0 +1,365 @@
+{
+  "baseline_sha256": "35ff4ecb9aa2e21f782cba1f48c9b4d5e339d827ea03813260d3a55d6b6add48",
+  "sources": [
+    {
+      "quarter": "2025_Q4",
+      "added_distinct_flights": 50638,
+      "source_database_sha256": "d5790390b73eacbbedea5399cd8f64c79362407b5ed08fb05cbd6b6c35a8fdfa",
+      "source_report": {
+        "schema": {
+          "2025_Q4_detailed_github.parquet": {
+            "ICAO_Hex": "VARCHAR",
+            "Reg": "VARCHAR",
+            "AC_Type": "VARCHAR",
+            "AC_Type_Description": "VARCHAR",
+            "Airline": "VARCHAR",
+            "Callsign": "VARCHAR",
+            "Track_Origin_Lat": "VARCHAR",
+            "Track_Origin_Lon": "VARCHAR",
+            "Track_Origin_FL_Ft": "VARCHAR",
+            "Track_Origin_DateTime_UTC": "VARCHAR",
+            "Track_Origin_ApplicableAirports": "VARCHAR",
+            "Track_Destination_Lat": "VARCHAR",
+            "Track_Destination_Lon": "VARCHAR",
+            "Track_Destination_FL_Ft": "VARCHAR",
+            "Track_Destination_DateTime_UTC": "VARCHAR",
+            "Track_Destination_ApplicableAirports": "VARCHAR",
+            "Route_Validation_Based_on_Callsign": "VARCHAR"
+          }
+        },
+        "versions": {
+          "duckdb": "1.5.6",
+          "timezonefinder": "9.0.0",
+          "timezonefinder-data": "3.2026.4",
+          "tzdata": "2026.4"
+        },
+        "sources": [
+          {
+            "url": "https://github.com/MrAirspace/aircraft-flight-schedules/releases/download/aircraft_flight_schedules_2025_quarter4/2025_Q4_detailed_github.parquet",
+            "file": "2025_Q4_detailed_github.parquet",
+            "bytes": 871154403,
+            "sha256": "f540e9264292a0476b35302da2249d54c5f4833046258a0d75b7a979c7f884de",
+            "seconds": 632.1
+          }
+        ],
+        "raw_rows": 13542708,
+        "accepted_before_dedup_window": 3903908,
+        "retained_observations": 3903908,
+        "window_days": 92,
+        "input_quarters": [
+          "2025_Q4_detailed_github.parquet"
+        ],
+        "etl_memory_mb": 768,
+        "etl_threads": 2,
+        "rejected_before_dedup": 9638800,
+        "patterns": 153170,
+        "airports": 19786,
+        "searchable_patterns": 57001,
+        "last_observation": "2025-12-31T23:59:56+00:00",
+        "built_at": "2026-10-12T21:34:58.175610+00:00",
+        "integrity_check": "ok",
+        "foreign_key_check": []
+      }
+    },
+    {
+      "quarter": "2025_Q3",
+      "added_distinct_flights": 30365,
+      "source_database_sha256": "4decdf2e6b05a6f6630ab3e3428fe338dd5a97de4fdcd0ef0272fe5dba55cc03",
+      "source_report": {
+        "schema": {
+          "2025_Q3_detailed_github.parquet": {
+            "ICAO_Hex": "VARCHAR",
+            "Reg": "VARCHAR",
+            "AC_Type": "VARCHAR",
+            "AC_Type_Description": "VARCHAR",
+            "Airline": "VARCHAR",
+            "Callsign": "VARCHAR",
+            "Track_Origin_Lat": "VARCHAR",
+            "Track_Origin_Lon": "VARCHAR",
+            "Track_Origin_FL_Ft": "VARCHAR",
+            "Track_Origin_DateTime_UTC": "VARCHAR",
+            "Track_Origin_ApplicableAirports": "VARCHAR",
+            "Track_Destination_Lat": "VARCHAR",
+            "Track_Destination_Lon": "VARCHAR",
+            "Track_Destination_FL_Ft": "VARCHAR",
+            "Track_Destination_DateTime_UTC": "VARCHAR",
+            "Track_Destination_ApplicableAirports": "VARCHAR",
+            "Route_Validation_Based_on_Callsign": "VARCHAR"
+          }
+        },
+        "versions": {
+          "duckdb": "1.5.6",
+          "timezonefinder": "9.0.0",
+          "timezonefinder-data": "3.2026.4",
+          "tzdata": "2026.4"
+        },
+        "sources": [
+          {
+            "url": "https://github.com/MrAirspace/aircraft-flight-schedules/releases/download/aircraft_flight_schedules_2025_quarter3/2025_Q3_detailed_github.parquet",
+            "file": "2025_Q3_detailed_github.parquet",
+            "bytes": 970997726,
+            "sha256": "aa9936affcd07b3ad60b7d166484e4fdf71b52eb4d4085e8b53401f8e3ff889b",
+            "seconds": 274.3
+          }
+        ],
+        "raw_rows": 15180704,
+        "accepted_before_dedup_window": 4313963,
+        "retained_observations": 4313963,
+        "window_days": 92,
+        "input_quarters": [
+          "2025_Q3_detailed_github.parquet"
+        ],
+        "etl_memory_mb": 768,
+        "etl_threads": 2,
+        "rejected_before_dedup": 10866741,
+        "patterns": 125481,
+        "airports": 19786,
+        "searchable_patterns": 45250,
+        "last_observation": "2025-09-30T23:59:59+00:00",
+        "built_at": "2026-10-12T21:42:23.180400+00:00",
+        "integrity_check": "ok",
+        "foreign_key_check": []
+      }
+    },
+    {
+      "quarter": "2025_Q2",
+      "added_distinct_flights": 19253,
+      "source_database_sha256": "bc77fee9d87fc5c6bae9253bc129f2230a07006d20a4b916289b1aeaec01e6c3",
+      "source_report": {
+        "schema": {
+          "2025_Q2_detailed_github.parquet": {
+            "ICAO_Hex": "VARCHAR",
+            "Reg": "VARCHAR",
+            "AC_Type": "VARCHAR",
+            "AC_Type_Description": "VARCHAR",
+            "Airline": "VARCHAR",
+            "Callsign": "VARCHAR",
+            "Track_Origin_Lat": "VARCHAR",
+            "Track_Origin_Lon": "VARCHAR",
+            "Track_Origin_FL_Ft": "VARCHAR",
+            "Track_Origin_DateTime_UTC": "VARCHAR",
+            "Track_Origin_ApplicableAirports": "VARCHAR",
+            "Track_Destination_Lat": "VARCHAR",
+            "Track_Destination_Lon": "VARCHAR",
+            "Track_Destination_FL_Ft": "VARCHAR",
+            "Track_Destination_DateTime_UTC": "VARCHAR",
+            "Track_Destination_ApplicableAirports": "VARCHAR",
+            "Route_Validation_Based_on_Callsign": "VARCHAR"
+          }
+        },
+        "versions": {
+          "duckdb": "1.5.6",
+          "timezonefinder": "9.0.0",
+          "timezonefinder-data": "3.2026.4",
+          "tzdata": "2026.4"
+        },
+        "sources": [
+          {
+            "url": "https://github.com/MrAirspace/aircraft-flight-schedules/releases/download/aircraft_flight_schedules_2025_quarter2/2025_Q2_detailed_github.parquet",
+            "file": "2025_Q2_detailed_github.parquet",
+            "bytes": 794652635,
+            "sha256": "c3cf91d74a3be6d9b194142637486558d5649989bec9c984f9b238d5898e1213",
+            "seconds": 207.1
+          }
+        ],
+        "raw_rows": 13978473,
+        "accepted_before_dedup_window": 3953041,
+        "retained_observations": 3953041,
+        "window_days": 91,
+        "input_quarters": [
+          "2025_Q2_detailed_github.parquet"
+        ],
+        "etl_memory_mb": 768,
+        "etl_threads": 2,
+        "rejected_before_dedup": 10025432,
+        "patterns": 123409,
+        "airports": 19786,
+        "searchable_patterns": 43609,
+        "last_observation": "2025-06-30T23:59:58+00:00",
+        "built_at": "2026-10-12T22:01:27.762166+00:00",
+        "integrity_check": "ok",
+        "foreign_key_check": []
+      }
+    },
+    {
+      "quarter": "2025_Q1",
+      "added_distinct_flights": 31074,
+      "source_database_sha256": "a88521e109fbf756bb0da8c24e924a4a30ae477c8855d6e7c25abf2c12c21174",
+      "source_report": {
+        "schema": {
+          "2025_Q1_detailed_github.parquet": {
+            "ICAO_Hex": "VARCHAR",
+            "Reg": "VARCHAR",
+            "AC_Type": "VARCHAR",
+            "AC_Type_Description": "VARCHAR",
+            "Airline": "VARCHAR",
+            "Callsign": "VARCHAR",
+            "Track_Origin_Lat": "VARCHAR",
+            "Track_Origin_Lon": "VARCHAR",
+            "Track_Origin_FL_Ft": "VARCHAR",
+            "Track_Origin_DateTime_UTC": "VARCHAR",
+            "Track_Origin_ApplicableAirports": "VARCHAR",
+            "Track_Destination_Lat": "VARCHAR",
+            "Track_Destination_Lon": "VARCHAR",
+            "Track_Destination_FL_Ft": "VARCHAR",
+            "Track_Destination_DateTime_UTC": "VARCHAR",
+            "Track_Destination_ApplicableAirports": "VARCHAR",
+            "Route_Validation_Based_on_Callsign": "VARCHAR"
+          }
+        },
+        "versions": {
+          "duckdb": "1.5.6",
+          "timezonefinder": "9.0.0",
+          "timezonefinder-data": "3.2026.4",
+          "tzdata": "2026.4"
+        },
+        "sources": [
+          {
+            "url": "https://github.com/MrAirspace/aircraft-flight-schedules/releases/download/aircraft_flight_schedules_2025_quarter1/2025_Q1_detailed_github.parquet",
+            "file": "2025_Q1_detailed_github.parquet",
+            "bytes": 683450495,
+            "sha256": "21e43b9982bb252c92a412cadba7f78af3658a36ac0b8380b8786644f50199bd",
+            "seconds": 192.6
+          }
+        ],
+        "raw_rows": 11910011,
+        "accepted_before_dedup_window": 3143134,
+        "retained_observations": 3143134,
+        "window_days": 90,
+        "input_quarters": [
+          "2025_Q1_detailed_github.parquet"
+        ],
+        "etl_memory_mb": 768,
+        "etl_threads": 2,
+        "rejected_before_dedup": 8766877,
+        "patterns": 94432,
+        "airports": 19786,
+        "searchable_patterns": 31929,
+        "last_observation": "2025-03-31T23:59:55+00:00",
+        "built_at": "2026-10-12T22:11:09.150168+00:00",
+        "integrity_check": "ok",
+        "foreign_key_check": []
+      }
+    },
+    {
+      "quarter": "2024_Q4",
+      "added_distinct_flights": 29075,
+      "source_database_sha256": "e8c08962925bc11621c8e87155b0a3f8f2df3082f6f4ca5f8a881c1b9c04c056",
+      "source_report": {
+        "schema": {
+          "2024_Q4_github.parquet": {
+            "Reg": "VARCHAR",
+            "AC_Type": "VARCHAR",
+            "AC_Type_Description": "VARCHAR",
+            "Airline": "VARCHAR",
+            "Callsign": "VARCHAR",
+            "Track_Origin_DateTime_UTC": "VARCHAR",
+            "Track_Origin_ApplicableAirports": "VARCHAR",
+            "Track_Destination_DateTime_UTC": "VARCHAR",
+            "Track_Destination_ApplicableAirports": "VARCHAR",
+            "Route_Validation_Based_on_Callsign": "VARCHAR"
+          }
+        },
+        "versions": {
+          "duckdb": "1.5.6",
+          "timezonefinder": "9.0.0",
+          "timezonefinder-data": "3.2026.4",
+          "tzdata": "2026.4"
+        },
+        "sources": [
+          {
+            "url": "https://github.com/MrAirspace/aircraft-flight-schedules/releases/download/aircraft_flight_logs_2024_quarter4/2024_Q4_github.parquet",
+            "file": "2024_Q4_github.parquet",
+            "bytes": 331728647,
+            "sha256": "82c19484f9cdacd87fb341102c289e8819a6a6eeb9aba3dff9bbc2a11cee0baf",
+            "seconds": 96.8
+          }
+        ],
+        "identity_basis": "published_registration",
+        "missing_ground_evidence": true,
+        "raw_rows": 12003653,
+        "accepted_before_dedup_window": 2930790,
+        "retained_observations": 2930790,
+        "window_days": 92,
+        "input_quarters": [
+          "2024_Q4_github.parquet"
+        ],
+        "etl_memory_mb": 768,
+        "etl_threads": 2,
+        "rejected_before_dedup": 9072863,
+        "patterns": 112677,
+        "airports": 19786,
+        "searchable_patterns": 0,
+        "last_observation": "2024-12-31T23:59:55+00:00",
+        "built_at": "2026-10-12T22:19:45.344462+00:00",
+        "integrity_check": "ok",
+        "foreign_key_check": []
+      }
+    },
+    {
+      "quarter": "2024_Q3",
+      "added_distinct_flights": 16881,
+      "source_database_sha256": "f8e018bd405f3d3ce77690a1d75631b298b1faa36199bd9d9a01f1c34432b342",
+      "source_report": {
+        "schema": {
+          "2024_Q3_github.parquet": {
+            "Reg": "VARCHAR",
+            "AC_Type": "VARCHAR",
+            "AC_Type_Description": "VARCHAR",
+            "Airline": "VARCHAR",
+            "Callsign": "VARCHAR",
+            "Track_Origin_DateTime_UTC": "VARCHAR",
+            "Track_Origin_ApplicableAirports": "VARCHAR",
+            "Track_Destination_DateTime_UTC": "VARCHAR",
+            "Track_Destination_ApplicableAirports": "VARCHAR",
+            "Route_Validation_Based_on_Callsign": "VARCHAR"
+          }
+        },
+        "versions": {
+          "duckdb": "1.5.6",
+          "timezonefinder": "9.0.0",
+          "timezonefinder-data": "3.2026.4",
+          "tzdata": "2026.4"
+        },
+        "sources": [
+          {
+            "url": "https://github.com/MrAirspace/aircraft-flight-schedules/releases/download/aircraft_flight_logs_2024_quarter3/2024_Q3_github.parquet",
+            "file": "2024_Q3_github.parquet",
+            "bytes": 354257916,
+            "sha256": "54dc88ca9cc2243876e4052f5d76bf5a1746752af034a03ad42640c6b3923e5e",
+            "seconds": 85.1
+          }
+        ],
+        "identity_basis": "published_registration",
+        "missing_ground_evidence": true,
+        "raw_rows": 13050823,
+        "accepted_before_dedup_window": 3119837,
+        "retained_observations": 3119837,
+        "window_days": 92,
+        "input_quarters": [
+          "2024_Q3_github.parquet"
+        ],
+        "etl_memory_mb": 768,
+        "etl_threads": 2,
+        "rejected_before_dedup": 9930986,
+        "patterns": 88186,
+        "airports": 19786,
+        "searchable_patterns": 0,
+        "last_observation": "2024-09-30T23:59:56+00:00",
+        "built_at": "2026-10-12T22:25:38.546127+00:00",
+        "integrity_check": "ok",
+        "foreign_key_check": []
+      }
+    }
+  ],
+  "baseline_distinct_flights": 167381,
+  "baseline_timed_flights": 140046,
+  "total_distinct_flights": 344667,
+  "total_timed_flights": 199145,
+  "total_profiles": 380913,
+  "distinct_flight_ratio": 2.0591763700778465,
+  "doubled_distinct_flights": true,
+  "lost_or_changed_legacy_rows": 0,
+  "integrity": "ok",
+  "candidate_sha256": "a3a975ff1b1dbfe0796cc4ffb955e27df5e117b4669dd44210ce0e140db33703"
+}

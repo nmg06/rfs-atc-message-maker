@@ -69,7 +69,7 @@ class PilotsDialog(QDialog):
             label = tr('Pseudo RFS *') if key == 'name' else tr(FLIGHT_FIELDS[key].label) + (' *' if key == 'callsign' else '')
             edit = QLineEdit(str(values.get(key, '')))
             if key not in ('name', 'callsign'):
-                edit.setPlaceholderText(tr('Commun : {v0}', v0=self.flight.get(key) or 'non renseigné'))
+                edit.setPlaceholderText(tr('Commun : {v0}', v0=self.flight.get(key) or tr('non renseigné')))
             form.addRow(tr(label), edit)
             widgets[key] = edit
         selection = QWidget()
@@ -123,7 +123,7 @@ class JokeDialog(QDialog):
         for label, placeholder in (('Numéro de carte', '•••• •••• •••• ••••'), ('Expiration', 'MM / AA'), ('Code de sécurité', '•••'), ('Prénom', ''), ('Nom', ''), ('Adresse de facturation', '')):
             field = QLineEdit()
             field.setReadOnly(True)
-            field.setPlaceholderText(placeholder)
+            field.setPlaceholderText(tr(placeholder))
             field.setContextMenuPolicy(Qt.ContextMenuPolicy.NoContextMenu)
             field.installEventFilter(self)
             self.props.append(field)
@@ -140,7 +140,10 @@ class JokeDialog(QDialog):
             child.installEventFilter(self)
 
     def eventFilter(self, watched, event):
-        if event.type() in (QEvent.Type.MouseButtonPress, QEvent.Type.KeyPress, QEvent.Type.InputMethod, QEvent.Type.ShortcutOverride):
+        # Qt can send an empty input-method event when focus is initialised.
+        # That is not a user's attempt to type and must not dismiss the prop.
+        entered_text = event.type() == QEvent.Type.InputMethod and bool(event.commitString() or event.preeditString())
+        if event.type() in (QEvent.Type.MouseButtonPress, QEvent.Type.KeyPress) or entered_text:
             self.reveal()
             return True
         return super().eventFilter(watched, event)

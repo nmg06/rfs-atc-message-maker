@@ -16,15 +16,27 @@ def set_language(value):
     QLocale.setDefault(QLocale('en_GB' if _language == 'en' else 'fr_FR'))
     app = QApplication.instance()
     if app:
+        # Qt sends LanguageChange to every widget on install/remove. Recreating
+        # parented translators even for an unchanged language churned native
+        # objects and deferred deletions during window teardown on Windows.
+        # Keep at most two catalogues alive for the QApplication lifetime.
+        if getattr(app, '_rfs_qt_language', None) == _language:
+            return
+        catalogues = getattr(app, '_rfs_qt_catalogues', None)
+        if catalogues is None:
+            app._rfs_qt_catalogues = catalogues = {}
+        if _language not in catalogues:
+            translator = QTranslator(app)
+            loaded = translator.load('qtbase_' + _language, QLibraryInfo.path(QLibraryInfo.LibraryPath.TranslationsPath))
+            catalogues[_language] = translator if loaded else None
         previous = getattr(app, '_rfs_qt_translation', None)
         if previous:
             app.removeTranslator(previous)
-        translator = QTranslator(app)
-        if translator.load('qtbase_' + _language, QLibraryInfo.path(QLibraryInfo.LibraryPath.TranslationsPath)):
+        translator = catalogues[_language]
+        if translator:
             app.installTranslator(translator)
         app._rfs_qt_translation = translator
-        if previous:
-            previous.deleteLater()
+        app._rfs_qt_language = _language
 
 
 def tr(source, **values):

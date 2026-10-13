@@ -1,0 +1,81 @@
+name: Flightdeck signed release candidate
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: python -m pip install -r requirements.txt
+      - run: python -m unittest discover -s tests -v
+      - run: python -m PyInstaller --noconfirm --clean RFSATCMessageMaker.spec
+      - shell: pwsh
+        run: |
+          $version = python -c 'from app_version import VERSION; print(VERSION)'
+          python scripts/package_windows.py --archive "dist/RFSFlightdeck-Windows-$version-x64.zip"
+          $env:QT_QPA_PLATFORM = 'offscreen'
+          $env:RFS_MESSAGE_MAKER_DATA_DIR = Join-Path $env:RUNNER_TEMP 'candidate-smoke'
+          $process = Start-Process -FilePath '.\dist\RFSATCMessageMaker\RFSATCMessageMaker.exe' -ArgumentList '--smoke-test' -WindowStyle Hidden -Wait -PassThru
+          if ($process.ExitCode -ne 0) { throw "Smoke failed: $($process.ExitCode)" }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Flightdeck-Windows-candidate
+          path: dist/RFSFlightdeck-Windows-*-x64.zip
+          if-no-files-found: error
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: flightdeck-release
+    env:
+      RFS_ANDROID_STORE_PASSWORD: ${{ secrets.RFS_ANDROID_STORE_PASSWORD }}
+      RFS_ANDROID_KEY_ALIAS: ${{ secrets.RFS_ANDROID_KEY_ALIAS }}
+      RFS_ANDROID_KEY_PASSWORD: ${{ secrets.RFS_ANDROID_KEY_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-35 build-tools;35.0.0'
+      - name: Restore private signing key
+        env:
+          RFS_ANDROID_KEYSTORE: ${{ runner.temp }}/flightdeck-release.jks
+          KEYSTORE_BASE64: ${{ secrets.RFS_ANDROID_KEYSTORE_BASE64 }}
+          EXPECTED_CERT: ${{ vars.RFS_ANDROID_CERT_SHA256 }}
+        run: |
+          test -n "$KEYSTORE_BASE64" && test -n "$EXPECTED_CERT" && test -n "$RFS_ANDROID_STORE_PASSWORD" && test -n "$RFS_ANDROID_KEY_ALIAS" && test -n "$RFS_ANDROID_KEY_PASSWORD" || { echo 'Configure the protected signing environment first: docs/android/SIGNING.md'; exit 1; }
+          umask 077
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RFS_ANDROID_KEYSTORE"
+          echo "RFS_ANDROID_KEYSTORE=$RFS_ANDROID_KEYSTORE" >> "$GITHUB_ENV"
+      - run: python -m pip install tzdata==2026.4
+      - run: python -m unittest discover -s android/tests -v
+      - name: Build signed candidate
+        working-directory: android
+        run: chmod +x gradlew && ./gradlew --no-daemon assembleRelease
+      - name: Check actual APK and stable signing certificate
+        env:
+          EXPECTED_CERT: ${{ vars.RFS_ANDROID_CERT_SHA256 }}
+        run: |
+          python scripts/verify_android_apk.py android/app/build/outputs/apk/release/app-release.apk --aapt "$ANDROID_HOME/build-tools/35.0.0/aapt" --require-release --apksigner "$ANDROID_HOME/build-tools/35.0.0/apksigner" --expected-cert-sha256 "$EXPECTED_CERT"
+          VERSION=$(python -c 'from app_version import VERSION; print(VERSION)')
+          mkdir -p dist
+          cp android/app/build/outputs/apk/release/app-release.apk "dist/RFSFlightdeck-Android-$VERSION.apk"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Flightdeck-Android-signed-candidate
+          path: dist/RFSFlightdeck-Android-*.apk
+          if-no-files-found: error
+      - name: Remove temporary signing key
+        if: always()
+        run: rm -f -- "$RFS_ANDROID_KEYSTORE"
+# Deliberately no release publishing, tag creation or Pages deployment here.

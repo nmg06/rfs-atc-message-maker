@@ -1,16 +1,55 @@
-# RFS ATC Message Maker
+# RFS Flightdeck
 
-Application Windows personnelle pour préparer des messages Discord de Real
-Flight Simulator. Les huit modèles fonctionnent sans compte, API ou Internet.
+Ancien nom : RFS ATC Message Maker. Messages Discord, Flight Finder local,
+RFS Fuel Helper et aperçu cartographique pour Real Flight Simulator.
+Les fonctions principales Windows et Android fonctionnent sans compte ni Internet.
+
+**Vous voulez installer l'application ?** Il suffit de télécharger le ZIP Windows
+ou l'APK Android : Python n'est pas nécessaire. Le [guide pas à pas](docs/INSTALLATION.md)
+explique les boutons de téléchargement, l'installation, le premier vol et les
+solutions aux problèmes fréquents. Aucune version iPhone installable actuellement.
+
+**[Téléchargement et installation Windows / Android / état iPhone](docs/INSTALLATION.md)**
+
+**[Tutoriel, 30 questions fréquentes et copie libre](docs/HELP.md)** — aide
+consultable dans l’application, que l’on peut passer et retrouver ensuite.
+
+La préversion **0.4.4** est disponible dans les [téléchargements](https://github.com/nmg06/rfs-flightdeck/releases/tag/flightdeck-0.4.4),
+avec un ZIP Windows et une APK Android, sans compte GitHub nécessaire.
+Les essais sur téléphone physique et la signature Android définitive restent à
+terminer. Le [guide d'installation](docs/INSTALLATION.md) indique comment mettre à
+jour en conservant vos données. Aucune version iPhone n'est livrée.
+
+Le Finder PC/Android permet de choisir plusieurs avions dès l'ouverture de la
+liste. Android propose une préparation par étapes, quatre rubriques principales
+et un menu Outils, ainsi qu'une comparaison de trois résultats réels sauvegardée
+localement. L'accueil web explique l'installation ; son prototype reste limité.
+
+## Base de vols enrichie
+
+La base locale contient **344 667 vols historiques distincts**,
+contre 167 381 auparavant : **plus du double**, sans modifier les anciennes lignes.
+Elle conserve les 21 061 routes récentes observées et propose aussi le
+**programme officiel Air India été 2026** : 785 couples numéro–trajet issus des
+37 pages DGCA, avec dates de validité, jours et escales. Il est valable jusqu'au
+24 octobre 2026 et ne garantit pas l'exploitation réelle d'un vol.
+
+Dans Finder, choisissez le catalogue voulu. **Inclure les vols sans durée**
+élargit les recherches sans contrainte de durée ; **Un seul résultat par vol**
+regroupe les variantes du même callsign et trajet. 199 145 clés historiques
+ont une durée recherchable. Les valeurs absentes ne sont jamais inventées.
+[Sources, dates, comptages et conservation des données](docs/finder/ENRICHMENT_2026-10-13.md).
 
 ## Utiliser
 
-Ouvrez `lancer.bat`, ou directement
-`dist\RFSATCMessageMaker-v5\RFSATCMessageMaker.exe` après mise à jour, ou
-`RFSATCMessageMaker.exe` dans le paquet téléchargé. Gardez le dossier
-`RFSATCMessageMaker` entier : l'exécutable utilise les fichiers de `_internal`.
+Ouvrez `RFSATCMessageMaker.exe` dans le paquet téléchargé. Gardez le dossier
+`RFSFlightdeck` entier : l'exécutable utilise les fichiers de `_internal`.
 Le paquet est autonome : Python n'est pas nécessaire pour l'utiliser.
 Il cible Windows 10/11 64 bits.
+
+Pour préparer un vol sans ATC, commencez par Flight Finder, utilisez le vol choisi,
+puis ouvrez Fuel Helper. Les messages restent facultatifs. Le guide d'installation
+explique aussi le carnet Android, les palettes et les rappels.
 
 1. Sélectionnez `ATC REQUEST` et renseignez le panneau `Vol actuel`.
 2. Complétez la porte, la piste, le pushback et les autres champs signalés par `*`.
@@ -21,12 +60,35 @@ Il cible Windows 10/11 64 bits.
 L'aperçu se met à jour pendant la saisie et reste modifiable. `Générer` recrée
 le texte à partir des champs. `Effacer` vide le vol courant et les informations
 des messages, en conservant pilotes, préférences et vols sauvegardés.
-Le pseudo RFS `n1chita` est proposé par défaut ; `NIKA` est disponible.
+Sur une installation neuve, saisissez votre propre pseudo RFS : aucun pilote,
+vol ou historique personnel ne se trouve dans le paquet public.
 
 Les données et journaux locaux sont dans `data/`, à côté du script ou du fichier
 exécutable. Les fichiers JSON de l'ancienne application restent intacts.
 
 ## Construction et tests
+
+Une première application **Android installable et hors ligne** existe désormais
+dans `android/`, à côté de Windows : moteurs Python partagés, Flight Finder avec
+base embarquée, Fuel Helper, carte locale/frontières, bibliothèque, import des
+quatre fichiers PC, stockage privé et copie native. Depuis Android 0.4 : marges
+Android corrigées, retour des paramètres, détails Finder lisibles, carnet chronométré,
+dix palettes PC/Android, icônes et rappel local facultatif. Satellite/vents en
+option Internet, désactivés au départ. L'APK debug est
+construite et testée sur émulateur API 35, y compris en mode avion et après arrêt
+complet du processus. [Installation, build et limites](docs/android/README.md) ;
+[parité détaillée](docs/android/PARITY.md). Le workflow **Android offline APK**
+fournit l'artefact `RFS-ATC-Android-debug` sans publication de release automatique.
+La 0.4.1 ajoute tutoriel et 30 questions bilingues, copie libre facultative,
+avertissements cliquables et défilement des avions corrigé.
+[État et tests 0.4.1](docs/android/PROGRESS_0.4.1.md) · [English installation guide](docs/INSTALLATION_EN.md).
+
+[État et tests 0.4.2](docs/android/PROGRESS_0.4.2.md).
+
+La 0.4.2 ajoute une vérification facultative des mises à jour et une sauvegarde
+commune PC–Android, avec fusion, aperçu avant import et récupération après
+interruption. [Mises à jour et transfert des données](docs/UPDATES_AND_TRANSFER.md).
+La synchronisation automatique et l’application iOS restent à développer.
 
 `build_exe.bat` crée un environnement Python local, installe PySide6 et
 PyInstaller, puis construit le paquet dans `dist\RFSATCMessageMaker`.
@@ -98,7 +160,9 @@ sont sous `docs/finder/`, et le transfert carburant sous `docs/fuel/reference/`.
 Distribuez le dossier portable complet (pas le seul `.exe`), avec `finder-data/`
 et ses licences pour le Finder. Ne publiez jamais le dossier personnel `data/`.
 Les sources, workflows GitHub et données publiques peuvent être partagés séparément.
-Voir `SECURITY.md`. Mobile/PWA, API live et livrées vérifiées restent hors de cette version.
+Voir `SECURITY.md`. La carte Windows ajoute des frontières locales et deux options
+Internet explicites : satellite EOX et vents Open-Meteo. Le prototype PWA reste
+historique ; aucune version native iPhone n'est livrée. Android est documenté séparément.
 
 ## Note sur les emojis
 

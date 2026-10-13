@@ -9,10 +9,12 @@ from PySide6.QtCore import QTimer
 from storage import LOGGER
 from ui import RFSWindow
 from app_icon import make_icon
+from app_version import VERSION
 
 def main() -> int:
     app = QApplication(sys.argv)
-    app.setApplicationName('RFS ATC Message Maker')
+    app.setApplicationName('RFS Flightdeck')
+    app.setApplicationVersion(VERSION)
     app.setWindowIcon(make_icon())
 
     def report_exception(exc_type, exc_value, exc_tb) -> None:
@@ -25,6 +27,11 @@ def main() -> int:
     window = RFSWindow()
     window.show()
     if '--smoke-test' in sys.argv:
+        import os
+        if os.name == 'nt' and os.environ.get('QT_QPA_PLATFORM') == 'offscreen':
+            from PySide6.QtGui import QFontDatabase, QFont
+            QFontDatabase.addApplicationFont(str(Path(os.environ['WINDIR'])/'Fonts/segoeui.ttf'))
+            app.setFont(QFont('Segoe UI', 9))
 
         def smoke():
             from storage import DATA_DIR
@@ -36,6 +43,11 @@ def main() -> int:
             from datetime import datetime, timezone
             app_folder = Path(sys.executable).parent if getattr(sys, 'frozen', False) else Path(__file__).parent
             database = app_folder / 'finder-data' / 'aviation.sqlite'
+            from route_map import land_path
+            window.store.state['flight'].update(departure_icao='LFPG', arrival_icao='KJFK')
+            window.render_preview()
+            if not window.route_map._route or land_path().isEmpty():
+                raise RuntimeError('Route map resources or airport coordinates missing')
             dialog = FinderDialog(window, database)
             instant, warnings = local_to_utc(datetime(2026, 3, 29, 2, 30), 'Europe/Paris')
             window.grab().save(str(DATA_DIR / 'smoke-main.png'))
@@ -48,9 +60,33 @@ def main() -> int:
             app.processEvents()
             fuel_dialog.grab().save(str(DATA_DIR / 'smoke-fuel.png'))
             found = search(database, Criteria(origin=['LFPG'], max_minutes=120), datetime.now(timezone.utc)) if database.is_file() else None
-            (DATA_DIR / 'smoke-result.json').write_text(json.dumps({'window': window.windowTitle(), 'finder': dialog.windowTitle(), 'dst_utc': instant.isoformat(), 'warnings': warnings, 'real_database_matches': found['matches'] if found else None, 'fuel_example_kg': calculate_fuel('airbus_a220_300', 5, 'EGLL')['total_block_fuel_kg_exact']}), encoding='utf-8')
+            from finder.database import connect_readonly
+            with connect_readonly(database) as db:
+                has_routes = bool(db.execute("SELECT 1 FROM sqlite_master WHERE name='observed_routes'").fetchone())
+            recent_routes = search(database, Criteria(route_catalog=True, airline='AFR'), datetime.now(timezone.utc)) if has_routes else None
+            if recent_routes and (not recent_routes['results'] or recent_routes['results'][0]['duration_min'] is not None or recent_routes['results'][0]['aircraft'] is not None):
+                raise RuntimeError('Recent route catalog is missing or invents unavailable flight fields')
+            (DATA_DIR / 'smoke-result.json').write_text(json.dumps({'window': window.windowTitle(), 'finder': dialog.windowTitle(), 'dst_utc': instant.isoformat(), 'warnings': warnings, 'real_database_matches': found['matches'] if found else None, 'recent_route_matches': recent_routes['matches'] if recent_routes else None, 'fuel_example_kg': calculate_fuel('airbus_a220_300', 5, 'EGLL')['total_block_fuel_kg_exact'], 'map_airports':list(window.route_map._codes), 'map_route_samples':len(window.route_map._route), 'map_land_loaded':not land_path().isEmpty()}), encoding='utf-8')
             window.language_combo.setCurrentIndex(window.language_combo.findData('en'))
             app.processEvents()
+            window.open_help('preview')
+            app.processEvents()
+            help_window = window.help_dialog
+            if len(help_window.faq_rows) != 30 or help_window.topics.currentText() != 'Preview and copying':
+                raise RuntimeError('Packaged bilingual guide is incomplete')
+            help_window.grab().save(str(DATA_DIR / 'smoke-help-en.png'))
+            help_window.close()
+            window.aligned.setChecked(False)
+            window.preview_timer.stop()
+            window.preview.setPlainText('PACKAGED FREE COPY incomplete Z')
+            window.strict_validation.setChecked(False)
+            window.copy_message()
+            if app.clipboard().text() != 'PACKAGED FREE COPY incomplete Z' or not window.validation_problems:
+                raise RuntimeError('Packaged free copy or warning retention failed')
+            result_path = DATA_DIR / 'smoke-result.json'
+            result = json.loads(result_path.read_text(encoding='utf-8'))
+            result.update(help_questions=30, english_themes=[window.visual_theme_combo.itemText(i) for i in range(10)], free_copy=True)
+            result_path.write_text(json.dumps(result), encoding='utf-8')
             window.grab().save(str(DATA_DIR / 'smoke-main-en.png'))
             from report_dialog import ReportDialog
             from dialogs import UnifiedDesignDialog

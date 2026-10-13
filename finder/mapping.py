@@ -1,6 +1,8 @@
 """The sole bridge into the existing current-flight state."""
 from copy import deepcopy
+import json
 import re
+from .provenance import duration_provenance
 
 
 def safe_text(value) -> str:
@@ -21,6 +23,11 @@ def use_this_flight(current: dict, result: dict) -> dict:
         if value:
             flight[target] = value
             known[target] = "STATIC_DB" if source != "callsign" else "OBSERVED"
+            if result.get('record_kind') == 'OBSERVED_ROUTE':
+                if source == 'airline_name':
+                    known[target] = 'DERIVED_FROM_CALLSIGN_PREFIX'
+                elif source == 'callsign':
+                    known[target] = 'OBSERVED_ROUTE_EVIDENCE'
     if result.get('aircraft_display'):
         flight['aircraft'] = safe_text(result['aircraft_display'])
         known['aircraft'] = 'OBSERVED_TYPE_ONLY'
@@ -39,14 +46,29 @@ def use_this_flight(current: dict, result: dict) -> dict:
     if result.get("duration_min") is not None:
         minutes = round(result["duration_min"])
         flight["estimated_flight_time"] = f"{minutes//60}h{minutes%60:02}"
-        known["estimated_flight_time"] = "TYPICAL_AIRBORNE"
+        known["estimated_flight_time"] = ("TYPICAL_AIRBORNE" if duration_provenance(result) == 'AGGREGATED_COMPLETE_TRACKS'
+                                           else duration_provenance(result))
     callsign = result.get("callsign") or ""
     suffix = re.fullmatch(r"[A-Z]{3}(\d{1,4}[A-Z]?)", callsign)
     if suffix and result.get("airline_iata"):
         flight["flight_number"] = safe_text(result["airline_iata"] + suffix[1])
         known["flight_number"] = "DERIVED_FROM_CALLSIGN"
+    published = result.get("record_kind") == "PUBLISHED_SCHEDULE"
+    if published:
+        known["callsign"] = "DERIVED_FROM_PUBLISHED_FLIGHT_NUMBER"
+        if "aircraft" in known:
+            known["aircraft"] = "PUBLISHED_AIRCRAFT_TYPE"
+        if result.get("flight_number"):
+            flight["flight_number"] = safe_text(result["flight_number"])
+            known["flight_number"] = "PUBLISHED_TIMETABLE"
     flight["selected_flight"] = {"schema_version": 1, "pattern_id": result.get("pattern_id"),
+        "aircraft_icao": result.get('aircraft'),
         "source_id": result.get("source_id"), "last_seen": result.get("last_seen"), "fields": known,
-        "status": "HISTORICAL_OBSERVED", "n_obs": result.get("n_obs"),
+        "status": "PUBLISHED_SCHEDULE" if published else "OBSERVED_ROUTE" if result.get('record_kind') == 'OBSERVED_ROUTE' else "HISTORICAL_OBSERVED",
+        "route_id": result.get('route_id'), "n_obs": result.get("n_obs"),
+        "duration_provenance": duration_provenance(result), "n_complete": result.get('n_complete'),
         "sim_departure_utc": result.get("sim_departure_utc"), "sim_arrival_utc": result.get("sim_arrival_utc")}
+    if published:
+        flight["selected_flight"]["via_airports"] = json.loads(result.get("via_json") or "[]")
+        flight["selected_flight"]["publication"] = {key: result.get(key) for key in ("publication_id", "flight_number", "valid_from", "valid_to", "schedule_days", "departure_local", "arrival_local", "published_on", "aircraft_as_published")}
     return flight

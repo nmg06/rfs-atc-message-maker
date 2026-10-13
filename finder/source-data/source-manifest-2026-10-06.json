@@ -1,0 +1,240 @@
+[
+  {
+    "url": "https://github.com/MrAirspace/aircraft-flight-schedules/releases/download/aircraft_flight_schedules_2026_quarter2/2026_Q2_detailed_github.parquet",
+    "file": "2026_Q2_detailed_github.parquet",
+    "bytes": 911949077,
+    "sha256": "2bef8bc41b9c5fc0708271859362a10d9a703a15ad57863e7e934bf3738226db",
+    "retrieved_at": "2026-09-30T23:45:04.433965+00:00"
+  },
+  {
+    "url": "https://davidmegginson.github.io/ourairports-data/airports.csv",
+    "file": "airports.csv",
+    "bytes": 12733703,
+    "sha256": "5cb29a038a92dbdb94d4fcdd90ce116b2b47394f456d9c43e373d683ef0c4eff",
+    "retrieved_at": "2026-09-30T23:45:04.531559+00:00"
+  },
+  {
+    "url": "https://davidmegginson.github.io/ourairports-data/runways.csv",
+    "file": "runways.csv",
+    "bytes": 3966684,
+    "sha256": "6384aca4f1a68f2cde0114cb955feb42ce303be40afe657a23c86abd11c9bd55",
+    "retrieved_at": "2026-09-30T23:45:04.556461+00:00"
+  },
+  {
+    "url": "https://davidmegginson.github.io/ourairports-data/countries.csv",
+    "file": "countries.csv",
+    "bytes": 24583,
+    "sha256": "2a9dbee691125b0cdb8ceb5fe227c48c903f99c488963b8e53e2ab366521c639",
+    "retrieved_at": "2026-09-30T23:45:04.557782+00:00"
+  },
+  {
+    "url": "https://davidmegginson.github.io/ourairports-data/regions.csv",
+    "file": "regions.csv",
+    "bytes": 485265,
+    "sha256": "abd0b7d8c5b0aea81ce27a4cd6344ec814c3af0858325b99e25d3bfc3355957f",
+    "retrieved_at": "2026-09-30T23:45:04.561227+00:00"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/vradarserver/standing-data/master/airlines/schema-01/airlines.csv",
+    "file": "airlines.csv",
+    "bytes": 177227,
+    "sha256": "5d86acc2da7ff60b3086e3fabd2233aea66459d037e3bfe8a52343dd1d4501ab",
+    "retrieved_at": "2026-09-30T23:45:04.564293+00:00"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/vradarserver/standing-data/main/model-type/schema-01/A.csv",
+    "file": "models-A.csv",
+    "bytes": 43206,
+    "sha256": "333211b6db9e3a9d118f3762233b854c35a13525bf5b95f8cbde2aa41dc8ac17",
+    "retrieved_at": "2026-09-30T23:45:04.818044+00:00"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/vradarserver/standing-data/main/model-type/schema-01/B.csv",
+    "file": "models-B.csv",
+    "bytes": 34092,
+    "sha256": "25de2dd65af328663f5c855733b09dd9e98058797e4fad4126f0f7f69f3ebb9d",
+    "retrieved_at": "2026-09-30T23:45:05.090192+00:00"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/vradarserver/standing-data/main/model-type/schema-01/C.csv",
+    "file": "models-C.csv",
+    "bytes": 48768,
+    "sha256": "634c394ac63d4e2cc366d9012256ccb7067d48a777694874188e6de0d2714201",
+    "retrieved_at": "2026-09-30T23:45:05.385302+00:00"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/vradarserver/standing-data/main/model-type/schema-01/D.csv",
+    "file": "models-D.csv",
+    "bytes": 22269,
+    "sha256": "b5b0e96281a5752e7ed58db213a3a18e6f360991a7ad52c2f809d2afee53433b",
+    "retrieved_at": "2026-09-30T23:45:05.649554+00:00"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/vradarserver/standing-data/main/model-type/schema-01/E.csv",
+    "file": "models-E.csv",
+    "bytes": 16794,
+    "sha256": "5cfc2afcc350f6305ced2bc23d10587736bda53f44738a87849dbbfe8ef8dca5",
+    "retrieved_at": "2026-09-30T23:45:05.929022+00:00"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/vradarserver/standing-data/main/model-type/schema-01/F.csv",
+    "file": "models-F.csv",
+    "bytes": 21303,
+    "sha256": "c1aafe4a43cdba04495214bfc7dc5e7fbde424ff747ddd90ed23fa20287212d2",
+    "retrieved_at": "2026-09-30T23:45:06.225433+00:00"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/vradarserver/standing-data/main/model-type/schema-01/G.csv",
+    "file": "models-G.csv",
+    "bytes": 16441,
+    "sha256": "0e957ab9d7fed678066c1fb9424444344807ed4ea70c6a071287eff563562afd",
+    "retrieved_at": "2026-09-30T23:45:06.529532+00:00"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/vradarserver/standing-data/main/model-type/schema-01/H.csv",
+    "file": "models-H.csv",
+    "bytes": 16787,
+    "sha256": "a35c410aa1dfa45da0eaf8b5f0d743b030e6a457739d96270fbeae604a3bb623",
+    "retrieved_at": "2026-09-30T23:45:06.827737+00:00"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/vradarserver/standing-data/main/model-type/schema-01/I.csv",
+    "file": "models-I.csv",
+    "bytes": 4292,
+    "sha256": "6c54ba4f4b620000046a069732683600ba9a05de0d2a07805a03f9a19bb3878f",
+    "retrieved_at": "2026-09-30T23:45:07.098151+00:00"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/vradarserver/standing-data/main/model-type/schema-01/J.csv",
+    "file": "models-J.csv",
+    "bytes": 9861,
+    "sha256": "89a6f54038096de2a369c35814d3fff4748c14e46a62588e96f4ebd267e729aa",
+    "retrieved_at": "2026-09-30T23:45:07.397686+00:00"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/vradarserver/standing-data/main/model-type/schema-01/K.csv",
+    "file": "models-K.csv",
+    "bytes": 7000,
+    "sha256": "c595d7873e1180d04ca9256548016d41224ee4de2647ed1991ebdcdc2402900a",
+    "retrieved_at": "2026-09-30T23:45:07.662586+00:00"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/vradarserver/standing-data/main/model-type/schema-01/L.csv",
+    "file": "models-L.csv",
+    "bytes": 13681,
+    "sha256": "82ae12254b9aa1741f53239e44bfa21402b4ddafb3c180c0e4285c08eceae549",
+    "retrieved_at": "2026-09-30T23:45:07.921952+00:00"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/vradarserver/standing-data/main/model-type/schema-01/M.csv",
+    "file": "models-M.csv",
+    "bytes": 23660,
+    "sha256": "788f9ea0919f472bd69cf568098aa2f40953c2ae81058dec012665665f3a03d8",
+    "retrieved_at": "2026-09-30T23:45:08.179400+00:00"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/vradarserver/standing-data/main/model-type/schema-01/N.csv",
+    "file": "models-N.csv",
+    "bytes": 5419,
+    "sha256": "bde43feba4420302bc95ee5d157534f61d5a251de43b3c4919cc420478310662",
+    "retrieved_at": "2026-09-30T23:45:08.446613+00:00"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/vradarserver/standing-data/main/model-type/schema-01/O.csv",
+    "file": "models-O.csv",
+    "bytes": 2074,
+    "sha256": "b37f732440abfd9681b8836874e5487c08b2a64cf20ca5d08ee46311d45d7959",
+    "retrieved_at": "2026-09-30T23:45:08.709291+00:00"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/vradarserver/standing-data/main/model-type/schema-01/P.csv",
+    "file": "models-P.csv",
+    "bytes": 36229,
+    "sha256": "b4272be4e577ac19fe4b5e0b78c38debfa1bef609c8c44f41e3e2154bf916282",
+    "retrieved_at": "2026-09-30T23:45:09.002989+00:00"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/vradarserver/standing-data/main/model-type/schema-01/Q.csv",
+    "file": "models-Q.csv",
+    "bytes": 1667,
+    "sha256": "2d2eb8de0cc992111fbe5791990c37c5ec62c7c8c3019dec0fbb69323dd626d3",
+    "retrieved_at": "2026-09-30T23:45:09.282670+00:00"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/vradarserver/standing-data/main/model-type/schema-01/R.csv",
+    "file": "models-R.csv",
+    "bytes": 10673,
+    "sha256": "9c5d01b451a46a8a35b4a656b80672af567adfddd6122a1bd4f58d1f9f6e7a59",
+    "retrieved_at": "2026-09-30T23:45:09.563546+00:00"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/vradarserver/standing-data/main/model-type/schema-01/S.csv",
+    "file": "models-S.csv",
+    "bytes": 34889,
+    "sha256": "cd118a989eae23a31046c8aa4c4b0ed697cfd624a10aa6c3202a4fddb59ea551",
+    "retrieved_at": "2026-09-30T23:45:09.882408+00:00"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/vradarserver/standing-data/main/model-type/schema-01/T.csv",
+    "file": "models-T.csv",
+    "bytes": 18157,
+    "sha256": "f44a10318d1fb4116c2911e094b06b4fc9bedab229d26d4b80fbe023a02bfe3a",
+    "retrieved_at": "2026-09-30T23:45:10.132668+00:00"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/vradarserver/standing-data/main/model-type/schema-01/U.csv",
+    "file": "models-U.csv",
+    "bytes": 5014,
+    "sha256": "63052082cd56add68e3ffe7d71c92fc5a6922bce6ecc5a288abec3cd0f60f28e",
+    "retrieved_at": "2026-09-30T23:45:10.400670+00:00"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/vradarserver/standing-data/main/model-type/schema-01/V.csv",
+    "file": "models-V.csv",
+    "bytes": 6430,
+    "sha256": "ee3c90c9f74d269e14129021f5c71dee64dbc7a47ce6e2669ef933e4cacb5a38",
+    "retrieved_at": "2026-09-30T23:45:10.697842+00:00"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/vradarserver/standing-data/main/model-type/schema-01/W.csv",
+    "file": "models-W.csv",
+    "bytes": 7096,
+    "sha256": "4c4933d857caf6f6e31d933cd5a66cf13cf9e449b8eabe5e8bf4d889f7f77066",
+    "retrieved_at": "2026-09-30T23:45:11.019553+00:00"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/vradarserver/standing-data/main/model-type/schema-01/X.csv",
+    "file": "models-X.csv",
+    "bytes": 1285,
+    "sha256": "10a435c58d9ea9c7319df7c3fa4402ab7927d3b971ae968c34636d995e000a44",
+    "retrieved_at": "2026-09-30T23:45:11.293177+00:00"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/vradarserver/standing-data/main/model-type/schema-01/Y.csv",
+    "file": "models-Y.csv",
+    "bytes": 2508,
+    "sha256": "37ee0732b2df0407ff19b76f77af01cd6989d458c0407efec88e08fce20b14c8",
+    "retrieved_at": "2026-09-30T23:45:11.571245+00:00"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/vradarserver/standing-data/main/model-type/schema-01/Z.csv",
+    "file": "models-Z.csv",
+    "bytes": 3488,
+    "sha256": "7f1b45fedc694997a6ad181afc89f2cd0fdbeb785bab3063fbb77c22dc3ef8d1",
+    "retrieved_at": "2026-09-30T23:45:11.843537+00:00"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/MrAirspace/aircraft-flight-schedules/main/LICENSE-ODbL.txt",
+    "file": "LICENSE-ODbL.txt",
+    "bytes": 25241,
+    "sha256": "d93f996262c15e7cf9d6b54f9f48e3f9d8b9c3a47fa2308dc8ef1f0f5cb88611",
+    "retrieved_at": "2026-09-30T23:45:12.259224+00:00"
+  },
+  {
+    "url": "https://github.com/MrAirspace/aircraft-flight-schedules/releases/download/aircraft_flight_schedules_2026_quarter1/2026_Q1_detailed_github.parquet",
+    "file": "2026_Q1_detailed_github.parquet",
+    "bytes": 840340093,
+    "sha256": "12ec161c7f1739934053d743625bb48e86b3785c3fcb0549b0e08ae93b1199ce",
+    "retrieved_at": "2026-10-06T19:05:39.562142+00:00"
+  }
+]

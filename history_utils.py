@@ -14,13 +14,15 @@ def same_operational_context(first, second):
             "departure_runway", "arrival_runway", "departure_gate", "arrival_gate",
             "cruise_fl", "distance", "estimated_flight_time", "passengers", "cargo", "fuel",
             "pilots", "departure_mode", "arrival_mode")
+    f1 = first.get("flight") or {}
+    f2 = second.get("flight") or {}
     for key in keys:
-        a, b = first.get("flight", {}).get(key, ""), second.get("flight", {}).get(key, "")
+        a, b = f1.get(key, ""), f2.get(key, "")
         if normalized(json.dumps(a, sort_keys=True)) != normalized(json.dumps(b, sort_keys=True)):
             return False
     if normalized(first.get("pilot_name")) != normalized(second.get("pilot_name")):
         return False
-    return first.get("data", {}) == second.get("data", {})
+    return (first.get("data") or {}) == (second.get("data") or {})
 
 
 def duplicate_index(history, entry, compact=True):

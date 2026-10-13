@@ -1,0 +1,45 @@
+{
+  "database_sha256": "a3a975ff1b1dbfe0796cc4ffb955e27df5e117b4669dd44210ce0e140db33703",
+  "counts": {
+    "FDX": {
+      "all_distinct": 1803,
+      "with_duration": 1287,
+      "candidate_cap": false
+    },
+    "UPS": {
+      "all_distinct": 2074,
+      "with_duration": 1222,
+      "candidate_cap": false
+    },
+    "CLX": {
+      "all_distinct": 272,
+      "with_duration": 224,
+      "candidate_cap": false
+    },
+    "C172": {
+      "all_distinct": 158,
+      "with_duration": 158,
+      "candidate_cap": false
+    },
+    "C208": {
+      "all_distinct": 792,
+      "with_duration": 476,
+      "candidate_cap": false
+    },
+    "SR22": {
+      "all_distinct": 4,
+      "with_duration": 4,
+      "candidate_cap": false
+    },
+    "C152": {
+      "all_distinct": 0,
+      "with_duration": 0,
+      "candidate_cap": false
+    }
+  },
+  "air_france_benchmark": {
+    "first_seconds": 0.864,
+    "more_seconds": 0.019,
+    "matches": 4304
+  }
+}

@@ -1,0 +1,1522 @@
+[
+  {
+    "path": ".github/workflows/checks.yml",
+    "lines": 26,
+    "sha256": "a1f889a2b23b5e5f3787d2166e9d1438133adf70730aa0ab38aa668e557fbaf7",
+    "imports": [],
+    "definitions": []
+  },
+  {
+    "path": ".github/workflows/codeql.yml",
+    "lines": 23,
+    "sha256": "40deb76fe3cf2b0906d2b47dc826cb6214aa70665c553fa2dbf40537d7ccbe61",
+    "imports": [],
+    "definitions": []
+  },
+  {
+    "path": ".github/workflows/release.yml",
+    "lines": 91,
+    "sha256": "087212a5fdb606c061c8c6b6bcc7e07be85994bc2cf93588232c800a60789197",
+    "imports": [],
+    "definitions": []
+  },
+  {
+    "path": "android/app/src/main/assets/www/index.html",
+    "lines": 19,
+    "sha256": "c125a082f1fd170a9bb6ec1dcb535cab3a7da12dfa9469aa0de71d759e704f7c",
+    "imports": [],
+    "definitions": []
+  },
+  {
+    "path": "android/app/src/main/python/android_engine.py",
+    "lines": 488,
+    "sha256": "95ba5d4e1f5ff6d326985ceb44e7f6fb377b26d7a0ff028db86fea446d61081b",
+    "imports": [
+      "from copy import deepcopy",
+      "from dataclasses import asdict, fields",
+      "from datetime import datetime, timezone",
+      "import json",
+      "import math",
+      "import os",
+      "from pathlib import Path",
+      "import re",
+      "import tempfile",
+      "import uuid",
+      "from zoneinfo import available_timezones",
+      "from country_data import COUNTRIES",
+      "from finder.database import connect_readonly",
+      "from finder.duration import parse_minutes",
+      "from finder.mapping import use_this_flight",
+      "from finder.search import Criteria, search",
+      "from finder.i18n import tr as finder_tr",
+      "from finder.rfs_catalogue import TYPE_BY_ID",
+      "from fuel.calculator import calculate_fuel, load_json",
+      "from history_utils import duplicate_index",
+      "from i18n import set_language, tr",
+      "from message_builder import compose, validate_group, preview_text, clipboard_text, DEFAULT_PRESENTATION, BUILTIN_DESIGNS, EMOJI_STYLES, PILOT_FIELDS, OPERATION_LABELS, _header, _layout, apply_custom, custom_context, limit_emojis, strip_emojis",
+      "from rfs_schema import Field, MESSAGE_TYPES, FLIGHT_TYPES, FLIGHT_FIELDS, MESSAGE_FIELDS, FLIGHT_FIELDS_BY_TYPE, empty_flight, empty_per_type",
+      "from validation import Issue, REQUIRED_FLIGHT, REQUIRED_MESSAGE, emoji_count"
+    ],
+    "definitions": [
+      "defaults",
+      "atomic_json",
+      "check_json",
+      "normalise_state",
+      "validate_design",
+      "Engine",
+      "initialise",
+      "request",
+      "__init__",
+      "state",
+      "validate_backup",
+      "commit",
+      "metadata",
+      "extension",
+      "render",
+      "sync",
+      "criteria",
+      "duration_details",
+      "handle",
+      "spec"
+    ]
+  },
+  {
+    "path": "android/app/src/main/python/i18n.py",
+    "lines": 17,
+    "sha256": "60a1fdb5cc21ab72f64daec6afd2b371f0d41266b0011964d2f9db3146cb4397",
+    "imports": [
+      "from ui_translations import EN, FR"
+    ],
+    "definitions": [
+      "language",
+      "set_language",
+      "tr"
+    ]
+  },
+  {
+    "path": "app_icon.py",
+    "lines": 50,
+    "sha256": "408a9f0903429cb4d4c50e408c26375c6e6851e341246a55b37395d9e84dd992",
+    "imports": [
+      "from functools import lru_cache",
+      "from pathlib import Path",
+      "from PySide6.QtCore import Qt, QPointF, QRectF",
+      "from PySide6.QtGui import QColor, QIcon, QImage, QPainter, QPainterPath, QPen, QPixmap",
+      "from PySide6.QtWidgets import QApplication"
+    ],
+    "definitions": [
+      "icon_image",
+      "make_icon"
+    ]
+  },
+  {
+    "path": "appearance.py",
+    "lines": 598,
+    "sha256": "0df957499cab711d244da17077bb914d95a72566a159ce92f1a7e5ef4f380117",
+    "imports": [
+      "from PySide6.QtGui import QColor, QPalette",
+      "from pathlib import Path"
+    ],
+    "definitions": [
+      "apply_palette",
+      "get_stylesheet",
+      "extra_style"
+    ]
+  },
+  {
+    "path": "CHANGELOG.md",
+    "lines": 57,
+    "sha256": "9a2360f0ec63e7e346a712b1b7892d9b5bdb4cbb9c5b52964bbe5cee497fef3d",
+    "imports": [],
+    "definitions": []
+  },
+  {
+    "path": "CODEX_TASK.md",
+    "lines": 100,
+    "sha256": "ceca2ace2f8d2cbaca66d91e05b95efa62255e69cb43da074a06c2026b53e273",
+    "imports": [],
+    "definitions": []
+  },
+  {
+    "path": "country_data.py",
+    "lines": 2,
+    "sha256": "8d8727db0bf8bee1b30c1c9e111774725b896d02d96fa880a84a03d26a8831ef",
+    "imports": [],
+    "definitions": []
+  },
+  {
+    "path": "country_picker.py",
+    "lines": 51,
+    "sha256": "8c8c9fc7dd698e48d0e9a65df9663b6b55f679d15fdef4fdb6aa9d7b0c242dbf",
+    "imports": [
+      "from i18n import tr, set_language, language",
+      "from PySide6.QtCore import Qt, Signal",
+      "from PySide6.QtWidgets import QComboBox, QCompleter",
+      "from country_data import COUNTRIES",
+      "from country_search import resolve_country, country_rows",
+      "from i18n import language, tr"
+    ],
+    "definitions": [
+      "flag_for",
+      "CountryPicker",
+      "__init__",
+      "value",
+      "commit_country"
+    ]
+  },
+  {
+    "path": "country_search.py",
+    "lines": 29,
+    "sha256": "e43d369311a27416a1bdeeb5f1280c80a6a68003eb4177253b1d8b4cf21731f9",
+    "imports": [
+      "import re",
+      "import unicodedata",
+      "from functools import lru_cache",
+      "from PySide6.QtCore import QLocale",
+      "from country_data import COUNTRIES"
+    ],
+    "definitions": [
+      "normalized",
+      "country_rows",
+      "resolve_country"
+    ]
+  },
+  {
+    "path": "dialogs.py",
+    "lines": 365,
+    "sha256": "301c770a14b27393057d2fbdc86559ad0485cf907c9bf37c143042571857f4a9",
+    "imports": [
+      "from i18n import tr, set_language, language",
+      "from copy import deepcopy",
+      "from PySide6.QtCore import QEvent, Qt",
+      "from PySide6.QtWidgets import QCheckBox, QComboBox, QDialog, QDialogButtonBox, QFormLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit, QPlainTextEdit, QPushButton, QScrollArea, QSplitter, QTabWidget, QVBoxLayout, QWidget",
+      "from message_builder import PILOT_FIELDS",
+      "from localized_widgets import ChoiceBox",
+      "from rfs_schema import FLIGHT_FIELDS, MESSAGE_FIELDS, FLIGHT_TYPES",
+      "from message_builder import BUILTIN_DESIGNS, compose, preview_text",
+      "from message_builder import compose, preview_text",
+      "from message_builder import compose, preview_text"
+    ],
+    "definitions": [
+      "PilotsDialog",
+      "JokeDialog",
+      "WelcomeDialog",
+      "UnifiedDesignDialog",
+      "__init__",
+      "add_pilot",
+      "values",
+      "add_saved",
+      "__init__",
+      "eventFilter",
+      "reveal",
+      "reject",
+      "__init__",
+      "__init__",
+      "convert_to_advanced",
+      "load_current_message",
+      "refresh",
+      "values",
+      "remove_row"
+    ]
+  },
+  {
+    "path": "docs/android/IMPLEMENTATION_PLAN.md",
+    "lines": 79,
+    "sha256": "77cae3a5915acce158ca86837f1c4ab9109eaced9eb0276aba9491cf7f0f4c08",
+    "imports": [],
+    "definitions": []
+  },
+  {
+    "path": "docs/android/PARITY.md",
+    "lines": 30,
+    "sha256": "e61a3411310c393677cf2c22b1562063621fea7fc79456fb95e2829bd1f61aa3",
+    "imports": [],
+    "definitions": []
+  },
+  {
+    "path": "docs/finder/CODEX_TASK.md",
+    "lines": 268,
+    "sha256": "9606331be71f34bb6484d3c62f19285af87c596ce7651ccd11ee19c900f35ed9",
+    "imports": [],
+    "definitions": []
+  },
+  {
+    "path": "docs/finder/DATA_SOURCES.md",
+    "lines": 265,
+    "sha256": "e8a1a890b17354b6838d8780be630757a51414ee02f7cb8d9b5ec6b5fda62172",
+    "imports": [],
+    "definitions": []
+  },
+  {
+    "path": "docs/finder/DATABASE_SCHEMA.md",
+    "lines": 535,
+    "sha256": "9fbee0f75b3153d91b7399840887860c2d7dc9b51a3ebd85ca2d463edd89b168",
+    "imports": [],
+    "definitions": []
+  },
+  {
+    "path": "docs/finder/DECISIONS.md",
+    "lines": 11,
+    "sha256": "79f5f16a5bb5469affa981ff2dc0082bf28aa8a3870939c6dc821d4a9184e140",
+    "imports": [],
+    "definitions": []
+  },
+  {
+    "path": "docs/finder/MRAIRSPACE_OBSERVED_SCHEMA.md",
+    "lines": 41,
+    "sha256": "878f6d8929fc8cccf7f13dd3ae29532bd63a1256dbc3775234e2254b6dcd07b3",
+    "imports": [],
+    "definitions": []
+  },
+  {
+    "path": "docs/finder/README.md",
+    "lines": 94,
+    "sha256": "5331b25af2b245d7e181f9896b373d3639707c2a532f5c40420fa7ec54449e83",
+    "imports": [],
+    "definitions": []
+  },
+  {
+    "path": "docs/finder/REPO_AUDIT.md",
+    "lines": 13,
+    "sha256": "f0eec640329437f79f5c315b5f6c86fd03e84715df02ea8476494635aee856f6",
+    "imports": [],
+    "definitions": []
+  },
+  {
+    "path": "docs/finder/RFS_FLIGHT_FINDER_SPEC.md",
+    "lines": 332,
+    "sha256": "35aed8d0de38752765ea69c909b468c0f34a8b181b7e8645df09a958456c0c6a",
+    "imports": [],
+    "definitions": []
+  },
+  {
+    "path": "docs/finder/SEARCH_ENGINE.md",
+    "lines": 421,
+    "sha256": "c126ec9baa5769f4c29cf675049ac99b96eed8b3a89dfadc6fbb88ca52607826",
+    "imports": [],
+    "definitions": []
+  },
+  {
+    "path": "docs/finder/VALIDATION.md",
+    "lines": 28,
+    "sha256": "b9ad60fbdcdb420fc9826d0638fb262618aa370e87330572fbea5aef5356d143",
+    "imports": [],
+    "definitions": []
+  },
+  {
+    "path": "docs/finder/VRS_OBSERVED_SCHEMA.md",
+    "lines": 15,
+    "sha256": "df795066a3a56a9cc567549fdb5a2511b174107edcb3c811b5f83d84c5d1e770",
+    "imports": [],
+    "definitions": []
+  },
+  {
+    "path": "docs/fuel/INTEGRATION.md",
+    "lines": 24,
+    "sha256": "826a4ce5b62511da3dd06ec80701167b72ebce0979caf75c1c5fe35076a6766e",
+    "imports": [],
+    "definitions": []
+  },
+  {
+    "path": "docs/fuel/reference/aircraft_fuel_data.json",
+    "lines": 461,
+    "sha256": "3c926cdc8d8a99b257d4bc09450fcf380e59ca13131be83a2b9f661af0303a09",
+    "imports": [],
+    "definitions": []
+  },
+  {
+    "path": "docs/fuel/reference/airport_alternates.json",
+    "lines": 917,
+    "sha256": "f7760bfbdf34c44bf1dac7bc2a90190547aff63d54f02d06d526f871221e70af",
+    "imports": [],
+    "definitions": []
+  },
+  {
+    "path": "docs/fuel/reference/fuel_calculator.py",
+    "lines": 144,
+    "sha256": "c610cdef1f953347301c3df9748b9b3c95254fabfa030212061afcfaf34c334e",
+    "imports": [
+      "from __future__ import annotations",
+      "import json",
+      "import math",
+      "from pathlib import Path",
+      "from typing import Any",
+      "import argparse"
+    ],
+    "definitions": [
+      "load_json",
+      "parse_endurance",
+      "find_aircraft",
+      "closest_alternate",
+      "format_kg",
+      "calculate_fuel"
+    ]
+  },
+  {
+    "path": "docs/fuel/reference/PROMPT_A_COPIER.md",
+    "lines": 26,
+    "sha256": "cc9dd460104ac8bd85b8c6cbf7b9d8b5a88f73adfeb676613cfe053a0074be56",
+    "imports": [],
+    "definitions": []
+  },
+  {
+    "path": "docs/fuel/reference/SPECIFICATION_FR.md",
+    "lines": 98,
+    "sha256": "e6aa00fe2fb4579b63c6fd975027d2fd24c920339cc49241d5e27b3f3cbf85ad",
+    "imports": [],
+    "definitions": []
+  },
+  {
+    "path": "docs/fuel/reference/test_fuel_calculator.py",
+    "lines": 41,
+    "sha256": "8770e0105e0637cf88710cac5ddb304bec26a49bf52e62ba9efc817d39ae0787",
+    "imports": [
+      "import math",
+      "import unittest",
+      "from fuel_calculator import calculate_fuel"
+    ],
+    "definitions": [
+      "FuelCalculatorTests",
+      "test_known_a220_example_with_egll_alternate",
+      "test_missing_or_unknown_arrival_adds_no_alternate_fuel",
+      "test_closest_candidate_is_selected",
+      "test_endurance_warning_and_input_validation"
+    ]
+  },
+  {
+    "path": "docs/licenses/PyInstaller/COPYING.txt",
+    "lines": 648,
+    "sha256": "2f71515511f67e3102ae9ba0d3ec0d3a513295262dec1fa0ab0bb2e23e9f2a77",
+    "imports": [],
+    "definitions": []
+  },
+  {
+    "path": "docs/licenses/Python/LICENSE.txt",
+    "lines": 645,
+    "sha256": "6315cf09aef549522006a3ff57a5a11d516c18051cb72c776fbef11d53e4fda8",
+    "imports": [],
+    "definitions": []
+  },
+  {
+    "path": "docs/licenses/Qt/GPL-2.0-only.txt",
+    "lines": 339,
+    "sha256": "189b1af95d661151e054cea10c91b3d754e4de4d3fecfb074c1fb29476f7167b",
+    "imports": [],
+    "definitions": []
+  },
+  {
+    "path": "docs/licenses/Qt/GPL-3.0-only.txt",
+    "lines": 674,
+    "sha256": "0b383d5a63da644f628d99c33976ea6487ed89aaa59f0b3257992deac1171e6b",
+    "imports": [],
+    "definitions": []
+  },
+  {
+    "path": "docs/licenses/Qt/LGPL-3.0-only.txt",
+    "lines": 165,
+    "sha256": "ea7d049c7705dc13afc202dd18e1827f3484f8212fd3fa7b82fc4a0c363432c9",
+    "imports": [],
+    "definitions": []
+  },
+  {
+    "path": "docs/licenses/README.md",
+    "lines": 22,
+    "sha256": "9ecf5df9124287efde69a1bbba20de44a64cc8b5c7a01eb37d2d1977edba3493",
+    "imports": [],
+    "definitions": []
+  },
+  {
+    "path": "docs/V4_CHANGES.md",
+    "lines": 84,
+    "sha256": "7a227e64ee4b37757110bdecf053c3b5d398bd5c3b1d6c8ab884f8d0969971de",
+    "imports": [],
+    "definitions": []
+  },
+  {
+    "path": "docs/V5_CHANGES.md",
+    "lines": 30,
+    "sha256": "4e7634a88c03a941dde135b3948e73a670253124ebb7a78b0a3037b7d17695ca",
+    "imports": [],
+    "definitions": []
+  },
+  {
+    "path": "finder/__init__.py",
+    "lines": 1,
+    "sha256": "8808960e37e266ada04a60248014569243379433a76ce09095e918d14b78a55a",
+    "imports": [],
+    "definitions": []
+  },
+  {
+    "path": "finder/database.py",
+    "lines": 70,
+    "sha256": "306e2c10063d545a175948b01848f194fdcb0abc1784936671dfc5acb311773b",
+    "imports": [
+      "from pathlib import Path",
+      "import sqlite3",
+      "from contextlib import contextmanager"
+    ],
+    "definitions": [
+      "connect_readonly"
+    ]
+  },
+  {
+    "path": "finder/duration.py",
+    "lines": 30,
+    "sha256": "1b6a3199d2a705356f46cc488e80ac95bd05e4870153580d84b3e7242cfb0cdb",
+    "imports": [
+      "import math",
+      "import re"
+    ],
+    "definitions": [
+      "parse_minutes"
+    ]
+  },
+  {
+    "path": "finder/fetch_data.py",
+    "lines": 68,
+    "sha256": "f0ee411b93579c01733725c8902f82378b93893e81c47e801e9acfb09b3fcb2a",
+    "imports": [
+      "from __future__ import annotations",
+      "import argparse",
+      "import hashlib",
+      "import json",
+      "from pathlib import Path",
+      "import urllib.request",
+      "from urllib.parse import urlparse",
+      "from datetime import datetime, timezone"
+    ],
+    "definitions": [
+      "download",
+      "main"
+    ]
+  },
+  {
+    "path": "finder/i18n.py",
+    "lines": 145,
+    "sha256": "241c800fac0531fa33e607f7b1a650c27abac4915d9110226e16a57b841ccece",
+    "imports": [],
+    "definitions": [
+      "tr"
+    ]
+  },
+  {
+    "path": "finder/importer.py",
+    "lines": 270,
+    "sha256": "378763f6fa7a67dc2d62cb17c2c702dcdb63878b4b272bd07d41014b5f29a59e",
+    "imports": [
+      "from __future__ import annotations",
+      "import argparse",
+      "import csv",
+      "from datetime import datetime, timezone",
+      "import json",
+      "import math",
+      "from pathlib import Path",
+      "import re",
+      "import sqlite3",
+      "from .database import SCHEMA",
+      "import duckdb",
+      "from timezonefinder import TimezoneFinder",
+      "import importlib.metadata"
+    ],
+    "definitions": [
+      "inspect_schema",
+      "csv_rows",
+      "nullable",
+      "family_for",
+      "distance_nm",
+      "build"
+    ]
+  },
+  {
+    "path": "finder/mapping.py",
+    "lines": 52,
+    "sha256": "86a200ce2ff6fe8d5164eba40e8a570122966c8541f058519c2d5b6cf116e61c",
+    "imports": [
+      "from copy import deepcopy",
+      "import re"
+    ],
+    "definitions": [
+      "safe_text",
+      "use_this_flight"
+    ]
+  },
+  {
+    "path": "finder/rfs_catalogue.py",
+    "lines": 55,
+    "sha256": "7085e9172d60473b442d6ea9f59b6c3a21bdd038215dac91c9b3c28c53bc80a8",
+    "imports": [
+      "from fuel.calculator import load_json",
+      "from functools import lru_cache"
+    ],
+    "definitions": [
+      "records",
+      "observation_name"
+    ]
+  },
+  {
+    "path": "finder/search.py",
+    "lines": 219,
+    "sha256": "6e974ad6dcad8cf3d856c7d30eb22531edd2436f73627070df9722603d2cbe6b",
+    "imports": [
+      "from __future__ import annotations",
+      "from dataclasses import dataclass, field",
+      "from datetime import datetime, timedelta, timezone",
+      "import math",
+      "import json",
+      "from pathlib import Path",
+      "from .database import connect_readonly",
+      "from .time_utils import resolve_local",
+      "from .rfs_catalogue import SUPPORTED_TYPES, TYPE_BY_ID, observation_name"
+    ],
+    "definitions": [
+      "Criteria",
+      "search",
+      "validate",
+      "in_filter"
+    ]
+  },
+  {
+    "path": "finder/time_utils.py",
+    "lines": 49,
+    "sha256": "816751aa6ef585b67514c63b50f00fb39b8b1108954650d290612bd3d6864b30",
+    "imports": [
+      "from datetime import date, datetime, timedelta, timezone",
+      "from zoneinfo import ZoneInfo, ZoneInfoNotFoundError"
+    ],
+    "definitions": [
+      "local_to_utc",
+      "resolve_local",
+      "circular_median"
+    ]
+  },
+  {
+    "path": "finder/ui.py",
+    "lines": 493,
+    "sha256": "8e7f04a176795ce38411246e5269f38ef9acb64323f04bfcb6e64a6999e994ec",
+    "imports": [
+      "from datetime import datetime, timezone",
+      "from pathlib import Path",
+      "import sqlite3",
+      "from zoneinfo import ZoneInfo",
+      "from PySide6.QtCore import QDate, QThread, Signal, Qt, QTimeZone",
+      "from PySide6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QComboBox, QFormLayout, QLineEdit, QCheckBox, QDateEdit, QSplitter, QScrollArea, QWidget, QTableWidget, QTableWidgetItem, QAbstractItemView, QHeaderView, QPlainTextEdit, QFileDialog, QGroupBox, QCompleter",
+      "from .database import connect_readonly",
+      "from .i18n import tr",
+      "from .search import Criteria, search",
+      "from .duration import parse_minutes",
+      "from .rfs_catalogue import records, TYPE_BY_ID",
+      "from country_search import country_rows, resolve_country",
+      "from ux import install_wheel_guard, smooth_scroll",
+      "from zoneinfo import available_timezones",
+      "from i18n import language as app_language",
+      "from dataclasses import replace",
+      "from functools import lru_cache",
+      "from importlib.resources import files",
+      "from importlib.resources import files"
+    ],
+    "definitions": [
+      "_build_timezone_labels",
+      "SearchWorker",
+      "FinderDialog",
+      "__init__",
+      "run",
+      "__init__",
+      "t",
+      "translate",
+      "change_language",
+      "choose_database",
+      "add_completer",
+      "load_suggestions",
+      "invalidate",
+      "criteria",
+      "run_search",
+      "search_finished",
+      "fail",
+      "present",
+      "show_result",
+      "use_flight",
+      "reject"
+    ]
+  },
+  {
+    "path": "fuel/__init__.py",
+    "lines": 1,
+    "sha256": "ef93ab8d33c56a6b6ea3f87e4fd745bfbcd75efc39fd32ff669f11521bf8a492",
+    "imports": [],
+    "definitions": []
+  },
+  {
+    "path": "fuel/calculator.py",
+    "lines": 113,
+    "sha256": "fb71b626914a6cbff9b4316d97a0871098ebb27e1568ce9179665f1653e5468e",
+    "imports": [
+      "from __future__ import annotations",
+      "from copy import deepcopy",
+      "from functools import lru_cache",
+      "import json",
+      "import math",
+      "from pathlib import Path"
+    ],
+    "definitions": [
+      "_read_json_text",
+      "load_json",
+      "parse_endurance",
+      "find_aircraft",
+      "closest_alternate",
+      "format_kg",
+      "calculate_fuel"
+    ]
+  },
+  {
+    "path": "fuel/ui.py",
+    "lines": 182,
+    "sha256": "2111237b684c6958d6b4a2cb17f2f5e380b6595727df0659279bb32c1fe6266a",
+    "imports": [
+      "from i18n import tr, set_language, language",
+      "from copy import deepcopy",
+      "import re",
+      "from PySide6.QtCore import Qt, Signal, QEvent, QTimer, QObject",
+      "from PySide6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QFormLayout, QLabel, QComboBox, QLineEdit, QPushButton, QTableWidget, QTableWidgetItem, QHeaderView, QAbstractItemView, QCompleter, QPlainTextEdit",
+      "from .calculator import calculate_fuel, find_aircraft, load_json, DISCLAIMER",
+      "from ux import install_wheel_guard"
+    ],
+    "definitions": [
+      "duration_hours",
+      "AircraftComboFilter",
+      "FuelDialog",
+      "__init__",
+      "eventFilter",
+      "__init__",
+      "invalidate",
+      "calculate",
+      "use_result"
+    ]
+  },
+  {
+    "path": "history_utils.py",
+    "lines": 42,
+    "sha256": "78acea70d4e335d19747a565ed5ea11bad6aa7bfb2e169183d18bdfbbba49603",
+    "imports": [
+      "from datetime import datetime",
+      "from difflib import SequenceMatcher",
+      "import json",
+      "import re"
+    ],
+    "definitions": [
+      "normalized",
+      "same_operational_context",
+      "duplicate_index"
+    ]
+  },
+  {
+    "path": "i18n.py",
+    "lines": 32,
+    "sha256": "b9ebec0a26a67850e15f4810e039163b900caa19fe2a56ad5031c12f2cc7e2fb",
+    "imports": [
+      "from ui_translations import EN, FR",
+      "from PySide6.QtCore import QLocale, QTranslator, QLibraryInfo",
+      "from PySide6.QtWidgets import QApplication"
+    ],
+    "definitions": [
+      "language",
+      "set_language",
+      "tr"
+    ]
+  },
+  {
+    "path": "index.html",
+    "lines": 966,
+    "sha256": "f465222a285f28bec7f12fb77c2221630321d74b27b2fa4964f9f2c7ca482172",
+    "imports": [],
+    "definitions": []
+  },
+  {
+    "path": "localized_widgets.py",
+    "lines": 33,
+    "sha256": "159778fe6b0e14b7bdf4122f855308a42e0ffd795c017c897817ca781a19cef5",
+    "imports": [
+      "from PySide6.QtCore import Qt",
+      "from PySide6.QtWidgets import QComboBox",
+      "from i18n import tr"
+    ],
+    "definitions": [
+      "ChoiceBox",
+      "addItem",
+      "addItems",
+      "currentText",
+      "setCurrentText",
+      "wheelEvent"
+    ]
+  },
+  {
+    "path": "main.py",
+    "lines": 79,
+    "sha256": "c1b0f3c8bc931501abb8f1b25e36f29cfaaa59233bd10f9848202082616a1c34",
+    "imports": [
+      "from __future__ import annotations",
+      "from i18n import tr, set_language, language",
+      "import sys",
+      "import json",
+      "from pathlib import Path",
+      "from PySide6.QtWidgets import QApplication, QMessageBox",
+      "from PySide6.QtCore import QTimer",
+      "from storage import LOGGER",
+      "from ui import RFSWindow",
+      "from app_icon import make_icon",
+      "from storage import DATA_DIR",
+      "from finder.ui import FinderDialog",
+      "from finder.time_utils import local_to_utc",
+      "from fuel.calculator import calculate_fuel",
+      "from fuel.ui import FuelDialog",
+      "from finder.search import search, Criteria",
+      "from datetime import datetime, timezone",
+      "from report_dialog import ReportDialog",
+      "from dialogs import UnifiedDesignDialog"
+    ],
+    "definitions": [
+      "main",
+      "report_exception",
+      "smoke"
+    ]
+  },
+  {
+    "path": "message_builder.py",
+    "lines": 339,
+    "sha256": "e33a90e19736fbcdfb340dccd0833a4c33fdc86cbee6c1428ce5bf3c28590c5a",
+    "imports": [
+      "from __future__ import annotations",
+      "import re",
+      "from copy import deepcopy",
+      "from i18n import tr",
+      "from rfs_schema import FLIGHT_TYPES, FLIGHT_FIELDS, MESSAGE_FIELDS",
+      "from templates import render, format_runway",
+      "from validation import Issue, validate"
+    ],
+    "definitions": [
+      "additional_pilots",
+      "pilot_flight",
+      "validate_group",
+      "procedure_data",
+      "strip_emojis",
+      "_unframe",
+      "_header",
+      "_shorten",
+      "_one",
+      "_mentions_outside",
+      "custom_context",
+      "apply_custom",
+      "_group_identity",
+      "_layout",
+      "preview_text",
+      "clipboard_text",
+      "compose",
+      "limit_emojis",
+      "replace"
+    ]
+  },
+  {
+    "path": "mobile/index.html",
+    "lines": 966,
+    "sha256": "f465222a285f28bec7f12fb77c2221630321d74b27b2fa4964f9f2c7ca482172",
+    "imports": [],
+    "definitions": []
+  },
+  {
+    "path": "preview_finder.py",
+    "lines": 50,
+    "sha256": "904f6f6bf3072e2683d5be7d49feb12573b25e2347a299daaded87bb5ba10be0",
+    "imports": [
+      "import json",
+      "import logging",
+      "import os",
+      "from pathlib import Path",
+      "import tempfile",
+      "from datetime import datetime, timezone",
+      "from PySide6.QtWidgets import QApplication",
+      "from ui import RFSWindow",
+      "from finder.ui import FinderDialog",
+      "from finder.search import Criteria, search"
+    ],
+    "definitions": []
+  },
+  {
+    "path": "preview_fuel.py",
+    "lines": 26,
+    "sha256": "c0cbd5c491c0bda257300e4b1f627a278b565285dca145351970918143a8dfc6",
+    "imports": [
+      "import os",
+      "import logging",
+      "from pathlib import Path",
+      "import tempfile",
+      "from PySide6.QtWidgets import QApplication",
+      "from ui import RFSWindow",
+      "from fuel.ui import FuelDialog"
+    ],
+    "definitions": []
+  },
+  {
+    "path": "preview_ui.py",
+    "lines": 50,
+    "sha256": "b156030571a65f6c6f3220a0113030e69182dc398185b63297977a62d68b3f35",
+    "imports": [
+      "import os",
+      "from pathlib import Path",
+      "import sys",
+      "import tempfile",
+      "import logging",
+      "from PySide6.QtCore import QTimer",
+      "from PySide6.QtWidgets import QApplication",
+      "from ui import RFSWindow",
+      "from test_rfs import sample_flight, sample_data"
+    ],
+    "definitions": [
+      "capture"
+    ]
+  },
+  {
+    "path": "README.md",
+    "lines": 111,
+    "sha256": "a88f1f9d679a963910907c1efc5fe534558171891f23f4d26cc3f9689c54cb61",
+    "imports": [],
+    "definitions": []
+  },
+  {
+    "path": "report_dialog.py",
+    "lines": 228,
+    "sha256": "1df294f5fcae624adf92d6ce9dab92b3dca829055ba7342afa172e45e0cac822",
+    "imports": [
+      "import json",
+      "import platform",
+      "from pathlib import Path",
+      "import zipfile",
+      "from PySide6.QtCore import Qt, QUrl",
+      "from PySide6.QtGui import QDesktopServices",
+      "from PySide6.QtWidgets import QDialog, QVBoxLayout, QFormLayout, QLineEdit, QPlainTextEdit, QLabel, QPushButton, QCheckBox, QFileDialog, QGroupBox, QHBoxLayout, QListWidget, QListWidgetItem, QScrollArea, QWidget, QDialogButtonBox",
+      "from i18n import tr"
+    ],
+    "definitions": [
+      "open_feedback_form",
+      "ReportDialog",
+      "__init__",
+      "open_google_forms",
+      "report",
+      "refresh",
+      "add_images",
+      "_refresh_file_list",
+      "_selection_changed",
+      "view_selected_image",
+      "remove_selected_image",
+      "write_report",
+      "export"
+    ]
+  },
+  {
+    "path": "requirements-etl.txt",
+    "lines": 5,
+    "sha256": "128d9795cbad3be5769320e180d8ca435fc4190f99a90bf3b39ed8e6eeb4db13",
+    "imports": [],
+    "definitions": []
+  },
+  {
+    "path": "requirements.txt",
+    "lines": 3,
+    "sha256": "8eaca8b7576c4613ffcb97fe79cce5f884b5d6e38b5fbb70412809f05cac524f",
+    "imports": [],
+    "definitions": []
+  },
+  {
+    "path": "rfs_schema.py",
+    "lines": 151,
+    "sha256": "39b156e8ca2883faeb77b7297bcad1a9e92cac40d65a5f5ef7f02a1a33cced16",
+    "imports": [
+      "from __future__ import annotations",
+      "from dataclasses import dataclass"
+    ],
+    "definitions": [
+      "Field",
+      "empty_flight",
+      "empty_per_type"
+    ]
+  },
+  {
+    "path": "RFS_TASK.md",
+    "lines": 562,
+    "sha256": "8d5f8491e6f9b324aef511cf1501dd59ce3f555b3cf3ced6da9bef44ddad4d5d",
+    "imports": [],
+    "definitions": []
+  },
+  {
+    "path": "scripts/optimize_perf.py",
+    "lines": 181,
+    "sha256": "168305f5b9c8c866b8db53827d7fb16897d4a56fc284bd303b03a08a31e85584",
+    "imports": [
+      "from pathlib import Path"
+    ],
+    "definitions": []
+  },
+  {
+    "path": "scripts/optimize_search_subquery.py",
+    "lines": 31,
+    "sha256": "e0a7db1fd19aa324fccb15ba3ae4dc738ca575cf45eae471f4c99ed0f1b1d8da",
+    "imports": [
+      "from pathlib import Path"
+    ],
+    "definitions": []
+  },
+  {
+    "path": "scripts/package_release.py",
+    "lines": 45,
+    "sha256": "b05ba2d9180a6b00386b8e439850655345ec78e5b63fd2d3d52f58d34a02b1aa",
+    "imports": [
+      "import argparse",
+      "import hashlib",
+      "from pathlib import Path",
+      "import zipfile"
+    ],
+    "definitions": [
+      "archive",
+      "main"
+    ]
+  },
+  {
+    "path": "scripts/prepare_android.py",
+    "lines": 74,
+    "sha256": "7fb159825d12c6a5db94f48256bbaa545330f5a4554a9e65a4368516359d9589",
+    "imports": [
+      "from pathlib import Path",
+      "import argparse",
+      "import gzip",
+      "import hashlib",
+      "import json",
+      "import shutil",
+      "import sqlite3"
+    ],
+    "definitions": [
+      "digest",
+      "prepare"
+    ]
+  },
+  {
+    "path": "SECURITY.md",
+    "lines": 43,
+    "sha256": "5e015c1c9b0d34eb6f5690a06bd70c9631ffb1cefa2da40758bbcd66faeee39e",
+    "imports": [],
+    "definitions": []
+  },
+  {
+    "path": "storage.py",
+    "lines": 166,
+    "sha256": "23454bc9cf8d0bd7e96aa29c67edc467739d3765b728f7e5938ef634d1345414",
+    "imports": [
+      "from __future__ import annotations",
+      "from copy import deepcopy",
+      "from datetime import datetime",
+      "import json",
+      "import logging",
+      "import os",
+      "from pathlib import Path",
+      "import shutil",
+      "import sys",
+      "from typing import Any",
+      "from rfs_schema import empty_flight, empty_per_type",
+      "from message_builder import DEFAULT_PRESENTATION",
+      "from history_utils import duplicate_index"
+    ],
+    "definitions": [
+      "data_directory",
+      "setup_logging",
+      "_merge",
+      "load_json",
+      "save_json",
+      "Store",
+      "__init__",
+      "save_state",
+      "remember_pilot",
+      "save_history",
+      "add_history",
+      "save_design",
+      "save_preset",
+      "remember"
+    ]
+  },
+  {
+    "path": "templates.py",
+    "lines": 280,
+    "sha256": "3eb208ae387b885df4fd4369bb61bceada47d7535fd0048b2de65ad57313cefb",
+    "imports": [
+      "from __future__ import annotations",
+      "import re"
+    ],
+    "definitions": [
+      "_value",
+      "_line",
+      "_block",
+      "_join",
+      "_heading",
+      "_flight_identity",
+      "_airport",
+      "_route",
+      "format_flight_level",
+      "format_runway",
+      "format_distance",
+      "format_duration",
+      "_callsign",
+      "atc_request",
+      "airborne",
+      "arrival_board",
+      "flight_completed",
+      "atc_session",
+      "flight_plan",
+      "dispatch_form",
+      "render",
+      "format_touchdown"
+    ]
+  },
+  {
+    "path": "tests/test_finder.py",
+    "lines": 240,
+    "sha256": "af33ce51472e3b416bea365ae481c2dd45cef4e68ebd593aa7ad46c5735894a9",
+    "imports": [
+      "from datetime import datetime, timezone",
+      "import os",
+      "from pathlib import Path",
+      "import sqlite3",
+      "import tempfile",
+      "import unittest",
+      "import csv",
+      "import contextlib",
+      "import io",
+      "from finder.database import SCHEMA, connect_readonly",
+      "from finder.search import Criteria, search",
+      "from finder.time_utils import local_to_utc, resolve_local, circular_median",
+      "from finder.mapping import use_this_flight",
+      "from finder.importer import inspect_schema, REQUIRED, distance_nm",
+      "from finder.importer import build",
+      "import duckdb",
+      "import timezonefinder",
+      "import duckdb"
+    ],
+    "definitions": [
+      "fixture",
+      "SearchTests",
+      "TimeTests",
+      "ImporterTests",
+      "setUp",
+      "tearDown",
+      "results",
+      "test_duration_hard_limits_and_target",
+      "test_two_hours_prefers_filling_available_time",
+      "test_airport_iata_icao_and_exclusions",
+      "test_geography_and_international",
+      "test_airline_and_aircraft_filters",
+      "test_conflicting_time_constraints",
+      "test_arrival_only_proposes_simulator_time",
+      "test_unknown_duration_and_values",
+      "test_determinism_and_no_os_timezone_dependency",
+      "test_readonly_and_missing_db",
+      "test_mapping_keeps_manual_and_unknowns",
+      "test_paris_dst_gap",
+      "test_paris_ambiguous",
+      "test_half_hour_and_date_line",
+      "test_other_zones_and_tomorrow",
+      "test_import_pipeline_deduplicates_and_excludes_incomplete_duration",
+      "test_real_schema_contract_and_rejection",
+      "test_distance_is_derived_and_symmetric",
+      "write_csv"
+    ]
+  },
+  {
+    "path": "tests/test_finder_ui.py",
+    "lines": 80,
+    "sha256": "1114b65472b966394e16515f87494a28ad88251dd71fda96a10055de55fd3724",
+    "imports": [
+      "import os",
+      "import tempfile",
+      "from pathlib import Path",
+      "import unittest",
+      "from PySide6.QtWidgets import QApplication",
+      "from PySide6.QtTest import QTest",
+      "from finder.ui import FinderDialog",
+      "from test_finder import fixture",
+      "from ui import RFSWindow",
+      "import storage"
+    ],
+    "definitions": [
+      "FinderUiTests",
+      "setUpClass",
+      "test_search_select_and_existing_messages",
+      "test_missing_data_does_not_break_generator"
+    ]
+  },
+  {
+    "path": "tests/test_fuel.py",
+    "lines": 97,
+    "sha256": "b6b0f2de19086c639aafcbf904507c800af1eecff1347f94ceafc9ee76f0d3a9",
+    "imports": [
+      "from copy import deepcopy",
+      "import importlib.util",
+      "import math",
+      "import os",
+      "from pathlib import Path",
+      "import tempfile",
+      "import unittest",
+      "from unittest.mock import patch",
+      "from PySide6.QtWidgets import QApplication",
+      "from fuel.calculator import calculate_fuel, load_json, DISCLAIMER",
+      "from fuel.ui import FuelDialog",
+      "from ui import RFSWindow",
+      "import storage"
+    ],
+    "definitions": [
+      "FuelTests",
+      "FuelUiTests",
+      "test_supplied_a220_5h_egll_example",
+      "test_invalid_inputs_and_ambiguous_variants",
+      "test_unknown_arrival_alternates_and_endurance",
+      "test_provenance_and_all_63_match_reference",
+      "setUpClass",
+      "test_explicit_variant_and_application_to_current_flight"
+    ]
+  },
+  {
+    "path": "tests/test_rfs.py",
+    "lines": 184,
+    "sha256": "0b9ed8b268d532d09267f604ba3ba1ea20b5ff156c8e7a72fb554a38e417a907",
+    "imports": [
+      "from copy import deepcopy",
+      "from pathlib import Path",
+      "import tempfile",
+      "import unittest",
+      "from rfs_schema import MESSAGE_TYPES, empty_flight, empty_per_type",
+      "from storage import load_json, save_json",
+      "from templates import format_duration, render",
+      "from validation import emoji_count, validate",
+      "from message_builder import compose"
+    ],
+    "definitions": [
+      "sample_flight",
+      "sample_data",
+      "TemplateTests",
+      "ValidationAndStorageTests",
+      "setUp",
+      "test_every_template_is_valid_and_under_emoji_limit",
+      "test_atc_request_hides_optional_values_and_keeps_icao",
+      "test_airborne_controller_and_no_atc_are_exclusive",
+      "test_arrival_center_blank_line_and_go_around",
+      "test_completed_is_short_unless_detailed",
+      "test_completed_preserves_icao_as_typed",
+      "test_atc_sessions_do_not_invent_counts_or_ping",
+      "test_flight_plan_and_dispatch_durations",
+      "test_missing_data_is_not_fabricated",
+      "test_invalid_nested_state_recovers_defaults",
+      "test_invalid_icao_fl_runway_distance",
+      "test_hidden_old_flight_values_do_not_block_atc_session",
+      "test_json_with_accents_and_corruption",
+      "test_dispatch_form_has_no_emoji_limit"
+    ]
+  },
+  {
+    "path": "tests/test_ui.py",
+    "lines": 73,
+    "sha256": "ddd6e55856e2bc5a99d430370e3df92972ca8d2d90389065b1a3356d3fb64ece",
+    "imports": [
+      "import os",
+      "from pathlib import Path",
+      "import tempfile",
+      "import unittest",
+      "from PySide6.QtWidgets import QApplication",
+      "import storage",
+      "from ui import RFSWindow"
+    ],
+    "definitions": [
+      "UiWorkflowTests",
+      "setUpClass",
+      "test_current_flight_carries_across_messages_and_copy"
+    ]
+  },
+  {
+    "path": "tests/test_v2.py",
+    "lines": 136,
+    "sha256": "24471e09b5c2d6062eb8e16ecf9ba4235b0939abb1621b108d543c82c65d0d85",
+    "imports": [
+      "from copy import deepcopy",
+      "from pathlib import Path",
+      "from tempfile import TemporaryDirectory",
+      "from unittest.mock import patch",
+      "import os",
+      "import unittest",
+      "from PySide6.QtGui import QPalette",
+      "from PySide6.QtWidgets import QApplication, QPlainTextEdit",
+      "from test_rfs import sample_flight, sample_data",
+      "from message_builder import compose, validate_group, DEFAULT_PRESENTATION, apply_custom",
+      "from rfs_schema import MESSAGE_TYPES, FLIGHT_TYPES",
+      "from validation import emoji_count",
+      "from history_utils import duplicate_index",
+      "from country_data import COUNTRIES",
+      "from country_picker import CountryPicker, flag_for",
+      "from dialogs import PilotsDialog",
+      "import storage",
+      "from ui import RFSWindow"
+    ],
+    "definitions": [
+      "BuilderTests",
+      "UiV2Tests",
+      "test_all_designs_lengths_and_templates",
+      "test_parallel_and_independent_pilots_across_all_flight_messages",
+      "test_go_around_procedure_overrides_old_descent_status",
+      "test_centered_box_and_mentions_outside_code_block",
+      "test_custom_templates_are_local_substitution_only",
+      "test_history_keeps_operational_changes_but_merges_typos",
+      "setUpClass",
+      "test_flags_theme_copy_feedback_and_persistence"
+    ]
+  },
+  {
+    "path": "tests/test_v3.py",
+    "lines": 71,
+    "sha256": "388c8ed9ca2d7c425fbbad535859f10a09d3de7d74dea5c581903818aa6c1c5a",
+    "imports": [
+      "import os",
+      "from pathlib import Path",
+      "import tempfile",
+      "import unittest",
+      "from unittest.mock import patch",
+      "from PySide6.QtWidgets import QApplication",
+      "from PySide6.QtTest import QTest",
+      "from PySide6.QtCore import Qt",
+      "from test_rfs import sample_flight, sample_data",
+      "from message_builder import compose, preview_text, clipboard_text, BUILTIN_DESIGNS",
+      "from dialogs import JokeDialog, PilotsDialog",
+      "import storage"
+    ],
+    "definitions": [
+      "RevisedUxTests",
+      "setUpClass",
+      "test_group_is_compact_and_selected_per_message",
+      "test_preview_hides_fences_and_short_departure_omits_destination",
+      "test_designs_change_body_layout_not_just_border",
+      "test_pilots_remembered_without_forcing_into_every_message",
+      "test_joke_reveals_before_accepting_input_and_on_close"
+    ]
+  },
+  {
+    "path": "tests/test_v4.py",
+    "lines": 238,
+    "sha256": "3d98381b07edae05ee7cd6d578c8aefa11761de1df25223598aab1e6c323eb3b",
+    "imports": [
+      "import os",
+      "from copy import deepcopy",
+      "from dataclasses import replace",
+      "import json",
+      "from pathlib import Path",
+      "import sqlite3",
+      "import tempfile",
+      "import unittest",
+      "from unittest.mock import patch, MagicMock",
+      "import zipfile",
+      "from PySide6.QtCore import QPoint, QPointF, Qt",
+      "from PySide6.QtGui import QWheelEvent",
+      "from PySide6.QtTest import QTest",
+      "from PySide6.QtWidgets import QApplication, QComboBox, QSpinBox, QVBoxLayout, QWidget",
+      "import storage",
+      "from ui import RFSWindow",
+      "from finder.duration import parse_minutes",
+      "from finder.search import Criteria, search",
+      "from finder.ui import FinderDialog",
+      "from finder.rfs_catalogue import TYPE_BY_ID, records, observation_name",
+      "from country_search import resolve_country",
+      "from country_picker import CountryPicker",
+      "from fuel.ui import FuelDialog",
+      "from message_builder import compose, BUILTIN_DESIGNS, EMOJI_STYLES",
+      "from validation import emoji_count",
+      "from templates import format_touchdown",
+      "from i18n import set_language",
+      "from report_dialog import ReportDialog",
+      "from test_rfs import sample_flight, sample_data",
+      "from test_finder import fixture, NOW"
+    ],
+    "definitions": [
+      "V4Tests",
+      "setUpClass",
+      "setUp",
+      "tearDown",
+      "test_clear_manual_saved_and_finder_flights_preserves_library",
+      "test_failed_copy_focus_marks_and_then_clears",
+      "test_duration_units_and_legacy_bare_minutes",
+      "test_strict_bounds_and_pagination_no_loss_or_duplicates",
+      "test_enter_search_not_file_picker_and_results_invalidate",
+      "test_catalogue_mapping_does_not_select_ambiguous_fuel_variant",
+      "test_countries_flags_and_accents",
+      "test_wheel_never_changes_closed_combo_or_spinbox_but_scrolls",
+      "test_language_switch_preserves_model_and_discord",
+      "test_old_language_migration_and_joke_independence",
+      "test_touchdown_units",
+      "test_all_styles_lengths_emojis_groups_custom_limit",
+      "test_report_exports_only_explicit_text_and_consented_attachments"
+    ]
+  },
+  {
+    "path": "tests/test_v5.py",
+    "lines": 102,
+    "sha256": "62c3dc57360c4cead40ef6e6dc9209ce2e03de75a145706d8629bc051f07a9f9",
+    "imports": [
+      "import os",
+      "import json",
+      "import tempfile",
+      "import unittest",
+      "from pathlib import Path",
+      "from unittest.mock import patch",
+      "from PySide6.QtWidgets import QApplication",
+      "from PySide6.QtCore import QPoint, QPointF, Qt",
+      "from PySide6.QtGui import QWheelEvent",
+      "import storage",
+      "from ui import RFSWindow",
+      "from dialogs import UnifiedDesignDialog",
+      "from report_dialog import ReportDialog, GOOGLE_FORMS_URL",
+      "from message_builder import compose",
+      "from validation import emoji_count",
+      "from i18n import set_language",
+      "from test_rfs import sample_flight, sample_data"
+    ],
+    "definitions": [
+      "V5Tests",
+      "setUpClass",
+      "setUp",
+      "tearDown",
+      "test_help_opens_exact_form_only_after_click",
+      "test_minimal_respects_emoji_choice_and_route_flags",
+      "test_guided_conversion_keeps_next_flight_dynamic",
+      "test_report_preview_consent_and_browser_failure",
+      "test_save_failure_is_not_reported_as_success",
+      "test_touchpad_pixels_scroll_without_changing_combo"
+    ]
+  },
+  {
+    "path": "ui.py",
+    "lines": 988,
+    "sha256": "ac1f0090758791609c8918fe1586d6db3890e96dba694009a5631d619a6bfa1b",
+    "imports": [
+      "from __future__ import annotations",
+      "from i18n import tr, set_language, language",
+      "from copy import deepcopy",
+      "from datetime import datetime",
+      "import uuid",
+      "import json",
+      "from pathlib import Path",
+      "from PySide6.QtCore import Qt, QTimer",
+      "from PySide6.QtGui import QFont, QKeySequence, QShortcut",
+      "from PySide6.QtWidgets import QAbstractItemView, QApplication, QCheckBox, QComboBox, QDialog, QDialogButtonBox, QFormLayout, QFrame, QGroupBox, QHBoxLayout, QHeaderView, QInputDialog, QLabel, QLineEdit, QMainWindow, QMessageBox, QMenu, QFileDialog, QPlainTextEdit, QPushButton, QScrollArea, QSplitter, QTableWidget, QTableWidgetItem, QTextEdit, QVBoxLayout, QWidget",
+      "from rfs_schema import Field, FLAGS, FLIGHT_FIELDS, FLIGHT_FIELDS_BY_TYPE, FLIGHT_TYPES, MESSAGE_FIELDS, MESSAGE_TYPES, empty_flight, empty_per_type",
+      "from storage import LOGGER, Store",
+      "from templates import render",
+      "from validation import Issue, REQUIRED_FLIGHT, REQUIRED_MESSAGE, emoji_count, validate",
+      "from message_builder import compose, validate_group, DEFAULT_PRESENTATION, additional_pilots, BUILTIN_DESIGNS, EMOJI_STYLES, preview_text, clipboard_text",
+      "from appearance import apply_palette, extra_style, get_stylesheet, DARK_STYLESHEET as DARK_STYLE, LIGHT_STYLESHEET as LIGHT_STYLE",
+      "from country_picker import CountryPicker",
+      "from dialogs import PilotsDialog, DesignDialog, WelcomeDialog, JokeDialog, GuidedDesignDialog",
+      "from app_icon import make_icon",
+      "from localized_widgets import ChoiceBox",
+      "from ux import install_wheel_guard, smooth_scroll",
+      "from report_dialog import open_feedback_form",
+      "from report_dialog import ReportDialog",
+      "from finder.mapping import use_this_flight",
+      "from finder.ui import FinderDialog",
+      "from storage import DATA_DIR",
+      "from fuel.ui import FuelDialog",
+      "from storage import save_json"
+    ],
+    "definitions": [
+      "RFSWindow",
+      "__init__",
+      "_card",
+      "_build_ui",
+      "_load_top_state",
+      "_refresh_saved_flights",
+      "_create_widget",
+      "_rebuild_forms",
+      "_apply_conditional_visibility",
+      "_field_changed",
+      "_pilot_changed",
+      "_type_changed",
+      "_update_flight_summary",
+      "render_preview",
+      "_preview_edited",
+      "_refresh_validation",
+      "generate_message",
+      "copy_message",
+      "_remember_frequent_values",
+      "save_state",
+      "_flight_selected",
+      "new_flight",
+      "open_feedback_form",
+      "open_report",
+      "open_finder",
+      "use_found_flight",
+      "open_fuel",
+      "use_fuel_result",
+      "save_current_flight",
+      "clear_current_message",
+      "save_preset",
+      "load_preset",
+      "open_history",
+      "toggle_theme",
+      "_apply_theme",
+      "closeEvent",
+      "reset_copy_feedback",
+      "change_language",
+      "show_welcome",
+      "_load_presentation",
+      "_presentation_changed",
+      "_clipboard_message",
+      "edit_pilots",
+      "_refresh_pilot_names",
+      "edit_design",
+      "import_design",
+      "export_design",
+      "selected",
+      "show_selected",
+      "duplicate_selected",
+      "copy_selected"
+    ]
+  },
+  {
+    "path": "ui_translations.py",
+    "lines": 81,
+    "sha256": "72cb93340ac83ba5450fb65efc67d016c695123a4b440e7e4cd4709a8986cde1",
+    "imports": [],
+    "definitions": []
+  },
+  {
+    "path": "ux.py",
+    "lines": 48,
+    "sha256": "76b4ab0e36c6d8d2f177f5e32de19e709775e88d634ed23b3bc47f92d4bfca31",
+    "imports": [
+      "from PySide6.QtCore import QObject, QEvent, Qt",
+      "from PySide6.QtWidgets import QApplication, QComboBox, QAbstractSpinBox, QAbstractScrollArea, QAbstractItemView"
+    ],
+    "definitions": [
+      "WheelGuard",
+      "install_wheel_guard",
+      "smooth_scroll",
+      "eventFilter"
+    ]
+  },
+  {
+    "path": "validation.py",
+    "lines": 146,
+    "sha256": "7a73e37daf6b3defdf6703006162f64b9583c1cec80eda62c1d5a5fd8d710b1e",
+    "imports": [
+      "from __future__ import annotations",
+      "from i18n import tr, set_language, language",
+      "from dataclasses import dataclass",
+      "import re",
+      "from rfs_schema import FLIGHT_FIELDS, FLIGHT_FIELDS_BY_TYPE, MESSAGE_FIELDS"
+    ],
+    "definitions": [
+      "Issue",
+      "_has",
+      "validate",
+      "emoji_count"
+    ]
+  }
+]

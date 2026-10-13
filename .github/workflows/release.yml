@@ -36,25 +36,8 @@ jobs:
       - name: Build standalone executable with PyInstaller
         run: python -m PyInstaller --noconfirm --clean --distpath dist RFSATCMessageMaker.spec
 
-      - name: Package release files
-        shell: pwsh
-        run: |
-          # Copy extra folders into dist/RFSATCMessageMaker
-          if (Test-Path "finder-data/aviation.sqlite") {
-            New-Item -ItemType Directory -Force -Path "dist/RFSATCMessageMaker/finder-data"
-            Copy-Item -Path "finder-data/aviation.sqlite" -Destination "dist/RFSATCMessageMaker/finder-data" -Force
-          }
-          if (Test-Path "docs") {
-            Copy-Item -Path "docs" -Destination "dist/RFSATCMessageMaker/docs" -Recurse -Force
-          }
-          if (Test-Path "licenses") {
-            Copy-Item -Path "licenses" -Destination "dist/RFSATCMessageMaker/licenses" -Recurse -Force
-          }
-          Copy-Item -Path "README.md" -Destination "dist/RFSATCMessageMaker" -Force
-          
-          # Create zip
-          Compress-Archive -Path "dist/RFSATCMessageMaker" -DestinationPath "RFSATCMessageMaker-Windows-x64.zip" -Force
-          Write-Host "Archive created: RFSATCMessageMaker-Windows-x64.zip"
+      - name: Package verified public files without a user profile
+        run: python scripts/package_windows.py --archive RFSATCMessageMaker-Windows-x64.zip
 
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v2
@@ -81,10 +64,17 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Prepare public website only
+        run: python scripts/prepare_site.py
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '.'
+          path: 'build/site'
 
       - name: Deploy to GitHub Pages
         id: deployment

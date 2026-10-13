@@ -90,6 +90,7 @@ class V5Tests(unittest.TestCase):
 
     def test_touchpad_pixels_scroll_without_changing_combo(self):
         window = RFSWindow()
+        window.deck_nav[1].click()
         window.show()
         self.app.processEvents()
         combo = window.flight_widgets['airline']
